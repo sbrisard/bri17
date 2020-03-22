@@ -8,7 +8,7 @@
 
 const size_t MAX_DIM = 3;
 
-template <int DIM>
+template<int DIM>
 class CartesianGrid {
  public:
   double *L;
@@ -18,7 +18,7 @@ class CartesianGrid {
     if ((DIM < 2) || (DIM > 3)) {
       throw std::domain_error(
           "DIM template integer parameter must be 2 or 3 (got " +
-          std::to_string(DIM) + ")");
+              std::to_string(DIM) + ")");
     }
     this->L = new double[DIM];
     this->N = new size_t[DIM];
@@ -38,7 +38,7 @@ class CartesianGrid {
                        std::complex<double> *K);
 };
 
-template <int DIM>
+template<int DIM>
 std::ostream &operator<<(std::ostream &os, const CartesianGrid<DIM> &grid) {
   os << "CartesianGrid<" << DIM << ">={L=[";
   for (size_t i = 0; i < DIM; i++) {
@@ -51,7 +51,7 @@ std::ostream &operator<<(std::ostream &os, const CartesianGrid<DIM> &grid) {
   return os << "]}";
 }
 
-template <int DIM>
+template<int DIM>
 void CartesianGrid<DIM>::modal_strain_displacement(double const *k,
                                                    std::complex<double> *B) {
   double h_inv[DIM];
@@ -80,7 +80,7 @@ void CartesianGrid<DIM>::modal_strain_displacement(double const *k,
   }
 }
 
-template <int DIM>
+template<int DIM>
 void CartesianGrid<DIM>::modal_stiffness(double const *k, double mu, double nu,
                                          std::complex<double> *K) {
   // {phi, chi, psi}[i] = {φ, χ, psi}(z_i) in the notation of [Bri17]
