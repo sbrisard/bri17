@@ -42,7 +42,6 @@ class CartesianGrid {
 template <int DIM>
 std::ostream &operator<<(std::ostream &os, const CartesianGrid<DIM> &grid) {
   os << "CartesianGrid<" << DIM << ">={L=[";
-  // TODO Use range-based loops when templates are implemented.
   for (size_t i = 0; i < DIM; i++) {
     os << grid.L[i] << ",";
   }
@@ -78,8 +77,7 @@ void CartesianGrid<DIM>::modal_strain_displacement(double const *k,
     B[1] = prefactor * h_inv[1] * c[0] * s[1] * c[2];
     B[2] = prefactor * h_inv[2] * c[0] * c[1] * s[2];
   } else {
-    // This should never occur
-    // TODO throw exception
+    throw std::logic_error("this should never occur");
   }
 }
 
@@ -133,8 +131,7 @@ void CartesianGrid<DIM>::modal_stiffness(double const *k, double mu, double nu,
     K[4] += K_diag;
     K[8] += K_diag;
   } else {
-    // This should never occur
-    // TODO throw exception
+    throw std::logic_error("this should never occur");
   }
 }
 
