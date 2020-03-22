@@ -1,15 +1,15 @@
 #include "bri17/bri17.h"
+#include <Eigen/dense>
 #include <cmath>
 #include <complex>
 #include <cstddef>
 #include <iostream>
 #include <stdexcept>
 #include <string>
-#include <Eigen/dense>
 
 const size_t MAX_DIM = 3;
 
-template<int DIM>
+template <int DIM>
 class CartesianGrid {
  public:
   double L[DIM];
@@ -19,7 +19,7 @@ class CartesianGrid {
     if ((DIM < 2) || (DIM > 3)) {
       throw std::domain_error(
           "DIM template integer parameter must be 2 or 3 (got " +
-              std::to_string(DIM) + ")");
+          std::to_string(DIM) + ")");
     }
     for (size_t i = 0; i < DIM; i++) {
       this->L[i] = L[i];
@@ -27,36 +27,30 @@ class CartesianGrid {
     }
   }
 
-  ~CartesianGrid() {
-  }
+  ~CartesianGrid() {}
 
-  void modal_strain_displacement(double const *k,
-                                 Eigen::Matrix<std::complex<double>,
-                                               DIM,
-                                               1> &B);
+  void modal_strain_displacement(
+      double const *k, Eigen::Matrix<std::complex<double>, DIM, 1> &B);
   void modal_stiffness(double const *k, double mu, double nu,
                        Eigen::Matrix<std::complex<double>, DIM, DIM> &K);
 };
 
-template<int DIM>
+template <int DIM>
 std::ostream &operator<<(std::ostream &os, const CartesianGrid<DIM> &grid) {
   os << "CartesianGrid<" << DIM << ">={L=[";
-  for (auto L_i: grid.L) {
+  for (auto L_i : grid.L) {
     os << L_i << ",";
   }
   os << "],N=[";
-  for (auto N_i: grid.N) {
+  for (auto N_i : grid.N) {
     os << N_i << ",";
   }
   return os << "]}";
 }
 
-template<int DIM>
-void CartesianGrid<DIM>::modal_strain_displacement(double const *k,
-                                                   Eigen::Matrix<std::complex<
-                                                       double>,
-                                                                 DIM,
-                                                                 1> &B) {
+template <int DIM>
+void CartesianGrid<DIM>::modal_strain_displacement(
+    double const *k, Eigen::Matrix<std::complex<double>, DIM, 1> &B) {
   double h_inv[DIM];
   double c[DIM];
   double s[DIM];
@@ -83,11 +77,10 @@ void CartesianGrid<DIM>::modal_strain_displacement(double const *k,
   }
 }
 
-template<int DIM>
-void CartesianGrid<DIM>::modal_stiffness(double const *k, double mu, double nu,
-                                         Eigen::Matrix<std::complex<double>,
-                                                       DIM,
-                                                       DIM> &K) {
+template <int DIM>
+void CartesianGrid<DIM>::modal_stiffness(
+    double const *k, double mu, double nu,
+    Eigen::Matrix<std::complex<double>, DIM, DIM> &K) {
   // {phi, chi, psi}[i] = {φ, χ, psi}(z_i) in the notation of [Bri17]
   double h_inv[DIM];
   double phi[DIM];
