@@ -41,12 +41,12 @@ class CartesianGrid {
 template<int DIM>
 std::ostream &operator<<(std::ostream &os, const CartesianGrid<DIM> &grid) {
   os << "CartesianGrid<" << DIM << ">={L=[";
-  for (size_t i = 0; i < DIM; i++) {
-    os << grid.L[i] << ",";
+  for (auto L_i: grid.L) {
+    os << L_i << ",";
   }
   os << "],N=[";
-  for (size_t i = 0; i < DIM; i++) {
-    os << grid.N[i] << ",";
+  for (auto N_i: grid.N) {
+    os << N_i << ",";
   }
   return os << "]}";
 }
