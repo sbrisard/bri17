@@ -1,5 +1,5 @@
 #include "bri17/bri17.h"
-#include <Eigen/dense>
+#include <Eigen/Dense>
 #include <cmath>
 #include <complex>
 #include <cstddef>
