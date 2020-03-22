@@ -12,8 +12,8 @@ const size_t MAX_DIM = 3;
 template<int DIM>
 class CartesianGrid {
  public:
-  double *L;
-  size_t *N;
+  double L[DIM];
+  size_t N[DIM];
 
   CartesianGrid(double L[], size_t N[]) {
     if ((DIM < 2) || (DIM > 3)) {
@@ -21,8 +21,6 @@ class CartesianGrid {
           "DIM template integer parameter must be 2 or 3 (got " +
               std::to_string(DIM) + ")");
     }
-    this->L = new double[DIM];
-    this->N = new size_t[DIM];
     for (size_t i = 0; i < DIM; i++) {
       this->L[i] = L[i];
       this->N[i] = N[i];
@@ -30,8 +28,6 @@ class CartesianGrid {
   }
 
   ~CartesianGrid() {
-    delete[] L;
-    delete[] N;
   }
 
   void modal_strain_displacement(double const *k,
