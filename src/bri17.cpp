@@ -5,6 +5,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <string>
+#include <Eigen/dense>
 
 const size_t MAX_DIM = 3;
 
@@ -33,9 +34,12 @@ class CartesianGrid {
     delete[] N;
   }
 
-  void modal_strain_displacement(double const *k, std::complex<double> *B);
+  void modal_strain_displacement(double const *k,
+                                 Eigen::Matrix<std::complex<double>,
+                                               DIM,
+                                               1> &B);
   void modal_stiffness(double const *k, double mu, double nu,
-                       std::complex<double> *K);
+                       Eigen::Matrix<std::complex<double>, DIM, DIM> &K);
 };
 
 template<int DIM>
@@ -53,7 +57,10 @@ std::ostream &operator<<(std::ostream &os, const CartesianGrid<DIM> &grid) {
 
 template<int DIM>
 void CartesianGrid<DIM>::modal_strain_displacement(double const *k,
-                                                   std::complex<double> *B) {
+                                                   Eigen::Matrix<std::complex<
+                                                       double>,
+                                                                 DIM,
+                                                                 1> &B) {
   double h_inv[DIM];
   double c[DIM];
   double s[DIM];
@@ -69,12 +76,12 @@ void CartesianGrid<DIM>::modal_strain_displacement(double const *k,
   std::complex prefactor{-2 * sin(sum_alpha), 2 * cos(sum_alpha)};
 
   if (DIM == 2) {
-    B[0] = prefactor * h_inv[0] * s[0] * c[1];
-    B[1] = prefactor * h_inv[1] * c[0] * s[1];
+    B(0) << prefactor * h_inv[0] * s[0] * c[1];
+    B(1) = prefactor * h_inv[1] * c[0] * s[1];
   } else if (DIM == 3) {
-    B[0] = prefactor * h_inv[0] * s[0] * c[1] * c[2];
-    B[1] = prefactor * h_inv[1] * c[0] * s[1] * c[2];
-    B[2] = prefactor * h_inv[2] * c[0] * c[1] * s[2];
+    B(0) = prefactor * h_inv[0] * s[0] * c[1] * c[2];
+    B(1) = prefactor * h_inv[1] * c[0] * s[1] * c[2];
+    B(2) = prefactor * h_inv[2] * c[0] * c[1] * s[2];
   } else {
     throw std::logic_error("this should never occur");
   }
@@ -82,7 +89,9 @@ void CartesianGrid<DIM>::modal_strain_displacement(double const *k,
 
 template<int DIM>
 void CartesianGrid<DIM>::modal_stiffness(double const *k, double mu, double nu,
-                                         std::complex<double> *K) {
+                                         Eigen::Matrix<std::complex<double>,
+                                                       DIM,
+                                                       DIM> &K) {
   // {phi, chi, psi}[i] = {φ, χ, psi}(z_i) in the notation of [Bri17]
   double h_inv[DIM];
   double phi[DIM];
@@ -98,37 +107,37 @@ void CartesianGrid<DIM>::modal_stiffness(double const *k, double mu, double nu,
 
   const double scaling = 1. / (1. - 2. * nu);
   if (DIM == 2) {
-    const double H0 = h_inv[0] * h_inv[0] * phi[0] * chi[1];
-    K[0] = scaling * H0;
-    K[1] = scaling * h_inv[0] * h_inv[1] * psi[0] * psi[1];
-    const double H3 = h_inv[1] * h_inv[1] * chi[0] * phi[1];
-    K[3] = scaling * H3;
+    const double H_00 = h_inv[0] * h_inv[0] * phi[0] * chi[1];
+    K(0, 0) = scaling * H_00;
+    K(0, 1) = scaling * h_inv[0] * h_inv[1] * psi[0] * psi[1];
+    const double H_11 = h_inv[1] * h_inv[1] * chi[0] * phi[1];
+    K(1, 1) = scaling * H_11;
 
     // Symmetrization
-    K[2] = K[1];
+    K(1, 0) = K[1];
 
-    const double K_diag = mu * (H0 + H3);
-    K[0] += K_diag;
-    K[3] += K_diag;
+    const double K_diag = mu * (H_00 + H_11);
+    K(0, 0) += K_diag;
+    K(1, 1) += K_diag;
   } else if (DIM == 3) {
-    const double H0 = h_inv[0] * h_inv[0] * phi[0] * chi[1] * chi[2];
-    K[0] = scaling * H0;
-    K[1] = scaling * h_inv[0] * h_inv[1] * psi[0] * psi[1] * chi[2];
-    K[2] = scaling * h_inv[0] * h_inv[2] * psi[0] * chi[1] * psi[2];
-    const double H4 = h_inv[1] * h_inv[1] * chi[0] * phi[1] * chi[2];
-    K[4] = scaling * H4;
-    K[5] = scaling * h_inv[1] * h_inv[2] * chi[0] * psi[1] * psi[2];
-    const double H8 = h_inv[2] * h_inv[2] * chi[0] * chi[1] * phi[2];
-    K[8] = scaling * H8;
+    const double H_00 = h_inv[0] * h_inv[0] * phi[0] * chi[1] * chi[2];
+    K(0, 0) = scaling * H_00;
+    K(0, 1) = scaling * h_inv[0] * h_inv[1] * psi[0] * psi[1] * chi[2];
+    K(0, 2) = scaling * h_inv[0] * h_inv[2] * psi[0] * chi[1] * psi[2];
+    const double H_11 = h_inv[1] * h_inv[1] * chi[0] * phi[1] * chi[2];
+    K(1, 1) = scaling * H_11;
+    K(1, 2) = scaling * h_inv[1] * h_inv[2] * chi[0] * psi[1] * psi[2];
+    const double H_22 = h_inv[2] * h_inv[2] * chi[0] * chi[1] * phi[2];
+    K(2, 2) = scaling * H_22;
 
-    K[3] = K[1];
-    K[6] = K[2];
-    K[7] = K[5];
+    K(1, 0) = K(0, 1);
+    K(2, 0) = K(0, 2);
+    K(2, 1) = K(1, 2);
 
-    const double K_diag = mu * (H0 + H4 + H8);
-    K[0] += K_diag;
-    K[4] += K_diag;
-    K[8] += K_diag;
+    const double K_diag = mu * (H_00 + H_11 + H_22);
+    K(0, 0) += K_diag;
+    K(1, 1) += K_diag;
+    K(2, 2) += K_diag;
   } else {
     throw std::logic_error("this should never occur");
   }
