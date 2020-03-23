@@ -162,11 +162,16 @@ int main() {
   FFTWComplexBuffer in{N};
   in.cpp_data[0] = 1.;
   FFTWComplexBuffer out{N};
-  fftw_plan p;
-  p = fftw_plan_dft_1d(N, in.c_data, out.c_data, FFTW_FORWARD, FFTW_ESTIMATE);
+  auto p = fftw_plan_dft_1d(N, in.c_data, out.c_data, FFTW_FORWARD, FFTW_ESTIMATE);
+  auto p_inv = fftw_plan_dft_1d(N, out.c_data, in.c_data, FFTW_BACKWARD, FFTW_ESTIMATE);
   fftw_execute(p);
   for (size_t i = 0; i < N; i++) {
     std::cout << out.cpp_data[i] << ", ";
+  }
+  std::cout << std::endl;
+  fftw_execute(p_inv);
+  for (size_t i = 0; i < N; i++) {
+    std::cout << in.cpp_data[i] << ", ";
   }
   std::cout << std::endl;
   fftw_destroy_plan(p);
