@@ -7,6 +7,8 @@
 #include <stdexcept>
 #include <string>
 
+#include <fftw3.h>
+
 const size_t MAX_DIM = 3;
 
 template <int DIM>
@@ -143,6 +145,19 @@ int main() {
   CartesianGrid<3> grid3{L3, N3};
   std::cout << grid3 << std::endl;
 
-  CartesianGrid<4> grid4{L3, N3};
-  std::cout << grid4 << std::endl;
+  size_t N = 16;
+  fftw_complex *in, *out;
+  fftw_plan p;
+  in = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * N);
+  in[0][0] = 1.;
+  out = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * N);
+  p = fftw_plan_dft_1d(N, in, out, FFTW_FORWARD, FFTW_ESTIMATE);
+  fftw_execute(p);
+  for (size_t i = 0; i < N; i++){
+    std::cout << out[i][0] << " + " << out[i][1] << "i, ";
+  }
+  std::cout << std::endl;
+  fftw_destroy_plan(p);
+  fftw_free(in);
+  fftw_free(out);
 }

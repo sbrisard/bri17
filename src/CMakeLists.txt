@@ -15,8 +15,13 @@ if (MATH_LIBRARY)
   target_link_libraries(bri17 ${MATH_LIBRARY})
 endif()
 
-find_package (Eigen3 3.3 REQUIRED NO_MODULE)
-target_link_libraries (bri17 Eigen3::Eigen)
+find_package(Eigen3 3.3 REQUIRED NO_MODULE)
+target_link_libraries(bri17 Eigen3::Eigen)
+
+find_package(FFTW REQUIRED)
+target_link_libraries(bri17 fftw3)
+
+message("bla" ${FFTW_LIBRARIES})
 
 # install(TARGETS bri17 LIBRARY DESTINATION lib)
 # install(DIRECTORY ../include/bri17 DESTINATION include)
