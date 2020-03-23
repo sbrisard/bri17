@@ -134,6 +134,19 @@ void CartesianGrid<DIM>::modal_stiffness(
   }
 }
 
+class FFTWComplexBuffer {
+ public:
+  fftw_complex *c_data;
+  std::complex<double> *cpp_data;
+
+  FFTWComplexBuffer(size_t n) {
+    c_data = (fftw_complex *)fftw_malloc(n * sizeof(fftw_complex));
+    cpp_data = reinterpret_cast<std::complex<double> *>(c_data);
+  }
+
+  ~FFTWComplexBuffer() { fftw_free(c_data); }
+};
+
 int main() {
   size_t N2[] = {32, 64};
   double L2[] = {0.5, 1.};
@@ -146,18 +159,15 @@ int main() {
   std::cout << grid3 << std::endl;
 
   size_t N = 16;
-  fftw_complex *in, *out;
+  FFTWComplexBuffer in{N};
+  in.cpp_data[0] = 1.;
+  FFTWComplexBuffer out{N};
   fftw_plan p;
-  in = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * N);
-  in[0][0] = 1.;
-  out = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * N);
-  p = fftw_plan_dft_1d(N, in, out, FFTW_FORWARD, FFTW_ESTIMATE);
+  p = fftw_plan_dft_1d(N, in.c_data, out.c_data, FFTW_FORWARD, FFTW_ESTIMATE);
   fftw_execute(p);
-  for (size_t i = 0; i < N; i++){
-    std::cout << out[i][0] << " + " << out[i][1] << "i, ";
+  for (size_t i = 0; i < N; i++) {
+    std::cout << out.cpp_data[i] << ", ";
   }
   std::cout << std::endl;
   fftw_destroy_plan(p);
-  fftw_free(in);
-  fftw_free(out);
 }
