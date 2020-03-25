@@ -35,6 +35,10 @@ class CartesianGrid {
       double const *k, Eigen::Matrix<std::complex<double>, DIM, 1> &B);
   void modal_stiffness(double const *k, double mu, double nu,
                        Eigen::Matrix<std::complex<double>, DIM, DIM> &K);
+  void modal_eigenstress_to_strain(
+      double const *k, double mu, double nu,
+      Eigen::Matrix<std::complex<double>, DIM, DIM> &tau,
+      Eigen::Matrix<std::complex<double>, DIM, DIM> &eps);
 };
 
 template <int DIM>
@@ -134,6 +138,19 @@ void CartesianGrid<DIM>::modal_stiffness(
   }
 }
 
+template <int DIM>
+void CartesianGrid<DIM>::modal_eigenstress_to_strain(
+    double const *k, double mu, double nu,
+    Eigen::Matrix<std::complex<double>, DIM, DIM> &tau,
+    Eigen::Matrix<std::complex<double>, DIM, DIM> &eps) {
+  Eigen::Matrix<std::complex<double>, DIM, 1> B{};
+  Eigen::Matrix<std::complex<double>, DIM, DIM> K{};
+  modal_strain_displacement(k, B);
+  modal_stiffness(k, mu, nu, K);
+  auto u = -K.fullPivLu().solve(tau * B);
+  eps = 0.5 * (B * u.transpose() + u * B.transpose());
+}
+
 class FFTWComplexBuffer {
  public:
   fftw_complex *c_data;
@@ -148,31 +165,13 @@ class FFTWComplexBuffer {
 };
 
 int main() {
-  size_t N2[] = {32, 64};
-  double L2[] = {0.5, 1.};
-  CartesianGrid<2> grid2{L2, N2};
-  std::cout << grid2 << std::endl;
+  const int DIM = 2;
+  double L[] = {0.5, 1.};
+  size_t N[] = {32, 64};
+  CartesianGrid<DIM> grid{L, N};
 
-  size_t N3[] = {32, 64, 128};
-  double L3[] = {0.5, 1., 2.};
-  CartesianGrid<3> grid3{L3, N3};
-  std::cout << grid3 << std::endl;
-
-  size_t N = 16;
-  FFTWComplexBuffer in{N};
-  in.cpp_data[0] = 1.;
-  FFTWComplexBuffer out{N};
-  auto p = fftw_plan_dft_1d(N, in.c_data, out.c_data, FFTW_FORWARD, FFTW_ESTIMATE);
-  auto p_inv = fftw_plan_dft_1d(N, out.c_data, in.c_data, FFTW_BACKWARD, FFTW_ESTIMATE);
-  fftw_execute(p);
-  for (size_t i = 0; i < N; i++) {
-    std::cout << out.cpp_data[i] << ", ";
+  size_t size = 1;
+  for (auto N_i : N) {
+    size *= N_i;
   }
-  std::cout << std::endl;
-  fftw_execute(p_inv);
-  for (size_t i = 0; i < N; i++) {
-    std::cout << in.cpp_data[i] << ", ";
-  }
-  std::cout << std::endl;
-  fftw_destroy_plan(p);
 }
