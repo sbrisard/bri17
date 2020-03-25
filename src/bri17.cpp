@@ -11,7 +11,7 @@
 
 const size_t MAX_DIM = 3;
 
-template <int DIM>
+template <size_t DIM>
 class CartesianGrid {
  public:
   double L[DIM];
@@ -41,7 +41,7 @@ class CartesianGrid {
       Eigen::Matrix<std::complex<double>, DIM, DIM> &eps);
 };
 
-template <int DIM>
+template <size_t DIM>
 std::ostream &operator<<(std::ostream &os, const CartesianGrid<DIM> &grid) {
   os << "CartesianGrid<" << DIM << ">={L=[";
   for (auto L_i : grid.L) {
@@ -54,7 +54,7 @@ std::ostream &operator<<(std::ostream &os, const CartesianGrid<DIM> &grid) {
   return os << "]}";
 }
 
-template <int DIM>
+template <size_t DIM>
 void CartesianGrid<DIM>::modal_strain_displacement(
     double const *k, Eigen::Matrix<std::complex<double>, DIM, 1> &B) {
   double h_inv[DIM];
@@ -83,7 +83,7 @@ void CartesianGrid<DIM>::modal_strain_displacement(
   }
 }
 
-template <int DIM>
+template <size_t DIM>
 void CartesianGrid<DIM>::modal_stiffness(
     double const *k, double mu, double nu,
     Eigen::Matrix<std::complex<double>, DIM, DIM> &K) {
@@ -138,7 +138,7 @@ void CartesianGrid<DIM>::modal_stiffness(
   }
 }
 
-template <int DIM>
+template <size_t DIM>
 void CartesianGrid<DIM>::modal_eigenstress_to_strain(
     double const *k, double mu, double nu,
     Eigen::Matrix<std::complex<double>, DIM, DIM> &tau,
@@ -165,7 +165,7 @@ class FFTWComplexBuffer {
 };
 
 int main() {
-  const int DIM = 2;
+  const size_t DIM = 2;
   double L[] = {0.5, 1.};
   size_t N[] = {32, 64};
   CartesianGrid<DIM> grid{L, N};
