@@ -14,10 +14,14 @@ const size_t MAX_DIM = 3;
 template <size_t DIM>
 class CartesianGrid {
  public:
+  double mu;
+  double nu;
   double L[DIM];
   size_t N[DIM];
 
-  CartesianGrid(double L[], size_t N[]) {
+  CartesianGrid(double mu, double nu, double L[], size_t N[]) {
+    this->mu = mu;
+    this->nu = nu;
     if ((DIM < 2) || (DIM > 3)) {
       throw std::domain_error(
           "DIM template integer parameter must be 2 or 3 (got " +
@@ -33,11 +37,10 @@ class CartesianGrid {
 
   void modal_strain_displacement(
       double const *k, Eigen::Matrix<std::complex<double>, DIM, 1> &B);
-  void modal_stiffness(double const *k, double mu, double nu,
+  void modal_stiffness(double const *k,
                        Eigen::Matrix<std::complex<double>, DIM, DIM> &K);
   void modal_eigenstress_to_strain(
-      double const *k, double mu, double nu,
-      Eigen::Matrix<std::complex<double>, DIM, DIM> &tau,
+      double const *k, Eigen::Matrix<std::complex<double>, DIM, DIM> &tau,
       Eigen::Matrix<std::complex<double>, DIM, DIM> &eps);
 };
 
@@ -85,8 +88,7 @@ void CartesianGrid<DIM>::modal_strain_displacement(
 
 template <size_t DIM>
 void CartesianGrid<DIM>::modal_stiffness(
-    double const *k, double mu, double nu,
-    Eigen::Matrix<std::complex<double>, DIM, DIM> &K) {
+    double const *k, Eigen::Matrix<std::complex<double>, DIM, DIM> &K) {
   // {phi, chi, psi}[i] = {φ, χ, psi}(z_i) in the notation of [Bri17]
   double h_inv[DIM];
   double phi[DIM];
@@ -140,8 +142,7 @@ void CartesianGrid<DIM>::modal_stiffness(
 
 template <size_t DIM>
 void CartesianGrid<DIM>::modal_eigenstress_to_strain(
-    double const *k, double mu, double nu,
-    Eigen::Matrix<std::complex<double>, DIM, DIM> &tau,
+    double const *k, Eigen::Matrix<std::complex<double>, DIM, DIM> &tau,
     Eigen::Matrix<std::complex<double>, DIM, DIM> &eps) {
   Eigen::Matrix<std::complex<double>, DIM, 1> B{};
   Eigen::Matrix<std::complex<double>, DIM, DIM> K{};
@@ -168,7 +169,7 @@ int main() {
   const size_t DIM = 2;
   double L[] = {0.5, 1.};
   size_t N[] = {32, 64};
-  CartesianGrid<DIM> grid{L, N};
+  CartesianGrid<DIM> grid{1., 0.3, L, N};
 
   size_t size = 1;
   for (auto N_i : N) {
