@@ -89,7 +89,7 @@ void CartesianGrid<DIM>::modal_strain_displacement(
 template <size_t DIM>
 void CartesianGrid<DIM>::modal_stiffness(
     double const *k, Eigen::Matrix<std::complex<double>, DIM, DIM> &K) {
-  // {phi, chi, psi}[i] = {φ, χ, psi}(z_i) in the notation of [Bri17]
+  // {phi, chi, psi}[i] = {?, ?, psi}(z_i) in the notation of [Bri17]
   double h_inv[DIM];
   double phi[DIM];
   double psi[DIM];
@@ -168,11 +168,42 @@ class FFTWComplexBuffer {
 int main() {
   const size_t DIM = 2;
   double L[] = {0.5, 1.};
-  size_t N[] = {32, 64};
+  size_t N[] = {3, 4};
   CartesianGrid<DIM> grid{1., 0.3, L, N};
 
-  size_t size = 1;
+  size_t ncells = 1;
   for (auto N_i : N) {
-    size *= N_i;
+    ncells *= N_i;
+  }
+  const size_t ndofs = ncells * DIM;
+
+  FFTWComplexBuffer u{ncells * DIM};
+  FFTWComplexBuffer u_hat{ncells * DIM};
+  FFTWComplexBuffer Ku{ncells * DIM};
+  FFTWComplexBuffer Ku_hat{ncells * DIM};
+
+  fftw_plan dft_u[DIM];
+  fftw_plan idft_Ku[DIM];
+
+  for (size_t i = 0; i < ndofs; i++) {
+    u.cpp_data[i] = 0.;
+  }
+
+  for (size_t k = 0; k < DIM; k++) {
+    dft_u[k] = fftw_plan_dft_2d(N[0], N[1], u.c_data + k * ncells,
+                                u_hat.c_data + k * ncells, FFTW_FORWARD,
+                                FFTW_ESTIMATE);
+    idft_Ku[k] = fftw_plan_dft_2d(N[0], N[1], Ku_hat.c_data + k * ncells,
+                                  Ku.c_data, FFTW_BACKWARD, FFTW_ESTIMATE);
+  }
+  Eigen::MatrixXcd K_act{ndofs, ndofs};
+  fftw_complex *u_j = u.c_data;
+
+  for (size_t j = 0; j < ndofs; j++) {
+    u_j[0][0] = 1.0;
+    for (size_t k = 0; k < DIM; k++) {
+      fftw_execute(dft_u[k]);
+    }
+    u_j[0][0] = 0.0;
   }
 }
