@@ -165,45 +165,91 @@ class FFTWComplexBuffer {
   ~FFTWComplexBuffer() { fftw_free(c_data); }
 };
 
-int main() {
-  const size_t DIM = 2;
-  double L[] = {0.5, 1.};
-  size_t N[] = {3, 4};
-  CartesianGrid<DIM> grid{1., 0.3, L, N};
-
-  size_t ncells = 1;
-  for (auto N_i : N) {
-    ncells *= N_i;
-  }
-  const size_t ndofs = ncells * DIM;
-
-  FFTWComplexBuffer u{ncells * DIM};
-  FFTWComplexBuffer u_hat{ncells * DIM};
-  FFTWComplexBuffer Ku{ncells * DIM};
-  FFTWComplexBuffer Ku_hat{ncells * DIM};
-
+template <size_t DIM>
+class StiffnessMatrixFactory {
+  const size_t ncells;
+  const size_t ndofs;
+  const CartesianGrid<DIM> grid;
+  const FFTWComplexBuffer u;
+  const FFTWComplexBuffer u_hat;
+  const FFTWComplexBuffer Ku;
+  const FFTWComplexBuffer Ku_hat;
+  // TODO These members should be const
   fftw_plan dft_u[DIM];
   fftw_plan idft_Ku[DIM];
 
-  for (size_t i = 0; i < ndofs; i++) {
-    u.cpp_data[i] = 0.;
-  }
-
-  for (size_t k = 0; k < DIM; k++) {
-    dft_u[k] = fftw_plan_dft_2d(N[0], N[1], u.c_data + k * ncells,
-                                u_hat.c_data + k * ncells, FFTW_FORWARD,
-                                FFTW_ESTIMATE);
-    idft_Ku[k] = fftw_plan_dft_2d(N[0], N[1], Ku_hat.c_data + k * ncells,
-                                  Ku.c_data, FFTW_BACKWARD, FFTW_ESTIMATE);
-  }
-  Eigen::MatrixXcd K_act{ndofs, ndofs};
-  fftw_complex *u_j = u.c_data;
-
-  for (size_t j = 0; j < ndofs; j++) {
-    u_j[0][0] = 1.0;
-    for (size_t k = 0; k < DIM; k++) {
-      fftw_execute(dft_u[k]);
+  static size_t num_cells(size_t N[]) {
+    if (DIM == 2) {
+      return N[0] * N[1];
+    } else if (DIM == 3) {
+      return N[0] * N[1] * N[2];
+    } else {
+      throw std::logic_error("this should never occur");
     }
-    u_j[0][0] = 0.0;
   }
+
+  void compute_Ku();
+
+ public:
+  StiffnessMatrixFactory(double mu, double nu, double L[], size_t N[])
+      : ncells{num_cells(N)},
+        ndofs{ncells * DIM},
+        grid{mu, nu, L, N},
+        u{ndofs},
+        u_hat{ndofs},
+        Ku{ndofs},
+        Ku_hat{ndofs} {
+    int N_[DIM];
+    for (size_t i = 0; i < DIM; i++) N_[i] = N[i];
+    for (size_t k = 0; k < DIM; k++) {
+      size_t offset = k * ncells;
+      dft_u[k] =
+          fftw_plan_dft(DIM, N_, u.c_data + offset, u_hat.c_data + offset,
+                        FFTW_FORWARD, FFTW_ESTIMATE);
+      idft_Ku[k] =
+          fftw_plan_dft(DIM, N_, Ku_hat.c_data + offset, Ku.c_data + offset,
+                        FFTW_BACKWARD, FFTW_ESTIMATE);
+    }
+  }
+
+  void run();
+};
+
+template <size_t DIM>
+void StiffnessMatrixFactory<DIM>::compute_Ku() {
+  for (size_t i = 0; i < DIM; i++) fftw_execute(dft_u[i]);
+  size_t k[DIM];
+  Eigen::Matrix<std::complex<double>, DIM, DIM> K_k;
+  Eigen::Matrix<std::complex<double>, DIM, 1> u_k;
+  if (DIM == 2) {
+    for (size_t k[0] = 0, i = 0; k[0] < grid.N[0]; k[0]++) {
+      for (size_t k[1] = 0; k[1] < grid.N[1]; k[1]++; i++) {
+        grid.modal_stiffness(k, K_k);
+        u_k(0) = u_hat[i];
+        u_k(1) = u_hat[i + ncells];
+        auto Ku_k = K_k * u_k;
+        Ku_hat[i] = Ku_k(0);
+        Ku_hat[i + ncells] = Ku_k(1);
+      }
+    }
+  }
+  for (size_t i = 0; i < DIM; i++) fftw_execute(idft_Ku[i]);
+}
+
+template <size_t DIM>
+void StiffnessMatrixFactory<DIM>::run() {
+  for (size_t i = 0; i < ndofs; i++) {
+    u.cpp_data[i] = 0;
+  }
+}
+
+int main() {
+  const size_t dim = 2;
+  const double mu = 1.0;
+  const double nu = 0.3;
+  double L[] = {1.1, 1.2};
+  size_t N[] = {3, 4};
+  StiffnessMatrixFactory<dim> factory{mu, nu, L, N};
+
+  //  Eigen::MatrixXcd K_act{ndofs, ndofs};
 }
