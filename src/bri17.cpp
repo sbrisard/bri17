@@ -35,13 +35,13 @@ class CartesianGrid {
 
   ~CartesianGrid() {}
 
-  void modal_strain_displacement(
-      double const *k, Eigen::Matrix<std::complex<double>, DIM, 1> &B);
-  void modal_stiffness(double const *k,
-                       Eigen::Matrix<std::complex<double>, DIM, DIM> &K);
+  void modal_strain_displacement (
+      size_t const *k, Eigen::Matrix<std::complex<double>, DIM, 1> &B) const;
+  void modal_stiffness(size_t const *k,
+                       Eigen::Matrix<std::complex<double>, DIM, DIM> &K) const;
   void modal_eigenstress_to_strain(
-      double const *k, Eigen::Matrix<std::complex<double>, DIM, DIM> &tau,
-      Eigen::Matrix<std::complex<double>, DIM, DIM> &eps);
+      size_t const *k, Eigen::Matrix<std::complex<double>, DIM, DIM> &tau,
+      Eigen::Matrix<std::complex<double>, DIM, DIM> &eps) const;
 };
 
 template <size_t DIM>
@@ -59,7 +59,7 @@ std::ostream &operator<<(std::ostream &os, const CartesianGrid<DIM> &grid) {
 
 template <size_t DIM>
 void CartesianGrid<DIM>::modal_strain_displacement(
-    double const *k, Eigen::Matrix<std::complex<double>, DIM, 1> &B) {
+    size_t const *k, Eigen::Matrix<std::complex<double>, DIM, 1> &B) const {
   double h_inv[DIM];
   double c[DIM];
   double s[DIM];
@@ -88,7 +88,7 @@ void CartesianGrid<DIM>::modal_strain_displacement(
 
 template <size_t DIM>
 void CartesianGrid<DIM>::modal_stiffness(
-    double const *k, Eigen::Matrix<std::complex<double>, DIM, DIM> &K) {
+    size_t const *k, Eigen::Matrix<std::complex<double>, DIM, DIM> &K) const {
   // {phi, chi, psi}[i] = {?, ?, psi}(z_i) in the notation of [Bri17]
   double h_inv[DIM];
   double phi[DIM];
@@ -111,7 +111,7 @@ void CartesianGrid<DIM>::modal_stiffness(
     K(1, 1) = scaling * H_11;
 
     // Symmetrization
-    K(1, 0) = K[1];
+    K(1, 0) = K(0, 1);
 
     const double K_diag = mu * (H_00 + H_11);
     K(0, 0) += K_diag;
@@ -142,8 +142,8 @@ void CartesianGrid<DIM>::modal_stiffness(
 
 template <size_t DIM>
 void CartesianGrid<DIM>::modal_eigenstress_to_strain(
-    double const *k, Eigen::Matrix<std::complex<double>, DIM, DIM> &tau,
-    Eigen::Matrix<std::complex<double>, DIM, DIM> &eps) {
+    size_t const *k, Eigen::Matrix<std::complex<double>, DIM, DIM> &tau,
+    Eigen::Matrix<std::complex<double>, DIM, DIM> &eps) const {
   Eigen::Matrix<std::complex<double>, DIM, 1> B{};
   Eigen::Matrix<std::complex<double>, DIM, DIM> K{};
   modal_strain_displacement(k, B);
@@ -167,8 +167,11 @@ class FFTWComplexBuffer {
 
 template <size_t DIM>
 class StiffnessMatrixFactory {
+ public:
   const size_t ncells;
   const size_t ndofs;
+
+ private:
   const CartesianGrid<DIM> grid;
   const FFTWComplexBuffer u;
   const FFTWComplexBuffer u_hat;
@@ -212,24 +215,26 @@ class StiffnessMatrixFactory {
     }
   }
 
-  void run();
+  void run(Eigen::MatrixXcd &K);
 };
 
 template <size_t DIM>
 void StiffnessMatrixFactory<DIM>::compute_Ku() {
   for (size_t i = 0; i < DIM; i++) fftw_execute(dft_u[i]);
-  size_t k[DIM];
+  size_t k[DIM] = {0};
   Eigen::Matrix<std::complex<double>, DIM, DIM> K_k;
   Eigen::Matrix<std::complex<double>, DIM, 1> u_k;
   if (DIM == 2) {
-    for (size_t k[0] = 0, i = 0; k[0] < grid.N[0]; k[0]++) {
-      for (size_t k[1] = 0; k[1] < grid.N[1]; k[1]++; i++) {
+    size_t i = 0;
+    for (k[0] = 0; k[0] < grid.N[0]; k[0]++) {
+      for (k[1] = 0; k[1] < grid.N[1]; k[1]++) {
         grid.modal_stiffness(k, K_k);
-        u_k(0) = u_hat[i];
-        u_k(1) = u_hat[i + ncells];
+        u_k(0) = u_hat.cpp_data[i];
+        u_k(1) = u_hat.cpp_data[i + ncells];
         auto Ku_k = K_k * u_k;
-        Ku_hat[i] = Ku_k(0);
-        Ku_hat[i + ncells] = Ku_k(1);
+        Ku_hat.cpp_data[i] = Ku_k(0);
+        Ku_hat.cpp_data[i + ncells] = Ku_k(1);
+        i++;
       }
     }
   }
@@ -237,9 +242,17 @@ void StiffnessMatrixFactory<DIM>::compute_Ku() {
 }
 
 template <size_t DIM>
-void StiffnessMatrixFactory<DIM>::run() {
+void StiffnessMatrixFactory<DIM>::run(Eigen::MatrixXcd &K) {
   for (size_t i = 0; i < ndofs; i++) {
     u.cpp_data[i] = 0;
+  }
+  for (size_t j = 0; j < ndofs; j++) {
+    u.cpp_data[j] = 1;
+    compute_Ku();
+    for (size_t i = 0; i < ndofs; i++) {
+      K(i, j) = Ku.cpp_data[i];
+    }
+    u.cpp_data[j] = 0;
   }
 }
 
@@ -250,6 +263,7 @@ int main() {
   double L[] = {1.1, 1.2};
   size_t N[] = {3, 4};
   StiffnessMatrixFactory<dim> factory{mu, nu, L, N};
-
-  //  Eigen::MatrixXcd K_act{ndofs, ndofs};
+  Eigen::MatrixXcd K_act{factory.ndofs, factory.ndofs};
+  factory.run(K_act);
+  std::cout << K_act << std::endl;
 }
