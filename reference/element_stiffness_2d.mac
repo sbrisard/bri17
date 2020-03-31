@@ -20,8 +20,6 @@ print("- coordinates:", xyz);
 print("- element sides:", abc);
 print("- components of displacement:", uvw);
 
-lame_I : 2*mu*nu/(1-2*nu);
-
 /* Create a list of lists of 1D shape functions, then compute the product. */
 shape_functions_list : lreduce(
   lambda([L1, L2], create_list(x1*x2, x1, L1, x2, L2)),
@@ -38,14 +36,18 @@ eps_[i, j] := factor((diff(u[i, 1], xyz[j])+diff(u[j, 1], xyz[i]))/2);
 eps : genmatrix(eps_, ndims, ndims);
 
 tr_eps : tracematrix(eps);
-sig : lame_I*tr_eps*ident(ndims)+2*mu*eps;
+sig : lame_I*tr_eps*ident(ndims)+2*lame_II*eps;
 
 U : tracematrix(sig.eps)/2;
 for i:1 thru ndims do U : integrate(U, xyz[i], 0, abc[i]);
-display(U);
 
 q : makelist(dofs[quotient(i-1, nnodes)+1, remainder(i-1, nnodes)+1], i, 1, ndofs);
 
 Kq_[i, j] := diff(U, q[i]);
 Kq : genmatrix(Kq_, ndofs, 1);
-K : coefmatrix(list_matrix_entries(Kq), q);
+K : expand(coefmatrix(list_matrix_entries(Kq), q));
+K_I : coeff(K, lame_I);
+K_II : coeff(K, lame_II);
+
+display(K_I);
+display(K_II);

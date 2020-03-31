@@ -35,7 +35,7 @@ class CartesianGrid {
 
   ~CartesianGrid() {}
 
-  void modal_strain_displacement (
+  void modal_strain_displacement(
       size_t const *k, Eigen::Matrix<std::complex<double>, DIM, 1> &B) const;
   void modal_stiffness(size_t const *k,
                        Eigen::Matrix<std::complex<double>, DIM, DIM> &K) const;
@@ -254,6 +254,25 @@ void StiffnessMatrixFactory<DIM>::run(Eigen::MatrixXcd &K) {
     }
     u.cpp_data[j] = 0;
   }
+}
+
+Eigen::Matrix<double, 8, 8> &element_stiffness_matrix_2d(double a, double b,
+                                                         double mu, double nu) {
+  Eigen::Matrix<double, 8, 8> K_I, K_II;
+  double b3a = b / 3. / a;
+  double b6a = b / 6. / a;
+  double a3b = a / 3. / b;
+  double a6b = a / 6. / b;
+  // clang-format off
+  K_I <<  b3a,  b6a, -b3a, -b6a,  .25, -.25,  .25, -.25,
+          b6a,  b3a, -b6a, -b3a,  .25, -.25,  .25, -.25,
+         -b3a, -b6a,  b3a,  b6a, -.25,  .25, -.25,  .25,
+         -b6a, -b3a,  b6a,  b3a, -.25,  .25, -.25,  .25,
+          .25,  .25, -.25, -.25,  a3b, -a3b,  a6b, -a6b,
+         -.25, -.25,  .25,  .25, -a3b,  a3b, -a6b,  a6b,
+          .25,  .25, -.25, -.25,  a6b, -a6b,  a3b, -a3b,
+         -.25, -.25,  .25,  .25, -a6b,  a6b, -a3b,  a3b;
+  // clang-format on
 }
 
 int main() {
