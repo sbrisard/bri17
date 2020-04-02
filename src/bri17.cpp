@@ -256,50 +256,76 @@ void StiffnessMatrixFactory<DIM>::run(Eigen::MatrixXcd &K) {
   }
 }
 
-Eigen::Matrix<double, 8, 8> &element_stiffness_matrix_2d(double a, double b,
+Eigen::Matrix<double, 8, 8> element_stiffness_matrix_2d(double a, double b,
                                                          double mu, double nu) {
-  Eigen::Matrix<double, 8, 8> K_I, K_II;
-  double k11, k12, k13, k14, k55, k56, k57, k58;
-  double b3a = b / 3. / a;
-  double b6a = b / 6. / a;
-  double a3b = a / 3. / b;
-  double a6b = a / 6. / b;
-  k11 = b / 3. / a;
-  k12 = b / 6. / a;
-  k13 = -b / 3. / a;
-  k14 = -b / 6. / a;
-  k55 = a / 3. / b;
-  k56 = -a / 3. / b;
-  k57 = a / 6. / b;
-  k58 = -a / 6. / b;
+  Eigen::Matrix<double, 8, 8> K;
+  //const double lambda_ = 2. * mu * nu / (1. - 2. * nu);
+  const double lambda_ = 0.;
+
+  const double k11_I = b / 3. / a;
+  const double k12_I = b / 6. / a;
+  const double k13_I = -b / 3. / a;
+  const double k14_I = -b / 6. / a;
+  const double k15_I = 0.25;
+  const double k16_I = -0.25;
+  const double k17_I = 0.25;
+  const double k18_I = -0.25;
+  const double k51_I = 0.25;
+  const double k52_I = 0.25;
+  const double k53_I = -0.25;
+  const double k54_I = -0.25;
+  const double k55_I = a / 3. / b;
+  const double k56_I = -a / 3. / b;
+  const double k57_I = a / 6. / b;
+  const double k58_I = -a / 6. / b;
+
+  const double k11_II = 2. * b / 3. * a + a / 3. / b;
+  const double k12_II = b / 3. / a - a / 3. / b;
+  const double k13_II = a / 6. / b - 2. * b / 3. / a;
+  const double k14_II = -b / 3. / a - a / 6. / b;
+  const double k15_II = 0.25;
+  const double k16_II = 0.25;
+  const double k17_II = -0.25;
+  const double k18_II = -0.25;
+  const double k51_II = 0.25;
+  const double k52_II = -0.25;
+  const double k53_II = 0.25;
+  const double k54_II = -0.25;
+  const double k55_II = b / 3. / a + 2. * a / 3. / b;
+  const double k56_II = b / 6. / a - 2. * a / 3. / b;
+  const double k57_II = a / 3. / b - b / 3. / a;
+  const double k58_II = -b / 6. / a - a / 3. / b;
+
+  const double k11 = lambda_ * k11_I + mu * k11_II;
+  const double k12 = lambda_ * k12_I + mu * k12_II;
+  const double k13 = lambda_ * k13_I + mu * k13_II;
+  const double k14 = lambda_ * k14_I + mu * k14_II;
+  const double k15 = lambda_ * k15_I + mu * k15_II;
+  const double k16 = lambda_ * k16_I + mu * k16_II;
+  const double k17 = lambda_ * k17_I + mu * k17_II;
+  const double k18 = lambda_ * k18_I + mu * k18_II;
+  const double k51 = lambda_ * k51_I + mu * k51_II;
+  const double k52 = lambda_ * k52_I + mu * k52_II;
+  const double k53 = lambda_ * k53_I + mu * k53_II;
+  const double k54 = lambda_ * k54_I + mu * k54_II;
+  const double k55 = lambda_ * k55_I + mu * k55_II;
+  const double k56 = lambda_ * k56_I + mu * k56_II;
+  const double k57 = lambda_ * k57_I + mu * k57_II;
+  const double k58 = lambda_ * k58_I + mu * k58_II;
+
   // clang-format off
-  K_I <<  k11,  k12,  k13,  k14,  .25, -.25,  .25, -.25,
-          k12,  k11,  k14,  k13,  .25, -.25,  .25, -.25,
-          k13,  k14,  k11,  k12, -.25,  .25, -.25,  .25,
-          k14,  k13,  k12,  k11, -.25,  .25, -.25,  .25,
-          .25,  .25, -.25, -.25,  k55,  k56,  k57,  k58,
-         -.25, -.25,  .25,  .25,  k56,  k55,  k58,  k57,
-          .25,  .25, -.25, -.25,  k57,  k58,  k55,  k56,
-         -.25, -.25,  .25,  .25,  k58,  k57,  k56,  k55;
+  K <<
+    k11, k12, k13, k14, k15, k16, k17, k18,
+    k12, k11, k14, k13, k17, k18, k15, k16,
+    k13, k14, k11, k12, k16, k15, k18, k17,
+    k14, k13, k12, k11, k18, k17, k16, k15,
+    k51, k52, k53, k54, k55, k56, k57, k58,
+    k53, k54, k51, k52, k56, k55, k58, k57,
+    k52, k51, k54, k53, k57, k58, k55, k56,
+    k54, k53, k52, k51, k58, k57, k56, k55;
   // clang-format on
-  k11 = 2. * b / 3. * a + a / 3. / b;
-  k12 = b / 3. / a - a / 3. / b;
-  k13 = a / 6. / b - 2. * b / 3. / a;
-  k14 = -b / 3. / a - a / 6. / b;
-  k55 = b / 3. / a + 2. * a / 3. / b;
-  k56 = b / 6. / a - 2. * a / 3. / b;
-  k57 = a / 3. / b - b / 3. / a;
-  k58 = -b / 6. / a - a / 3. / b;
-  // clang-format off
-  K_II <<  k11,  k12,  k13,  k14,  .25,  .25, -.25, -.25,
-           k12,  k11,  k14,  k13, -.25, -.25,  .25,  .25,
-           k13,  k14,  k11,  k12,  .25,  .25, -.25, -.25,
-           k14,  k13,  k12,  k11, -.25, -.25,  .25,  .25,
-           .25, -.25,  .25, -.25,  k55,  k56,  k57,  k58,
-           .25, -.25,  .25, -.25,  k56,  k55,  k58,  k57,
-          -.25,  .25, -.25,  .25,  k57,  k58,  k55,  k56,
-          -.25,  .25, -.25,  .25,  k58,  k57,  k56,  k55;
-  // clang-format on
+    
+  return K;
 }
 
 int main() {
@@ -312,4 +338,7 @@ int main() {
   Eigen::MatrixXcd K_act{factory.ndofs, factory.ndofs};
   factory.run(K_act);
   std::cout << K_act << std::endl;
+  
+  auto K_e = element_stiffness_matrix_2d(L[0]/N[0], L[1]/N[1], mu, nu);
+  std::cout << K_e << std::endl;
 }
