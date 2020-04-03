@@ -13,13 +13,26 @@ const size_t MAX_DIM = 3;
 
 template <size_t DIM>
 class CartesianGrid {
+ private:
+  static size_t get_nnodes_per_cell() {
+    if (DIM == 2) {
+      return 4;
+    }
+    else if (DIM == 3) {
+      return 8;
+    } else {
+      throw std::logic_error("this should never occur");
+    }
+  }
+
  public:
+  const size_t nnodes_per_cell;
   double mu;
   double nu;
   double L[DIM];
   size_t N[DIM];
 
-  CartesianGrid(double mu, double nu, double L[], size_t N[]) {
+  CartesianGrid(double mu, double nu, double L[], size_t N[]): nnodes_per_cell{get_nnodes_per_cell()} {
     this->mu = mu;
     this->nu = nu;
     if ((DIM < 2) || (DIM > 3)) {
@@ -257,9 +270,9 @@ void StiffnessMatrixFactory<DIM>::run(Eigen::MatrixXcd &K) {
 }
 
 Eigen::Matrix<double, 8, 8> element_stiffness_matrix_2d(double a, double b,
-                                                         double mu, double nu) {
+                                                        double mu, double nu) {
   Eigen::Matrix<double, 8, 8> K;
-  //const double lambda_ = 2. * mu * nu / (1. - 2. * nu);
+  // const double lambda_ = 2. * mu * nu / (1. - 2. * nu);
   const double lambda_ = 0.;
 
   const double k11_I = b / 3. / a;
@@ -324,7 +337,7 @@ Eigen::Matrix<double, 8, 8> element_stiffness_matrix_2d(double a, double b,
     k52, k51, k54, k53, k57, k58, k55, k56,
     k54, k53, k52, k51, k58, k57, k56, k55;
   // clang-format on
-    
+
   return K;
 }
 
@@ -338,7 +351,7 @@ int main() {
   Eigen::MatrixXcd K_act{factory.ndofs, factory.ndofs};
   factory.run(K_act);
   std::cout << K_act << std::endl;
-  
-  auto K_e = element_stiffness_matrix_2d(L[0]/N[0], L[1]/N[1], mu, nu);
+
+  auto K_e = element_stiffness_matrix_2d(L[0] / N[0], L[1] / N[1], mu, nu);
   std::cout << K_e << std::endl;
 }
