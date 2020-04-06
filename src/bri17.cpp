@@ -17,8 +17,7 @@ class CartesianGrid {
   static size_t get_nnodes_per_cell() {
     if (DIM == 2) {
       return 4;
-    }
-    else if (DIM == 3) {
+    } else if (DIM == 3) {
       return 8;
     } else {
       throw std::logic_error("this should never occur");
@@ -33,17 +32,42 @@ class CartesianGrid {
   double L[DIM];
   size_t N[DIM];
 
-  CartesianGrid(double mu, double nu, double L[], size_t N[]): nnodes_per_cell{get_nnodes_per_cell()} {
+  CartesianGrid(double mu, double nu, double L[], size_t N[])
+      : nnodes_per_cell{get_nnodes_per_cell()} {
     this->mu = mu;
     this->nu = nu;
-    if ((DIM < 2) || (DIM > 3)) {
-      throw std::domain_error(
-          "DIM template integer parameter must be 2 or 3 (got " +
-          std::to_string(DIM) + ")");
-    }
+    static_assert((DIM == 2) || (DIM == 3));
     for (size_t i = 0; i < DIM; i++) {
       this->L[i] = L[i];
       this->N[i] = N[i];
+    }
+  }
+
+  size_t get_node_at(size_t i, size_t j) {
+    static_assert(DIM == 2, "this function should not be called with 3D grids");
+    return i * N[1] + j;
+  }
+
+  size_t get_node_at(size_t i, size_t j, size_t k) {
+    static_assert(DIM == 3, "this function should not be called with 2D grids");
+    return (i * N[1] + j) * N[2] + k;
+  }
+
+  void get_cell_nodes(const size_t cell, size_t node[]) {
+    static_assert(DIM != 3, "not implemented");
+    if (DIM == 2) {
+      const size_t i1 = cell / N[1];
+      const size_t j1 = cell % N[1];
+      const size_t i2 = i1 == N[0] - 1 ? 0 : i1 + 1;
+      const size_t j2 = j1 == N[1] - 1 ? 0 : j1 + 1;
+      node[0] = get_node_at(i1, j1);
+      node[1] = get_node_at(i1, j2);
+      node[2] = get_node_at(i2, j1);
+      node[3] = get_node_at(i2, j2);
+    } else if (DIM == 3) {
+      // TODO Implement this case
+    } else {
+      throw std::logic_error("This should never occur");
     }
   }
 
@@ -346,11 +370,30 @@ int main() {
   const double nu = 0.3;
   double L[] = {1.1, 1.2};
   size_t N[] = {3, 4};
-  StiffnessMatrixFactory<dim> factory{mu, nu, L, N};
-  Eigen::MatrixXcd K_act{factory.ndofs, factory.ndofs};
-  factory.run(K_act);
-  std::cout << K_act << std::endl;
+  //   StiffnessMatrixFactory<dim> factory{mu, nu, L, N};
+  //   Eigen::MatrixXcd K_act{factory.ndofs, factory.ndofs};
+  //   factory.run(K_act);
+  //   std::cout << K_act << std::endl;
+  //
+  //   auto K_e = element_stiffness_matrix_2d(L[0] / N[0], L[1] / N[1], mu, nu);
+  //   std::cout << K_e << std::endl;
 
-  auto K_e = element_stiffness_matrix_2d(L[0] / N[0], L[1] / N[1], mu, nu);
-  std::cout << K_e << std::endl;
+  CartesianGrid<2> grid{mu, nu, L, N};
+  std::cout << std::endl;
+  for (size_t i = 0; i < N[0]; i++) {
+    for (size_t j = 0; j < N[1]; j++) {
+      std::cout << grid.get_node_at(i, j) << "\t";
+    }
+    std::cout << std::endl;
+  }
+
+  size_t node[4];
+  for (size_t cell = 0; cell < N[0] * N[1]; cell++) {
+    grid.get_cell_nodes(cell, node);
+    std::cout << cell << " = {";
+    for (size_t i = 0; i < grid.nnodes_per_cell; i++) {
+      std::cout << node[i] << ", ";
+    }
+    std::cout << "}" << std::endl;
+  }
 }
