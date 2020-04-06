@@ -29,6 +29,7 @@ class CartesianGrid {
   const size_t nnodes_per_cell;
   double mu;
   double nu;
+  // TODO How to make these array const?
   double L[DIM];
   size_t N[DIM];
 
