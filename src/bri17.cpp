@@ -46,8 +46,6 @@ class CartesianGrid {
     }
   }
 
-  ~CartesianGrid() {}
-
   void modal_strain_displacement(
       size_t const *k, Eigen::Matrix<std::complex<double>, DIM, 1> &B) const;
   void modal_stiffness(size_t const *k,
