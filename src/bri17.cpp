@@ -29,16 +29,20 @@ class CartesianGrid {
   const size_t nnodes_per_cell;
   double mu;
   double nu;
-  std::array<double, DIM> L;
-  std::array<size_t, DIM> N;
+  double L[DIM];
+  size_t N[DIM];
 
-  CartesianGrid(double mu, double nu, std::array<double, DIM> L, std::array<size_t, DIM> N): nnodes_per_cell{get_nnodes_per_cell()}, L{L}, N{N} {
+  CartesianGrid(double mu, double nu, double L[], size_t N[]): nnodes_per_cell{get_nnodes_per_cell()} {
     this->mu = mu;
     this->nu = nu;
     if ((DIM < 2) || (DIM > 3)) {
       throw std::domain_error(
           "DIM template integer parameter must be 2 or 3 (got " +
           std::to_string(DIM) + ")");
+    }
+    for (size_t i = 0; i < DIM; i++) {
+      this->L[i] = L[i];
+      this->N[i] = N[i];
     }
   }
 
@@ -190,7 +194,7 @@ class StiffnessMatrixFactory {
   fftw_plan dft_u[DIM];
   fftw_plan idft_Ku[DIM];
 
-  static size_t num_cells(std::array<size_t, DIM> N) {
+  static size_t num_cells(size_t N[]) {
     if (DIM == 2) {
       return N[0] * N[1];
     } else if (DIM == 3) {
@@ -203,7 +207,7 @@ class StiffnessMatrixFactory {
   void compute_Ku();
 
  public:
-  StiffnessMatrixFactory(double mu, double nu, std::array<double, DIM> L, std::array<size_t, DIM> N)
+  StiffnessMatrixFactory(double mu, double nu, double L[], size_t N[])
       : ncells{num_cells(N)},
         ndofs{ncells * DIM},
         grid{mu, nu, L, N},
@@ -341,8 +345,8 @@ int main() {
   const size_t dim = 2;
   const double mu = 1.0;
   const double nu = 0.3;
-  std::array<double, dim> L = {1.1, 1.2};
-  std::array<size_t, dim> N = {3, 4};
+  double L[] = {1.1, 1.2};
+  size_t N[] = {3, 4};
   StiffnessMatrixFactory<dim> factory{mu, nu, L, N};
   Eigen::MatrixXcd K_act{factory.ndofs, factory.ndofs};
   factory.run(K_act);
