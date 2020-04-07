@@ -24,8 +24,17 @@ class CartesianGrid {
     }
   }
 
+  static size_t get_ncells(size_t N[]) {
+    size_t nnodes = N[0] * N[1];
+    if (DIM == 3) {
+      return nnodes *= N[2];
+    }
+    return nnodes;
+  }
+
  public:
   const size_t nnodes_per_cell;
+  const size_t ncells;
   double mu;
   double nu;
   // TODO How to make these array const?
@@ -33,7 +42,7 @@ class CartesianGrid {
   size_t N[DIM];
 
   CartesianGrid(double mu, double nu, double L[], size_t N[])
-      : nnodes_per_cell{get_nnodes_per_cell()} {
+      : nnodes_per_cell{get_nnodes_per_cell()}, ncells{get_ncells(N)} {
     this->mu = mu;
     this->nu = nu;
     static_assert((DIM == 2) || (DIM == 3));
