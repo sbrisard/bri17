@@ -4,10 +4,6 @@ print("+--------------------------+");
 print("| ELEMENT STIFFNESS MATRIX |");
 print("+--------------------------+");
 print("");
-print("NUMBERING OF NODES");
-print("------------------");
-print("");
-print("");
 print("NOMENCLATURE");
 print("------------");
 ndims : 2;
@@ -19,13 +15,26 @@ uvw : firstn(['u, 'v, 'w], ndims);
 print("- coordinates:", xyz);
 print("- element sides:", abc);
 print("- components of displacement:", uvw);
-
+print("");
+print("NUMBERING OF NODES");
+print("------------------");
+print("");
+print("This node numbering is slightly unusual, but is more convenient to");
+print("implement in a dimension-independent way.");
+print("  2---4");
+print("  |   |");
+print("  1---3");
 /* Create a list of lists of 1D shape functions, then compute the product. */
 shape_functions_list : lreduce(
   lambda([L1, L2], create_list(x1*x2, x1, L1, x2, L2)),
   map(lambda([xi], [1-xi, xi]), xyz/abc));
 
 N : transpose(matrix(shape_functions_list));
+
+if transpose(subst([x=0, y=0], N)) # matrix([1, 0, 0, 0]) then error();
+if transpose(subst([x=0, y=b], N)) # matrix([0, 1, 0, 0]) then error();
+if transpose(subst([x=a, y=0], N)) # matrix([0, 0, 1, 0]) then error();
+if transpose(subst([x=a, y=b], N)) # matrix([0, 0, 0, 1]) then error();
 
 dofs_[i, j] := concat(uvw[i], j);
 dofs : genmatrix(dofs_, ndims, nnodes);
@@ -90,7 +99,11 @@ print("");
 print("Some numerical values");
 print("---------------------");
 print("");
-num_val : [lame_I=1, lame_II=2*1*3/10/(1-2*3/10), a=11/30, b=12/40];
-num_val : [lame_I=0, lame_II=1, a=11/30, b=12/40];
+nu_val : 3/10;
+mu_val : 1;
+num_val : [lame_I=mu_val, lame_II=2*mu_val*nu_val/(1-2*nu_val), a=11/30, b=12/40];
 K_num : float(subst(num_val, K));
-display(K_num);
+
+text : "";
+for i:1 thru ndofs do for j:1 thru ndofs do text : concat(text, K_num[i, j], ", ");
+display(text);
