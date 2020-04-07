@@ -379,30 +379,28 @@ int main() {
   const double nu = 0.3;
   double L[] = {1.1, 1.2};
   size_t N[] = {3, 4};
-  //   StiffnessMatrixFactory<dim> factory{mu, nu, L, N};
-  //   Eigen::MatrixXcd K_act{factory.ndofs, factory.ndofs};
-  //   factory.run(K_act);
-  //   std::cout << K_act << std::endl;
-  //
-  //   auto K_e = element_stiffness_matrix_2d(L[0] / N[0], L[1] / N[1], mu, nu);
-  //   std::cout << K_e << std::endl;
+  StiffnessMatrixFactory<dim> factory{mu, nu, L, N};
+  Eigen::MatrixXcd K_act{factory.ndofs, factory.ndofs};
+  factory.run(K_act);
+  std::cout << K_act << std::endl;
 
-  CartesianGrid<2> grid{mu, nu, L, N};
-  std::cout << std::endl;
-  for (size_t i = 0; i < N[0]; i++) {
-    for (size_t j = 0; j < N[1]; j++) {
-      std::cout << grid.get_node_at(i, j) << "\t";
-    }
-    std::cout << std::endl;
-  }
+  CartesianGrid<dim> grid{mu, nu, L, N};
 
-  size_t node[4];
-  for (size_t cell = 0; cell < N[0] * N[1]; cell++) {
-    grid.get_cell_nodes(cell, node);
-    std::cout << cell << " = {";
-    for (size_t i = 0; i < grid.nnodes_per_cell; i++) {
-      std::cout << node[i] << ", ";
-    }
-    std::cout << "}" << std::endl;
-  }
+  const size_t ndofs = grid.ncells * dim;
+  const size_t ndofs_per_cell = grid.nnodes_per_cell * dim;
+  Eigen::MatrixXd Ke{ndofs_per_cell, ndofs_per_cell};
+  // This is a copy-paste from Maximax
+  Ke << 1.702020202020202, -0.06565656565656566, -0.7853535353535354,
+      -0.851010101010101, 0.625, 0.125, -0.125, -0.625, -0.06565656565656566,
+      1.702020202020202, -0.851010101010101, -0.7853535353535354, -0.125,
+      -0.625, 0.625, 0.125, -0.7853535353535354, -0.851010101010101,
+      1.702020202020202, -0.06565656565656566, 0.125, 0.625, -0.625, -0.125,
+      -0.851010101010101, -0.7853535353535354, -0.06565656565656566,
+      1.702020202020202, -0.625, -0.125, 0.125, 0.625, 0.625, -0.125, 0.125,
+      -0.625, 2.038720538720539, -1.425084175084175, 0.4057239057239057,
+      -1.019360269360269, 0.125, -0.625, 0.625, -0.125, -1.425084175084175,
+      2.038720538720539, -1.019360269360269, 0.4057239057239057, -0.125, 0.625,
+      -0.625, 0.125, 0.4057239057239057, -1.019360269360269, 2.038720538720539,
+      -1.425084175084175, -0.625, 0.125, -0.125, 0.625, -1.019360269360269,
+      0.4057239057239057, -1.425084175084175, 2.038720538720539;
 }
