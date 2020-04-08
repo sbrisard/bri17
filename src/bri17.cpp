@@ -24,17 +24,20 @@ class CartesianGrid {
     }
   }
 
-  static size_t get_ncells(size_t N[]) {
-    size_t nnodes = N[0] * N[1];
-    if (DIM == 3) {
-      return nnodes *= N[2];
+  static size_t get_num_cells(size_t N[]) {
+    if (DIM == 2) {
+      return N[0] * N[1];
     }
-    return nnodes;
+    else if (DIM == 3) {
+      return N[0] * N[1] * N[2];
+    } else {
+      throw std::logic_error("this should never occur");
+    }
   }
 
  public:
   const size_t num_nodes_per_cell;
-  const size_t ncells;
+  const size_t num_cells;
   double mu;
   double nu;
   // TODO How to make these array const?
@@ -42,7 +45,7 @@ class CartesianGrid {
   size_t N[DIM];
 
   CartesianGrid(double mu, double nu, double L[], size_t N[])
-      : num_nodes_per_cell{get_num_nodes_per_cell()}, ncells{get_ncells(N)} {
+      : num_nodes_per_cell{get_num_nodes_per_cell()}, num_cells{get_num_cells(N)} {
     this->mu = mu;
     this->nu = nu;
     static_assert((DIM == 2) || (DIM == 3));
@@ -386,7 +389,7 @@ int main() {
 
   CartesianGrid<dim> grid{mu, nu, L, N};
 
-  const size_t ndofs = grid.ncells * dim;
+  const size_t ndofs = grid.num_cells * dim;
   const size_t ndofs_per_cell = grid.num_nodes_per_cell * dim;
   Eigen::MatrixXd Ke{ndofs_per_cell, ndofs_per_cell};
   // This is a copy-paste from Maxima
@@ -406,12 +409,12 @@ int main() {
 
   Eigen::MatrixXcd K_exp{ndofs, ndofs};
   size_t nodes[grid.num_nodes_per_cell];
-  for (size_t cell = 0; cell < grid.ncells; cell++) {
+  for (size_t cell = 0; cell < grid.num_cells; cell++) {
     grid.get_cell_nodes(cell, nodes);
     for (size_t rloc = 0; rloc < ndofs_per_cell; rloc++) {
-      size_t r = nodes[rloc % dim] + grid.ncells * (rloc / dim);
+      size_t r = nodes[rloc % dim] + grid.num_cells * (rloc / dim);
       for (size_t cloc = 0; cloc < ndofs_per_cell; cloc++) {
-	size_t c = nodes[cloc % dim] + grid.ncells*(cloc/dim);
+	size_t c = nodes[cloc % dim] + grid.num_cells*(cloc/dim);
 	K_exp(r, c) += Ke(rloc, cloc);
       }
     }
