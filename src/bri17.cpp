@@ -389,7 +389,7 @@ int main() {
   const size_t ndofs = grid.ncells * dim;
   const size_t ndofs_per_cell = grid.nnodes_per_cell * dim;
   Eigen::MatrixXd Ke{ndofs_per_cell, ndofs_per_cell};
-  // This is a copy-paste from Maximax
+  // This is a copy-paste from Maxima
   Ke << 1.702020202020202, -0.06565656565656566, -0.7853535353535354,
       -0.851010101010101, 0.625, 0.125, -0.125, -0.625, -0.06565656565656566,
       1.702020202020202, -0.851010101010101, -0.7853535353535354, -0.125,
@@ -403,4 +403,20 @@ int main() {
       -0.625, 0.125, 0.4057239057239057, -1.019360269360269, 2.038720538720539,
       -1.425084175084175, -0.625, 0.125, -0.125, 0.625, -1.019360269360269,
       0.4057239057239057, -1.425084175084175, 2.038720538720539;
+
+  Eigen::MatrixXcd K_exp{ndofs, ndofs};
+  size_t nodes[grid.nnodes_per_cell];
+  for (size_t cell = 0; cell < grid.ncells; cell++) {
+    grid.get_cell_nodes(cell, nodes);
+    for (size_t rloc = 0; rloc < ndofs_per_cell; rloc++) {
+      size_t r = nodes[rloc % dim] + grid.ncells * (rloc / dim);
+      for (size_t cloc = 0; cloc < ndofs_per_cell; cloc++) {
+	size_t c = nodes[cloc % dim] + grid.ncells*(cloc/dim);
+	K_exp(r, c) += Ke(rloc, cloc);
+      }
+    }
+  }
+
+  std::cout << "-----" << std::endl;
+  std::cout << K_exp << std::endl;
 }
