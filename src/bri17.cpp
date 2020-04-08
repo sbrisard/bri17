@@ -389,7 +389,7 @@ int main() {
 
   CartesianGrid<dim> grid{mu, nu, L, N};
 
-  const size_t ndofs = grid.num_cells * dim;
+  const size_t num_dofs = grid.num_cells * dim;
   const size_t ndofs_per_cell = grid.num_nodes_per_cell * dim;
   Eigen::MatrixXd Ke{ndofs_per_cell, ndofs_per_cell};
   // This is a copy-paste from Maxima
@@ -407,7 +407,7 @@ int main() {
       -1.425084175084175, -0.625, 0.125, -0.125, 0.625, -1.019360269360269,
       0.4057239057239057, -1.425084175084175, 2.038720538720539;
 
-  Eigen::MatrixXcd K_exp{ndofs, ndofs};
+  Eigen::MatrixXcd K_exp{num_dofs, num_dofs};
   size_t nodes[grid.num_nodes_per_cell];
   for (size_t cell = 0; cell < grid.num_cells; cell++) {
     grid.get_cell_nodes(cell, nodes);
