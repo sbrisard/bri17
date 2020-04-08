@@ -27,8 +27,7 @@ class CartesianGrid {
   static size_t get_num_cells(size_t N[]) {
     if (DIM == 2) {
       return N[0] * N[1];
-    }
-    else if (DIM == 3) {
+    } else if (DIM == 3) {
       return N[0] * N[1] * N[2];
     } else {
       throw std::logic_error("this should never occur");
@@ -45,7 +44,8 @@ class CartesianGrid {
   size_t N[DIM];
 
   CartesianGrid(double mu, double nu, double L[], size_t N[])
-      : num_nodes_per_cell{get_num_nodes_per_cell()}, num_cells{get_num_cells(N)} {
+      : num_nodes_per_cell{get_num_nodes_per_cell()},
+        num_cells{get_num_cells(N)} {
     this->mu = mu;
     this->nu = nu;
     static_assert((DIM == 2) || (DIM == 3));
@@ -385,7 +385,6 @@ int main() {
   StiffnessMatrixFactory<dim> factory{mu, nu, L, N};
   Eigen::MatrixXcd K_act{factory.ndofs, factory.ndofs};
   factory.run(K_act);
-  std::cout << K_act << std::endl;
 
   CartesianGrid<dim> grid{mu, nu, L, N};
 
@@ -407,19 +406,25 @@ int main() {
       -1.425084175084175, -0.625, 0.125, -0.125, 0.625, -1.019360269360269,
       0.4057239057239057, -1.425084175084175, 2.038720538720539;
 
-  Eigen::MatrixXcd K_exp{num_dofs, num_dofs};
+  Eigen::MatrixXd K_exp{num_dofs, num_dofs};
   size_t nodes[grid.num_nodes_per_cell];
   for (size_t cell = 0; cell < grid.num_cells; cell++) {
     grid.get_cell_nodes(cell, nodes);
-    for (size_t rloc = 0; rloc < num_dofs_per_cell; rloc++) {
-      size_t r = nodes[rloc % dim] + grid.num_cells * (rloc / dim);
-      for (size_t cloc = 0; cloc < num_dofs_per_cell; cloc++) {
-	size_t c = nodes[cloc % dim] + grid.num_cells*(cloc/dim);
-	K_exp(r, c) += Ke(rloc, cloc);
+    for (size_t ie = 0; ie < num_dofs_per_cell; ie++) {
+      size_t i = nodes[ie % grid.num_nodes_per_cell] +
+                 grid.num_cells * (ie / grid.num_nodes_per_cell);
+      for (size_t je = 0; je < num_dofs_per_cell; je++) {
+        size_t j = nodes[je % grid.num_nodes_per_cell] +
+                   grid.num_cells * (je / grid.num_nodes_per_cell);
+        K_exp(i, j) += Ke(ie, je);
       }
     }
   }
 
-  std::cout << "-----" << std::endl;
-  std::cout << K_exp << std::endl;
+  for (size_t i = 0; i < num_dofs; i++) {
+    for (size_t j = 0; j < num_dofs; j++) {
+      std::cout << "expected = " << K_exp(i, j) << ", actual = " << K_act(i, j)
+                << std::endl;
+    }
+  }
 }
