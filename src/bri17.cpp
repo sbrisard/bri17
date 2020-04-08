@@ -390,8 +390,8 @@ int main() {
   CartesianGrid<dim> grid{mu, nu, L, N};
 
   const size_t num_dofs = grid.num_cells * dim;
-  const size_t ndofs_per_cell = grid.num_nodes_per_cell * dim;
-  Eigen::MatrixXd Ke{ndofs_per_cell, ndofs_per_cell};
+  const size_t num_dofs_per_cell = grid.num_nodes_per_cell * dim;
+  Eigen::MatrixXd Ke{num_dofs_per_cell, num_dofs_per_cell};
   // This is a copy-paste from Maxima
   Ke << 1.702020202020202, -0.06565656565656566, -0.7853535353535354,
       -0.851010101010101, 0.625, 0.125, -0.125, -0.625, -0.06565656565656566,
@@ -411,9 +411,9 @@ int main() {
   size_t nodes[grid.num_nodes_per_cell];
   for (size_t cell = 0; cell < grid.num_cells; cell++) {
     grid.get_cell_nodes(cell, nodes);
-    for (size_t rloc = 0; rloc < ndofs_per_cell; rloc++) {
+    for (size_t rloc = 0; rloc < num_dofs_per_cell; rloc++) {
       size_t r = nodes[rloc % dim] + grid.num_cells * (rloc / dim);
-      for (size_t cloc = 0; cloc < ndofs_per_cell; cloc++) {
+      for (size_t cloc = 0; cloc < num_dofs_per_cell; cloc++) {
 	size_t c = nodes[cloc % dim] + grid.num_cells*(cloc/dim);
 	K_exp(r, c) += Ke(rloc, cloc);
       }
