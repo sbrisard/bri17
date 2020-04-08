@@ -14,7 +14,7 @@ const size_t MAX_DIM = 3;
 template <size_t DIM>
 class CartesianGrid {
  private:
-  static size_t get_nnodes_per_cell() {
+  static size_t get_num_nodes_per_cell() {
     if (DIM == 2) {
       return 4;
     } else if (DIM == 3) {
@@ -33,7 +33,7 @@ class CartesianGrid {
   }
 
  public:
-  const size_t nnodes_per_cell;
+  const size_t num_nodes_per_cell;
   const size_t ncells;
   double mu;
   double nu;
@@ -42,7 +42,7 @@ class CartesianGrid {
   size_t N[DIM];
 
   CartesianGrid(double mu, double nu, double L[], size_t N[])
-      : nnodes_per_cell{get_nnodes_per_cell()}, ncells{get_ncells(N)} {
+      : num_nodes_per_cell{get_num_nodes_per_cell()}, ncells{get_ncells(N)} {
     this->mu = mu;
     this->nu = nu;
     static_assert((DIM == 2) || (DIM == 3));
@@ -387,7 +387,7 @@ int main() {
   CartesianGrid<dim> grid{mu, nu, L, N};
 
   const size_t ndofs = grid.ncells * dim;
-  const size_t ndofs_per_cell = grid.nnodes_per_cell * dim;
+  const size_t ndofs_per_cell = grid.num_nodes_per_cell * dim;
   Eigen::MatrixXd Ke{ndofs_per_cell, ndofs_per_cell};
   // This is a copy-paste from Maxima
   Ke << 1.702020202020202, -0.06565656565656566, -0.7853535353535354,
@@ -405,7 +405,7 @@ int main() {
       0.4057239057239057, -1.425084175084175, 2.038720538720539;
 
   Eigen::MatrixXcd K_exp{ndofs, ndofs};
-  size_t nodes[grid.nnodes_per_cell];
+  size_t nodes[grid.num_nodes_per_cell];
   for (size_t cell = 0; cell < grid.ncells; cell++) {
     grid.get_cell_nodes(cell, nodes);
     for (size_t rloc = 0; rloc < ndofs_per_cell; rloc++) {
