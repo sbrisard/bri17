@@ -62,17 +62,17 @@ class CartesianGrid {
     return (i * N[1] + j) * N[2] + k;
   }
 
-  void get_cell_nodes(const size_t cell, size_t node[]) {
+  void get_cell_nodes(const size_t cell, size_t nodes[]) {
     static_assert(DIM != 3, "not implemented");
     if (DIM == 2) {
       const size_t i1 = cell / N[1];
       const size_t j1 = cell % N[1];
       const size_t i2 = i1 == N[0] - 1 ? 0 : i1 + 1;
       const size_t j2 = j1 == N[1] - 1 ? 0 : j1 + 1;
-      node[0] = get_node_at(i1, j1);
-      node[1] = get_node_at(i1, j2);
-      node[2] = get_node_at(i2, j1);
-      node[3] = get_node_at(i2, j2);
+      nodes[0] = get_node_at(i1, j1);
+      nodes[1] = get_node_at(i1, j2);
+      nodes[2] = get_node_at(i2, j1);
+      nodes[3] = get_node_at(i2, j2);
     } else if (DIM == 3) {
       // TODO Implement this case
     } else {
