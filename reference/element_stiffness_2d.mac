@@ -31,15 +31,25 @@ shape_functions_list : lreduce(
 
 N : transpose(matrix(shape_functions_list));
 
-if transpose(subst([x=0, y=0], N)) # matrix([1, 0, 0, 0]) then error();
-if transpose(subst([x=0, y=b], N)) # matrix([0, 1, 0, 0]) then error();
-if transpose(subst([x=a, y=0], N)) # matrix([0, 0, 1, 0]) then error();
-if transpose(subst([x=a, y=b], N)) # matrix([0, 0, 0, 1]) then error();
+node1 : [x=0, y=0];
+node2 : [x=0, y=b];
+node3 : [x=a, y=0];
+node4 : [x=a, y=b];
+
+if transpose(subst(node1, N)) # matrix([1, 0, 0, 0]) then error();
+if transpose(subst(node2, N)) # matrix([0, 1, 0, 0]) then error();
+if transpose(subst(node3, N)) # matrix([0, 0, 1, 0]) then error();
+if transpose(subst(node4, N)) # matrix([0, 0, 0, 1]) then error();
 
 dofs_[i, j] := concat(uvw[i], j);
 dofs : genmatrix(dofs_, ndims, nnodes);
 
 u : dofs.N;
+
+if subst(node1, u) # transpose(matrix([u1, v1])) then error();
+if subst(node2, u) # transpose(matrix([u2, v2])) then error();
+if subst(node3, u) # transpose(matrix([u3, v3])) then error();
+if subst(node4, u) # transpose(matrix([u4, v4])) then error();
 
 eps_[i, j] := factor((diff(u[i, 1], xyz[j])+diff(u[j, 1], xyz[i]))/2);
 eps : genmatrix(eps_, ndims, ndims);
@@ -57,6 +67,9 @@ Kq : genmatrix(Kq_, ndofs, 1);
 K : expand(coefmatrix(list_matrix_entries(Kq), q));
 K_I : coeff(K, lame_I);
 K_II : coeff(K, lame_II);
+
+res : ratsimp(1/2*transpose(q).(lame_I*K_I+lame_II*K_II).q-U);
+if res # 0 then error();
 
 print("Blocks of matrix K_I");
 print("---------------------");
