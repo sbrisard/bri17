@@ -150,7 +150,7 @@ void CartesianGrid<DIM>::modal_stiffness(
     psi[i] = sin(beta);
   }
 
-  const double scaling = 1. / (1. - 2. * nu);
+  const double scaling = mu / (1. - 2. * nu);
   if (DIM == 2) {
     const double H_00 = h_inv[0] * h_inv[0] * phi[0] * chi[1];
     K(0, 0) = scaling * H_00;
