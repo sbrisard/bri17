@@ -119,4 +119,5 @@ K_num : float(subst(num_val, K));
 
 text : "";
 for i:1 thru ndofs do for j:1 thru ndofs do text : concat(text, K_num[i, j], ", ");
-display(text);
+
+sprint(text);
