@@ -287,6 +287,9 @@ void StiffnessMatrixFactory<DIM>::compute_Ku() {
     }
   }
   for (size_t i = 0; i < DIM; i++) fftw_execute(idft_Ku[i]);
+  for (size_t i = 0; i < ndofs; i++) {
+    Ku.cpp_data[i] /= ncells;
+  }
 }
 
 template <size_t DIM>
