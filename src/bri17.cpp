@@ -41,7 +41,7 @@ class CartesianGrid {
   double L[DIM];
   size_t N[DIM];
 
-  CartesianGrid(double L[], size_t N[])
+  CartesianGrid(size_t N[], double L[])
       : num_nodes_per_cell{get_num_nodes_per_cell()},
         num_cells{get_num_cells(N)} {
     static_assert((DIM == 2) || (DIM == 3));
@@ -242,7 +242,7 @@ class StiffnessMatrixFactory {
         ndofs{ncells * DIM},
 	mu{mu},
 	nu{nu},
-        grid{L, N},
+        grid{N, L},
         u{ndofs},
         u_hat{ndofs},
         Ku{ndofs},
@@ -324,7 +324,7 @@ int main() {
   Eigen::MatrixXcd K_act{factory.ndofs, factory.ndofs};
   factory.run(K_act);
 
-  CartesianGrid<dim> grid{L, N};
+  CartesianGrid<dim> grid{N, L};
 
   const size_t num_dofs = grid.num_cells * dim;
   const size_t num_dofs_per_cell = grid.num_nodes_per_cell * dim;
