@@ -9,19 +9,17 @@
 
 #include <fftw3.h>
 
+template <typename T>
+T product(size_t n, T a[]) {
+  T out{1};
+  for (size_t i = 0; i < n; i++) {
+    out *= a[i];
+  }
+  return out;
+}
+
 template <size_t DIM>
 class CartesianGrid {
- private:
-  static size_t get_num_cells(size_t N[]) {
-    if constexpr (DIM == 2) {
-      return N[0] * N[1];
-    } else if constexpr (DIM == 3) {
-      return N[0] * N[1] * N[2];
-    } else {
-      throw std::logic_error("this should never occur");
-    }
-  }
-
  public:
   const size_t num_nodes_per_cell;
   const size_t num_cells;
@@ -30,7 +28,7 @@ class CartesianGrid {
   size_t N[DIM];
 
   CartesianGrid(size_t N[], double L[])
-      : num_nodes_per_cell{1 << DIM}, num_cells{get_num_cells(N)} {
+      : num_nodes_per_cell{1 << DIM}, num_cells{product(DIM, N)} {
     static_assert((DIM == 2) || (DIM == 3));
     for (size_t i = 0; i < DIM; i++) {
       this->L[i] = L[i];
