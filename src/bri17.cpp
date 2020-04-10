@@ -52,12 +52,12 @@ class CartesianGrid {
   }
 
   size_t get_node_at(size_t i, size_t j) {
-    static_assert(DIM == 2, "this function should not be called with 3D grids");
+    static_assert(DIM == 2, "this method expects a 2D grid");
     return i * N[1] + j;
   }
 
   size_t get_node_at(size_t i, size_t j, size_t k) {
-    static_assert(DIM == 3, "this function should not be called with 2D grids");
+    static_assert(DIM == 3, "this method expects a 3D grid");
     return (i * N[1] + j) * N[2] + k;
   }
 
