@@ -15,9 +15,9 @@ template <size_t DIM>
 class CartesianGrid {
  private:
   static size_t get_num_nodes_per_cell() {
-    if (DIM == 2) {
+    if constexpr (DIM == 2) {
       return 4;
-    } else if (DIM == 3) {
+    } else if constexpr (DIM == 3) {
       return 8;
     } else {
       throw std::logic_error("this should never occur");
@@ -25,9 +25,9 @@ class CartesianGrid {
   }
 
   static size_t get_num_cells(size_t N[]) {
-    if (DIM == 2) {
+    if constexpr (DIM == 2) {
       return N[0] * N[1];
-    } else if (DIM == 3) {
+    } else if constexpr (DIM == 3) {
       return N[0] * N[1] * N[2];
     } else {
       throw std::logic_error("this should never occur");
@@ -37,7 +37,7 @@ class CartesianGrid {
  public:
   const size_t num_nodes_per_cell;
   const size_t num_cells;
-  // TODO How to make these array const?
+  // TODO How to make these arrays const?
   double L[DIM];
   size_t N[DIM];
 
@@ -240,8 +240,8 @@ class StiffnessMatrixFactory {
   StiffnessMatrixFactory(double mu, double nu, double L[], size_t N[])
       : ncells{num_cells(N)},
         ndofs{ncells * DIM},
-	mu{mu},
-	nu{nu},
+        mu{mu},
+        nu{nu},
         grid{N, L},
         u{ndofs},
         u_hat{ndofs},
