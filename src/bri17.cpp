@@ -63,7 +63,7 @@ class CartesianGrid {
 
   void get_cell_nodes(const size_t cell, size_t nodes[]) {
     static_assert(DIM != 3, "not implemented");
-    if (DIM == 2) {
+    if constexpr (DIM == 2) {
       const size_t i1 = cell / N[1];
       const size_t j1 = cell % N[1];
       const size_t i2 = i1 == N[0] - 1 ? 0 : i1 + 1;
@@ -72,7 +72,7 @@ class CartesianGrid {
       nodes[1] = get_node_at(i1, j2);
       nodes[2] = get_node_at(i2, j1);
       nodes[3] = get_node_at(i2, j2);
-    } else if (DIM == 3) {
+    } else if constexpr (DIM == 3) {
       // TODO Implement this case
     } else {
       throw std::logic_error("This should never occur");
