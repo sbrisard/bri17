@@ -9,8 +9,6 @@
 
 #include <fftw3.h>
 
-const size_t MAX_DIM = 3;
-
 template <size_t DIM>
 class CartesianGrid {
  private:
