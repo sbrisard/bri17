@@ -37,17 +37,13 @@ class CartesianGrid {
  public:
   const size_t num_nodes_per_cell;
   const size_t num_cells;
-  double mu;
-  double nu;
   // TODO How to make these array const?
   double L[DIM];
   size_t N[DIM];
 
-  CartesianGrid(double mu, double nu, double L[], size_t N[])
+  CartesianGrid(double L[], size_t N[])
       : num_nodes_per_cell{get_num_nodes_per_cell()},
         num_cells{get_num_cells(N)} {
-    this->mu = mu;
-    this->nu = nu;
     static_assert((DIM == 2) || (DIM == 3));
     for (size_t i = 0; i < DIM; i++) {
       this->L[i] = L[i];
@@ -215,6 +211,8 @@ class StiffnessMatrixFactory {
  public:
   const size_t ncells;
   const size_t ndofs;
+  const double mu;
+  const double nu;
 
  private:
   const CartesianGrid<DIM> grid;
@@ -242,7 +240,9 @@ class StiffnessMatrixFactory {
   StiffnessMatrixFactory(double mu, double nu, double L[], size_t N[])
       : ncells{num_cells(N)},
         ndofs{ncells * DIM},
-        grid{mu, nu, L, N},
+	mu{mu},
+	nu{nu},
+        grid{L, N},
         u{ndofs},
         u_hat{ndofs},
         Ku{ndofs},
@@ -273,7 +273,7 @@ void StiffnessMatrixFactory<DIM>::compute_Ku() {
     size_t i = 0;
     for (k[0] = 0; k[0] < grid.N[0]; k[0]++) {
       for (k[1] = 0; k[1] < grid.N[1]; k[1]++) {
-        modal_stiffness<DIM>(grid, grid.mu, grid.nu, k, K_k);
+        modal_stiffness<DIM>(grid, mu, nu, k, K_k);
         u_k(0) = u_hat.cpp_data[i];
         u_k(1) = u_hat.cpp_data[i + ncells];
         auto Ku_k = K_k * u_k;
@@ -324,7 +324,7 @@ int main() {
   Eigen::MatrixXcd K_act{factory.ndofs, factory.ndofs};
   factory.run(K_act);
 
-  CartesianGrid<dim> grid{mu, nu, L, N};
+  CartesianGrid<dim> grid{L, N};
 
   const size_t num_dofs = grid.num_cells * dim;
   const size_t num_dofs_per_cell = grid.num_nodes_per_cell * dim;
