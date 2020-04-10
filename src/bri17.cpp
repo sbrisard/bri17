@@ -14,16 +14,6 @@ const size_t MAX_DIM = 3;
 template <size_t DIM>
 class CartesianGrid {
  private:
-  static size_t get_num_nodes_per_cell() {
-    if constexpr (DIM == 2) {
-      return 4;
-    } else if constexpr (DIM == 3) {
-      return 8;
-    } else {
-      throw std::logic_error("this should never occur");
-    }
-  }
-
   static size_t get_num_cells(size_t N[]) {
     if constexpr (DIM == 2) {
       return N[0] * N[1];
@@ -42,8 +32,7 @@ class CartesianGrid {
   size_t N[DIM];
 
   CartesianGrid(size_t N[], double L[])
-      : num_nodes_per_cell{get_num_nodes_per_cell()},
-        num_cells{get_num_cells(N)} {
+      : num_nodes_per_cell{1 << DIM}, num_cells{get_num_cells(N)} {
     static_assert((DIM == 2) || (DIM == 3));
     for (size_t i = 0; i < DIM; i++) {
       this->L[i] = L[i];
