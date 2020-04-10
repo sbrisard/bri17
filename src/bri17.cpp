@@ -83,8 +83,6 @@ class CartesianGrid {
     }
   }
 
-  void modal_strain_displacement(
-      size_t const *k, Eigen::Matrix<std::complex<double>, DIM, 1> &B) const;
   void modal_stiffness(size_t const *k,
                        Eigen::Matrix<std::complex<double>, DIM, DIM> &K) const;
   void modal_eigenstress_to_strain(
@@ -106,16 +104,17 @@ std::ostream &operator<<(std::ostream &os, const CartesianGrid<DIM> &grid) {
 }
 
 template <size_t DIM>
-void CartesianGrid<DIM>::modal_strain_displacement(
-    size_t const *k, Eigen::Matrix<std::complex<double>, DIM, 1> &B) const {
+void modal_strain_displacement(
+    CartesianGrid<DIM> grid, size_t const *k,
+    Eigen::Matrix<std::complex<double>, DIM, 1> &B) {
   double h_inv[DIM];
   double c[DIM];
   double s[DIM];
   double sum_alpha = 0.;
 
   for (size_t i = 0; i < DIM; i++) {
-    h_inv[i] = N[i] / L[i];
-    const double alpha = M_PI * k[i] / N[i];
+    h_inv[i] = grid.N[i] / grid.L[i];
+    const double alpha = M_PI * k[i] / grid.N[i];
     c[i] = cos(alpha);
     s[i] = sin(alpha);
   }
