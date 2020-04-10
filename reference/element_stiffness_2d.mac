@@ -114,7 +114,7 @@ print("---------------------");
 print("");
 nu_val : 3/10;
 mu_val : 1;
-num_val : [lame_II=mu_val, lame_I=2*mu_val*nu_val/(1-2*nu_val), a=11/30, b=12/40];
+num_val : [lame_II=mu_val, lame_I=2*mu_val*nu_val/(1-2*nu_val), a=11/10, b=12/10];
 K_num : float(subst(num_val, K));
 
 text : "";

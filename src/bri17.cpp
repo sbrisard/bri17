@@ -287,8 +287,18 @@ void StiffnessMatrixFactory<DIM>::compute_Ku() {
     }
   }
   for (size_t i = 0; i < DIM; i++) fftw_execute(idft_Ku[i]);
+  double correction = 1.0;
+  for (size_t i = 0; i < DIM; i++) correction *= grid.L[i] / grid.N[i];
+  correction /= ncells;
+  // The following correction is due to the fact that
+  //
+  // 1. FFTW's backward Fourier transform returns the inverse DFT, scaled by the
+  //    number of cells (see FFTW's FAQ, 3.10).
+  // 2. The matrix \hat{K}_k^N in [Bri17] is a scaled modal stiffness, as shown
+  //    by Eq. (45), where this matrix must be scaled by the cell volume to get
+  //    the potential energy.
   for (size_t i = 0; i < ndofs; i++) {
-    Ku.cpp_data[i] /= ncells;
+    Ku.cpp_data[i] *= correction;
   }
 }
 
@@ -311,8 +321,8 @@ int main() {
   const size_t dim = 2;
   const double mu = 1.0;
   const double nu = 0.3;
-  double L[] = {1.1, 1.2};
   size_t N[] = {3, 4};
+  double L[] = {3. * 1.1, 4. * 1.2};
   StiffnessMatrixFactory<dim> factory{mu, nu, L, N};
   Eigen::MatrixXcd K_act{factory.ndofs, factory.ndofs};
   factory.run(K_act);
@@ -323,21 +333,26 @@ int main() {
   const size_t num_dofs_per_cell = grid.num_nodes_per_cell * dim;
   Eigen::MatrixXd Ke{num_dofs_per_cell, num_dofs_per_cell};
   // This is a copy-paste from Maxima
-  Ke << 1.702020202020202, -0.06565656565656566, -0.7853535353535354,
-      -0.851010101010101, 0.625, 0.125, -0.125, -0.625, -0.06565656565656566,
-      1.702020202020202, -0.851010101010101, -0.7853535353535354, -0.125,
-      -0.625, 0.625, 0.125, -0.7853535353535354, -0.851010101010101,
-      1.702020202020202, -0.06565656565656566, 0.125, 0.625, -0.625, -0.125,
-      -0.851010101010101, -0.7853535353535354, -0.06565656565656566,
-      1.702020202020202, -0.625, -0.125, 0.125, 0.625, 0.625, -0.125, 0.125,
-      -0.625, 2.038720538720539, -1.425084175084175, 0.4057239057239057,
-      -1.019360269360269, 0.125, -0.625, 0.625, -0.125, -1.425084175084175,
-      2.038720538720539, -1.019360269360269, 0.4057239057239057, -0.125, 0.625,
-      -0.625, 0.125, 0.4057239057239057, -1.019360269360269, 2.038720538720539,
-      -1.425084175084175, -0.625, 0.125, -0.125, 0.625, -1.019360269360269,
-      0.4057239057239057, -1.425084175084175, 2.038720538720539;
+  Ke << 1.578282828282828, 0.3308080808080808, -1.119949494949495,
+      -0.7891414141414141, 0.625, -0.125, 0.125, -0.625, 0.3308080808080808,
+      1.578282828282828, -0.7891414141414141, -1.119949494949495, 0.125, -0.625,
+      0.625, -0.125, -1.119949494949495, -0.7891414141414141, 1.578282828282828,
+      0.3308080808080808, -0.125, 0.625, -0.625, 0.125, -0.7891414141414141,
+      -1.119949494949495, 0.3308080808080808, 1.578282828282828, -0.625, 0.125,
+      -0.125, 0.625, 0.625, 0.125, -0.125, -0.625, 1.433080808080808,
+      -0.8876262626262627, 0.1710858585858586, -0.7165404040404041, -0.125,
+      -0.625, 0.625, 0.125, -0.8876262626262627, 1.433080808080808,
+      -0.7165404040404041, 0.1710858585858586, 0.125, 0.625, -0.625, -0.125,
+      0.1710858585858586, -0.7165404040404041, 1.433080808080808,
+      -0.8876262626262627, -0.625, -0.125, 0.125, 0.625, -0.7165404040404041,
+      0.1710858585858586, -0.8876262626262627, 1.433080808080808;
 
   Eigen::MatrixXd K_exp{num_dofs, num_dofs};
+  for (size_t i = 0; i < num_dofs; i++) {
+    for (size_t j = 0; j < num_dofs; j++) {
+      K_exp(i, j) = 0;
+    }
+  }
   size_t nodes[grid.num_nodes_per_cell];
   for (size_t cell = 0; cell < grid.num_cells; cell++) {
     grid.get_cell_nodes(cell, nodes);
@@ -352,10 +367,21 @@ int main() {
     }
   }
 
+  double atol = 1e-15;
+  double rtol = 1e-15;
+
   for (size_t i = 0; i < num_dofs; i++) {
     for (size_t j = 0; j < num_dofs; j++) {
-      std::cout << "expected = " << K_exp(i, j) << ", actual = " << K_act(i, j)
-                << std::endl;
+      double act = std::real(K_act(i, j));
+      if (fabs(std::imag(act)) > atol) {
+        throw std::runtime_error("");
+      }
+      double exp = K_exp(i, j);
+      double tol = rtol * fabs(exp) + atol;
+      double err = fabs(act - exp);
+      if (err > tol) {
+        throw std::runtime_error("");
+      }
     }
   }
 }
