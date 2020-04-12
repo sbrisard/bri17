@@ -65,10 +65,6 @@ class CartesianGrid {
       throw std::logic_error("This should never occur");
     }
   }
-
-  // void modal_eigenstress_to_strain(
-  //     size_t const *k, Eigen::Matrix<std::complex<double>, DIM, DIM> &tau,
-  //     Eigen::Matrix<std::complex<double>, DIM, DIM> &eps) const;
 };
 
 template <size_t DIM>
@@ -98,6 +94,9 @@ class Hooke {
       size_t const *k, Eigen::Matrix<std::complex<double>, DIM, 1> &B) const;
   void modal_stiffness(size_t const *k,
                        Eigen::Matrix<std::complex<double>, DIM, DIM> &K) const;
+  void modal_eigenstress_to_strain(
+      size_t const *k, Eigen::Matrix<std::complex<double>, DIM, DIM> &tau,
+      Eigen::Matrix<std::complex<double>, DIM, DIM> &eps) const;
 };
 
 template <size_t DIM>
@@ -183,17 +182,17 @@ void Hooke<DIM>::modal_stiffness(
   }
 }
 
-// template <size_t DIM>
-// void CartesianGrid<DIM>::modal_eigenstress_to_strain(
-//     size_t const *k, Eigen::Matrix<std::complex<double>, DIM, DIM> &tau,
-//     Eigen::Matrix<std::complex<double>, DIM, DIM> &eps) const {
-//   Eigen::Matrix<std::complex<double>, DIM, 1> B{};
-//   Eigen::Matrix<std::complex<double>, DIM, DIM> K{};
-//   modal_strain_displacement(k, B);
-//   modal_stiffness<DIM>(k, mu, nu, K);
-//   auto u = -K.fullPivLu().solve(tau * B);
-//   eps = 0.5 * (B * u.transpose() + u * B.transpose());
-// }
+template <size_t DIM>
+void Hooke<DIM>::modal_eigenstress_to_strain(
+    size_t const *k, Eigen::Matrix<std::complex<double>, DIM, DIM> &tau,
+    Eigen::Matrix<std::complex<double>, DIM, DIM> &eps) const {
+  Eigen::Matrix<std::complex<double>, DIM, 1> B{};
+  Eigen::Matrix<std::complex<double>, DIM, DIM> K{};
+  modal_strain_displacement(k, B);
+  modal_stiffness<DIM>(k, mu, nu, K);
+  auto u = -K.fullPivLu().solve(tau * B);
+  eps = 0.5 * (B * u.transpose() + u * B.transpose());
+}
 
 class FFTWComplexBuffer {
  public:
