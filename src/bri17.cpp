@@ -38,17 +38,17 @@ class CartesianGrid {
     }
   }
 
-  size_t get_node_at(size_t i, size_t j) {
+  size_t get_node_at(size_t i, size_t j) const {
     static_assert(DIM == 2, "this method expects a 2D grid");
     return i * N[1] + j;
   }
 
-  size_t get_node_at(size_t i, size_t j, size_t k) {
+  size_t get_node_at(size_t i, size_t j, size_t k) const {
     static_assert(DIM == 3, "this method expects a 3D grid");
     return (i * N[1] + j) * N[2] + k;
   }
 
-  void get_cell_nodes(const size_t cell, size_t nodes[]) {
+  void get_cell_nodes(const size_t cell, size_t nodes[]) const {
     static_assert(DIM != 3, "not implemented");
     if constexpr (DIM == 2) {
       const size_t i1 = cell / N[1];
