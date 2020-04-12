@@ -85,8 +85,24 @@ std::ostream &operator<<(std::ostream &os, const CartesianGrid<DIM> &grid) {
 }
 
 template <size_t DIM>
-void modal_strain_displacement(const CartesianGrid<DIM> &grid, size_t const *k,
-                               Eigen::Matrix<std::complex<double>, DIM, 1> &B) {
+class Hooke {
+ public:
+  const double mu;
+  const double nu;
+  const CartesianGrid<DIM> &grid;
+
+  Hooke(double mu, double nu, CartesianGrid<DIM> &grid)
+      : mu{mu}, nu{nu}, grid{grid} {};
+
+  void modal_strain_displacement(
+      size_t const *k, Eigen::Matrix<std::complex<double>, DIM, 1> &B) const;
+  void modal_stiffness(size_t const *k,
+                       Eigen::Matrix<std::complex<double>, DIM, DIM> &K) const;
+};
+
+template <size_t DIM>
+void Hooke<DIM>::modal_strain_displacement(
+    size_t const *k, Eigen::Matrix<std::complex<double>, DIM, 1> &B) const {
   double h_inv[DIM];
   double c[DIM];
   double s[DIM];
@@ -114,9 +130,8 @@ void modal_strain_displacement(const CartesianGrid<DIM> &grid, size_t const *k,
 }
 
 template <size_t DIM>
-void modal_stiffness(const CartesianGrid<DIM> &grid, double mu, double nu,
-                     size_t const *k,
-                     Eigen::Matrix<std::complex<double>, DIM, DIM> &K) {
+void Hooke<DIM>::modal_stiffness(
+    size_t const *k, Eigen::Matrix<std::complex<double>, DIM, DIM> &K) const {
   // {phi, chi, psi}[i] = {?, ?, psi}(z_i) in the notation of [Bri17]
   double h_inv[DIM];
   double phi[DIM];
@@ -198,11 +213,9 @@ class StiffnessMatrixFactory {
  public:
   const size_t ncells;
   const size_t ndofs;
-  const double mu;
-  const double nu;
 
  private:
-  const CartesianGrid<DIM> grid;
+  const Hooke<DIM> hooke;
   const FFTWComplexBuffer u;
   const FFTWComplexBuffer u_hat;
   const FFTWComplexBuffer Ku;
@@ -224,18 +237,16 @@ class StiffnessMatrixFactory {
   void compute_Ku();
 
  public:
-  StiffnessMatrixFactory(double mu, double nu, double L[], size_t N[])
-      : ncells{num_cells(N)},
+  StiffnessMatrixFactory(Hooke<DIM> hooke)
+      : ncells{hooke.grid.num_cells},
         ndofs{ncells * DIM},
-        mu{mu},
-        nu{nu},
-        grid{N, L},
+        hooke{hooke},
         u{ndofs},
         u_hat{ndofs},
         Ku{ndofs},
         Ku_hat{ndofs} {
     int N_[DIM];
-    for (size_t i = 0; i < DIM; i++) N_[i] = N[i];
+    for (size_t i = 0; i < DIM; i++) N_[i] = hooke.grid.N[i];
     for (size_t k = 0; k < DIM; k++) {
       size_t offset = k * ncells;
       dft_u[k] =
@@ -258,9 +269,9 @@ void StiffnessMatrixFactory<DIM>::compute_Ku() {
   Eigen::Matrix<std::complex<double>, DIM, 1> u_k;
   if (DIM == 2) {
     size_t i = 0;
-    for (k[0] = 0; k[0] < grid.N[0]; k[0]++) {
-      for (k[1] = 0; k[1] < grid.N[1]; k[1]++) {
-        modal_stiffness<DIM>(grid, mu, nu, k, K_k);
+    for (k[0] = 0; k[0] < hooke.grid.N[0]; k[0]++) {
+      for (k[1] = 0; k[1] < hooke.grid.N[1]; k[1]++) {
+        hooke.modal_stiffness(k, K_k);
         u_k(0) = u_hat.cpp_data[i];
         u_k(1) = u_hat.cpp_data[i + ncells];
         auto Ku_k = K_k * u_k;
@@ -272,7 +283,8 @@ void StiffnessMatrixFactory<DIM>::compute_Ku() {
   }
   for (size_t i = 0; i < DIM; i++) fftw_execute(idft_Ku[i]);
   double correction = 1.0;
-  for (size_t i = 0; i < DIM; i++) correction *= grid.L[i] / grid.N[i];
+  for (size_t i = 0; i < DIM; i++)
+    correction *= hooke.grid.L[i] / hooke.grid.N[i];
   correction /= ncells;
   // The following correction is due to the fact that
   //
@@ -307,11 +319,11 @@ int main() {
   const double nu = 0.3;
   size_t N[] = {3, 4};
   double L[] = {3. * 1.1, 4. * 1.2};
-  StiffnessMatrixFactory<dim> factory{mu, nu, L, N};
+  CartesianGrid<dim> grid{N, L};
+  Hooke<dim> hooke{mu, nu, grid};
+  StiffnessMatrixFactory<dim> factory{hooke};
   Eigen::MatrixXcd K_act{factory.ndofs, factory.ndofs};
   factory.run(K_act);
-
-  CartesianGrid<dim> grid{N, L};
 
   const size_t num_dofs = grid.num_cells * dim;
   const size_t num_dofs_per_cell = grid.num_nodes_per_cell * dim;
