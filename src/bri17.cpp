@@ -220,16 +220,6 @@ class StiffnessMatrixFactory {
   fftw_plan dft_u[DIM];
   fftw_plan idft_Ku[DIM];
 
-  static size_t num_cells(size_t N[]) {
-    if (DIM == 2) {
-      return N[0] * N[1];
-    } else if (DIM == 3) {
-      return N[0] * N[1] * N[2];
-    } else {
-      throw std::logic_error("this should never occur");
-    }
-  }
-
   void compute_Ku() {
     for (size_t i = 0; i < DIM; i++) fftw_execute(dft_u[i]);
     size_t k[DIM] = {0};
