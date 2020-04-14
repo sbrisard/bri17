@@ -233,7 +233,43 @@ class StiffnessMatrixFactory {
     }
   }
 
-  void compute_Ku();
+  void compute_Ku() {
+    for (size_t i = 0; i < DIM; i++) fftw_execute(dft_u[i]);
+    size_t k[DIM] = {0};
+    Eigen::Matrix<std::complex<double>, DIM, DIM> K_k;
+    Eigen::Matrix<std::complex<double>, DIM, 1> u_k;
+    if (DIM == 2) {
+      size_t i = 0;
+      for (k[0] = 0; k[0] < hooke.grid.N[0]; k[0]++) {
+        for (k[1] = 0; k[1] < hooke.grid.N[1]; k[1]++) {
+          hooke.modal_stiffness(k, K_k);
+          u_k(0) = u_hat.cpp_data[i];
+          u_k(1) = u_hat.cpp_data[i + ncells];
+          auto Ku_k = K_k * u_k;
+          Ku_hat.cpp_data[i] = Ku_k(0);
+          Ku_hat.cpp_data[i + ncells] = Ku_k(1);
+          i++;
+        }
+      }
+    }
+    for (size_t i = 0; i < DIM; i++) fftw_execute(idft_Ku[i]);
+    double correction = 1.0;
+    for (size_t i = 0; i < DIM; i++)
+      correction *= hooke.grid.L[i] / hooke.grid.N[i];
+    correction /= ncells;
+    // The following correction is due to the fact that
+    //
+    // 1. FFTW's backward Fourier transform returns the inverse DFT, scaled by
+    // the
+    //    number of cells (see FFTW's FAQ, 3.10).
+    // 2. The matrix \hat{K}_k^N in [Bri17] is a scaled modal stiffness, as
+    // shown
+    //    by Eq. (45), where this matrix must be scaled by the cell volume to
+    //    get the potential energy.
+    for (size_t i = 0; i < ndofs; i++) {
+      Ku.cpp_data[i] *= correction;
+    }
+  };
 
  public:
   StiffnessMatrixFactory(Hooke<DIM> hooke)
@@ -257,60 +293,20 @@ class StiffnessMatrixFactory {
     }
   }
 
-  void run(Eigen::MatrixXcd &K);
-};
-
-template <size_t DIM>
-void StiffnessMatrixFactory<DIM>::compute_Ku() {
-  for (size_t i = 0; i < DIM; i++) fftw_execute(dft_u[i]);
-  size_t k[DIM] = {0};
-  Eigen::Matrix<std::complex<double>, DIM, DIM> K_k;
-  Eigen::Matrix<std::complex<double>, DIM, 1> u_k;
-  if (DIM == 2) {
-    size_t i = 0;
-    for (k[0] = 0; k[0] < hooke.grid.N[0]; k[0]++) {
-      for (k[1] = 0; k[1] < hooke.grid.N[1]; k[1]++) {
-        hooke.modal_stiffness(k, K_k);
-        u_k(0) = u_hat.cpp_data[i];
-        u_k(1) = u_hat.cpp_data[i + ncells];
-        auto Ku_k = K_k * u_k;
-        Ku_hat.cpp_data[i] = Ku_k(0);
-        Ku_hat.cpp_data[i + ncells] = Ku_k(1);
-        i++;
-      }
-    }
-  }
-  for (size_t i = 0; i < DIM; i++) fftw_execute(idft_Ku[i]);
-  double correction = 1.0;
-  for (size_t i = 0; i < DIM; i++)
-    correction *= hooke.grid.L[i] / hooke.grid.N[i];
-  correction /= ncells;
-  // The following correction is due to the fact that
-  //
-  // 1. FFTW's backward Fourier transform returns the inverse DFT, scaled by the
-  //    number of cells (see FFTW's FAQ, 3.10).
-  // 2. The matrix \hat{K}_k^N in [Bri17] is a scaled modal stiffness, as shown
-  //    by Eq. (45), where this matrix must be scaled by the cell volume to get
-  //    the potential energy.
-  for (size_t i = 0; i < ndofs; i++) {
-    Ku.cpp_data[i] *= correction;
-  }
-}
-
-template <size_t DIM>
-void StiffnessMatrixFactory<DIM>::run(Eigen::MatrixXcd &K) {
-  for (size_t i = 0; i < ndofs; i++) {
-    u.cpp_data[i] = 0;
-  }
-  for (size_t j = 0; j < ndofs; j++) {
-    u.cpp_data[j] = 1;
-    compute_Ku();
+  void run(Eigen::MatrixXcd &K) {
     for (size_t i = 0; i < ndofs; i++) {
-      K(i, j) = Ku.cpp_data[i];
+      u.cpp_data[i] = 0;
     }
-    u.cpp_data[j] = 0;
-  }
-}
+    for (size_t j = 0; j < ndofs; j++) {
+      u.cpp_data[j] = 1;
+      compute_Ku();
+      for (size_t i = 0; i < ndofs; i++) {
+        K(i, j) = Ku.cpp_data[i];
+      }
+      u.cpp_data[j] = 0;
+    }
+  };
+};
 
 int main() {
   const size_t dim = 2;
