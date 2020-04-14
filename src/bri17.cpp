@@ -209,11 +209,8 @@ class FFTWComplexBuffer {
 
 template <size_t DIM>
 class StiffnessMatrixFactory {
- public:
-  const size_t ncells;
-  const size_t ndofs;
-
  private:
+  const size_t ndofs;
   const Hooke<DIM> hooke;
   const FFTWComplexBuffer u;
   const FFTWComplexBuffer u_hat;
@@ -244,10 +241,10 @@ class StiffnessMatrixFactory {
         for (k[1] = 0; k[1] < hooke.grid.N[1]; k[1]++) {
           hooke.modal_stiffness(k, K_k);
           u_k(0) = u_hat.cpp_data[i];
-          u_k(1) = u_hat.cpp_data[i + ncells];
+          u_k(1) = u_hat.cpp_data[i + hooke.grid.num_cells];
           auto Ku_k = K_k * u_k;
           Ku_hat.cpp_data[i] = Ku_k(0);
-          Ku_hat.cpp_data[i + ncells] = Ku_k(1);
+          Ku_hat.cpp_data[i + hooke.grid.num_cells] = Ku_k(1);
           i++;
         }
       }
@@ -256,7 +253,7 @@ class StiffnessMatrixFactory {
     double correction = 1.0;
     for (size_t i = 0; i < DIM; i++)
       correction *= hooke.grid.L[i] / hooke.grid.N[i];
-    correction /= ncells;
+    correction /= hooke.grid.num_cells;
     // The following correction is due to the fact that
     //
     // 1. FFTW's backward Fourier transform returns the inverse DFT, scaled by
@@ -271,8 +268,7 @@ class StiffnessMatrixFactory {
 
  public:
   StiffnessMatrixFactory(Hooke<DIM> hooke)
-      : ncells{hooke.grid.num_cells},
-        ndofs{ncells * DIM},
+      : ndofs{DIM * hooke.grid.num_cells},
         hooke{hooke},
         u{ndofs},
         u_hat{ndofs},
@@ -281,7 +277,7 @@ class StiffnessMatrixFactory {
     int N_[DIM];
     for (size_t i = 0; i < DIM; i++) N_[i] = hooke.grid.N[i];
     for (size_t k = 0; k < DIM; k++) {
-      size_t offset = k * ncells;
+      size_t offset = k * hooke.grid.num_cells;
       dft_u[k] =
           fftw_plan_dft(DIM, N_, u.c_data + offset, u_hat.c_data + offset,
                         FFTW_FORWARD, FFTW_ESTIMATE);
@@ -314,12 +310,12 @@ int main() {
   double L[] = {3. * 1.1, 4. * 1.2};
   CartesianGrid<dim> grid{N, L};
   Hooke<dim> hooke{mu, nu, grid};
-  StiffnessMatrixFactory<dim> factory{hooke};
-  Eigen::MatrixXcd K_act{factory.ndofs, factory.ndofs};
-  factory.run(K_act);
-
   const size_t num_dofs = grid.num_cells * dim;
   const size_t num_dofs_per_cell = grid.num_nodes_per_cell * dim;
+  StiffnessMatrixFactory<dim> factory{hooke};
+  Eigen::MatrixXcd K_act{num_dofs, num_dofs};
+  factory.run(K_act);
+
   Eigen::MatrixXd Ke{num_dofs_per_cell, num_dofs_per_cell};
   // This is a copy-paste from Maxima
   Ke << 1.578282828282828, 0.3308080808080808, -1.119949494949495,
