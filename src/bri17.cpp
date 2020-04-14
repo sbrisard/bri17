@@ -260,12 +260,10 @@ class StiffnessMatrixFactory {
     // The following correction is due to the fact that
     //
     // 1. FFTW's backward Fourier transform returns the inverse DFT, scaled by
-    // the
-    //    number of cells (see FFTW's FAQ, 3.10).
+    //    the number of cells (see FFTW's FAQ, 3.10).
     // 2. The matrix \hat{K}_k^N in [Bri17] is a scaled modal stiffness, as
-    // shown
-    //    by Eq. (45), where this matrix must be scaled by the cell volume to
-    //    get the potential energy.
+    //    shown by Eq. (45), where this matrix must be scaled by the cell volume
+    //    to get the potential energy.
     for (size_t i = 0; i < ndofs; i++) {
       Ku.cpp_data[i] *= correction;
     }
