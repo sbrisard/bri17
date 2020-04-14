@@ -1,4 +1,4 @@
-#include "bri17/bri17.h"
+#include "bri17/bri17.hpp"
 #include <Eigen/Dense>
 #include <cmath>
 #include <complex>
