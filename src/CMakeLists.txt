@@ -4,7 +4,7 @@ find_library(MATH_LIBRARY m)
 #  bri17.cpp
 #  ../include/bri17/bri17.h)
 
-add_executable(bri17 bri17.cpp ../include/bri17/bri17.h)
+add_executable(bri17 bri17.cpp ../include/bri17/bri17.hpp)
 
 target_include_directories(bri17 PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}../include>
