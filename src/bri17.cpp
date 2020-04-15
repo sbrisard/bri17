@@ -19,7 +19,7 @@ template <size_t DIM>
 class StiffnessMatrixFactory {
  private:
   const size_t ndofs;
-  const Hooke<DIM> hooke;
+  const bri17::Hooke<DIM> hooke;
   const FFTWComplexBuffer u;
   const FFTWComplexBuffer u_hat;
   const FFTWComplexBuffer Ku;
@@ -65,7 +65,7 @@ class StiffnessMatrixFactory {
   };
 
  public:
-  StiffnessMatrixFactory(Hooke<DIM> hooke)
+  StiffnessMatrixFactory(bri17::Hooke<DIM> hooke)
       : ndofs{DIM * hooke.grid.num_cells},
         hooke{hooke},
         u{ndofs},
@@ -106,8 +106,8 @@ int main() {
   const double nu = 0.3;
   size_t N[] = {3, 4};
   double L[] = {3. * 1.1, 4. * 1.2};
-  CartesianGrid<dim> grid{N, L};
-  Hooke<dim> hooke{mu, nu, grid};
+  bri17::CartesianGrid<dim> grid{N, L};
+  bri17::Hooke<dim> hooke{mu, nu, grid};
   const size_t num_dofs = grid.num_cells * dim;
   const size_t num_dofs_per_cell = grid.num_nodes_per_cell * dim;
   StiffnessMatrixFactory<dim> factory{hooke};

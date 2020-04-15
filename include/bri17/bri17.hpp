@@ -9,6 +9,8 @@
 #include <stdexcept>
 #include <string>
 
+namespace bri17 {
+
 template <typename T>
 T product(size_t n, T a[]) {
   T out{1};
@@ -183,4 +185,5 @@ class Hooke {
   }
 };
 
+}  // namespace bri17
 #endif  // __BRI17_H_20200315__
