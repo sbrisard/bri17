@@ -7,5 +7,5 @@ include(CTest)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake_modules/morse_cmake/modules" )
 include(MorseInit)
 
-add_subdirectory(src)
-# add_subdirectory(test)
+# add_subdirectory(src)
+add_subdirectory(test)
