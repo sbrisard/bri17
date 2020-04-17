@@ -1,6 +1,4 @@
-#define CATCH_CONFIG_MAIN
 #include "catch2/catch.hpp"
-
 #include "bri17/bri17.hpp"
 
 #include <fftw3.h>

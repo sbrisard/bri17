@@ -1,4 +1,4 @@
-add_executable(test_bri17 test_bri17.cpp ../include/bri17/bri17.hpp)
+add_executable(test_bri17 test_bri17_main.cpp test_bri17.cpp ../include/bri17/bri17.hpp)
 
 target_include_directories(test_bri17 PUBLIC ../include)
 
