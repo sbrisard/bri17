@@ -1,3 +1,6 @@
+#define CATCH_CONFIG_MAIN
+#include "catch2/catch.hpp"
+
 #include "bri17/bri17.hpp"
 
 #include <fftw3.h>
@@ -100,7 +103,7 @@ class StiffnessMatrixFactory {
   };
 };
 
-int main() {
+TEST_CASE("2D stiffness matrix") {
   const size_t dim = 2;
   const double mu = 1.0;
   const double nu = 0.3;
@@ -162,9 +165,7 @@ int main() {
       double exp = K_exp(i, j);
       double tol = rtol * fabs(exp) + atol;
       double err = fabs(act - exp);
-      if (err > tol) {
-        throw std::runtime_error("");
-      }
+      REQUIRE(err <= tol);
     }
   }
 }

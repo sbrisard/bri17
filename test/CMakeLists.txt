@@ -6,6 +6,9 @@ if (MATH_LIBRARY)
   target_link_libraries(test_bri17 ${MATH_LIBRARY})
 endif()
 
+find_package(Catch2 REQUIRED)
+target_link_libraries(test_bri17 Catch2::Catch2)
+
 find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 target_link_libraries(test_bri17 Eigen3::Eigen)
 
