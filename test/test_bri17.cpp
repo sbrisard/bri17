@@ -1,7 +1,22 @@
-#include "catch2/catch.hpp"
 #include "bri17/bri17.hpp"
+#include "catch2/catch.hpp"
 
 #include <fftw3.h>
+
+void assert_equal(const Eigen::MatrixXd &expected,
+                  const Eigen::MatrixXd &actual, double rtol, double atol) {
+  REQUIRE(expected.rows() == actual.rows());
+  REQUIRE(expected.cols() == actual.cols());
+  for (size_t i = 0; i < expected.rows(); i++) {
+    for (size_t j = 0; j < expected.cols(); j++) {
+      double e_ij = expected(i, j);
+      double a_ij = actual(i, j);
+      double tol = rtol * fabs(e_ij) + atol;
+      double err = fabs(a_ij - e_ij);
+      REQUIRE(err <= tol);
+    }
+  }
+}
 
 class FFTWComplexBuffer {
  public:
@@ -86,7 +101,7 @@ class StiffnessMatrixFactory {
     }
   }
 
-  void run(Eigen::MatrixXcd &K) {
+  void run(Eigen::MatrixXd &K) {
     for (size_t i = 0; i < ndofs; i++) {
       u.cpp_data[i] = 0;
     }
@@ -94,12 +109,39 @@ class StiffnessMatrixFactory {
       u.cpp_data[j] = 1;
       compute_Ku();
       for (size_t i = 0; i < ndofs; i++) {
-        K(i, j) = Ku.cpp_data[i];
+        const auto K_ij = Ku.cpp_data[i];
+        if (fabs(std::imag(K_ij)) > 1e-14) {
+          throw std::runtime_error(std::to_string(std::imag(K_ij)));
+        }
+        K(i, j) = std::real(K_ij);
       }
       u.cpp_data[j] = 0;
     }
   };
 };
+
+template <size_t DIM>
+void assemble_expected_stiffness_matrix(const bri17::CartesianGrid<DIM> &grid,
+                                        const Eigen::MatrixXd &Ke,
+                                        Eigen::MatrixXd &K) {
+  // TODO Check dimensions of Ke and K.
+  const size_t num_dofs_per_cell = grid.num_nodes_per_cell * DIM;
+  const size_t num_dofs = grid.num_cells * DIM;
+  K.setZero();
+  size_t cell_nodes[grid.num_nodes_per_cell];
+  for (size_t cell = 0; cell < grid.num_cells; cell++) {
+    grid.get_cell_nodes(cell, cell_nodes);
+    for (size_t ie = 0; ie < num_dofs_per_cell; ie++) {
+      size_t i = cell_nodes[ie % grid.num_nodes_per_cell] +
+                 grid.num_cells * (ie / grid.num_nodes_per_cell);
+      for (size_t je = 0; je < num_dofs_per_cell; je++) {
+        size_t j = cell_nodes[je % grid.num_nodes_per_cell] +
+                   grid.num_cells * (je / grid.num_nodes_per_cell);
+        K(i, j) += Ke(ie, je);
+      }
+    }
+  }
+}
 
 TEST_CASE("2D stiffness matrix") {
   const size_t dim = 2;
@@ -112,7 +154,7 @@ TEST_CASE("2D stiffness matrix") {
   const size_t num_dofs = grid.num_cells * dim;
   const size_t num_dofs_per_cell = grid.num_nodes_per_cell * dim;
   StiffnessMatrixFactory<dim> factory{hooke};
-  Eigen::MatrixXcd K_act{num_dofs, num_dofs};
+  Eigen::MatrixXd K_act{num_dofs, num_dofs};
   factory.run(K_act);
 
   Eigen::MatrixXd Ke{num_dofs_per_cell, num_dofs_per_cell};
@@ -132,38 +174,6 @@ TEST_CASE("2D stiffness matrix") {
       0.1710858585858586, -0.8876262626262627, 1.433080808080808;
 
   Eigen::MatrixXd K_exp{num_dofs, num_dofs};
-  for (size_t i = 0; i < num_dofs; i++) {
-    for (size_t j = 0; j < num_dofs; j++) {
-      K_exp(i, j) = 0;
-    }
-  }
-  size_t nodes[grid.num_nodes_per_cell];
-  for (size_t cell = 0; cell < grid.num_cells; cell++) {
-    grid.get_cell_nodes(cell, nodes);
-    for (size_t ie = 0; ie < num_dofs_per_cell; ie++) {
-      size_t i = nodes[ie % grid.num_nodes_per_cell] +
-                 grid.num_cells * (ie / grid.num_nodes_per_cell);
-      for (size_t je = 0; je < num_dofs_per_cell; je++) {
-        size_t j = nodes[je % grid.num_nodes_per_cell] +
-                   grid.num_cells * (je / grid.num_nodes_per_cell);
-        K_exp(i, j) += Ke(ie, je);
-      }
-    }
-  }
-
-  double atol = 1e-15;
-  double rtol = 1e-15;
-
-  for (size_t i = 0; i < num_dofs; i++) {
-    for (size_t j = 0; j < num_dofs; j++) {
-      double act = std::real(K_act(i, j));
-      if (fabs(std::imag(act)) > atol) {
-        throw std::runtime_error("");
-      }
-      double exp = K_exp(i, j);
-      double tol = rtol * fabs(exp) + atol;
-      double err = fabs(act - exp);
-      REQUIRE(err <= tol);
-    }
-  }
+  assemble_expected_stiffness_matrix(grid, Ke, K_exp);
+  assert_equal(K_exp, K_act, 1e-15, 1e-15);
 }
