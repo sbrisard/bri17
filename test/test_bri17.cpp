@@ -90,12 +90,12 @@ class StiffnessMatrixFactory {
         Ku_hat{ndofs} {
     int N_[DIM];
     for (size_t i = 0; i < DIM; i++) N_[i] = hooke.grid.N[i];
-    for (size_t k = 0; k < DIM; k++) {
-      size_t offset = k * hooke.grid.num_cells;
-      dft_u[k] =
+    for (size_t i = 0; i < DIM; i++) {
+      size_t offset = i * hooke.grid.num_cells;
+      dft_u[i] =
           fftw_plan_dft(DIM, N_, u.c_data + offset, u_hat.c_data + offset,
                         FFTW_FORWARD, FFTW_ESTIMATE);
-      idft_Ku[k] =
+      idft_Ku[i] =
           fftw_plan_dft(DIM, N_, Ku_hat.c_data + offset, Ku.c_data + offset,
                         FFTW_BACKWARD, FFTW_ESTIMATE);
     }
