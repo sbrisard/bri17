@@ -6,7 +6,7 @@ print("+--------------------------+");
 print("");
 print("NOMENCLATURE");
 print("------------");
-ndims : 2;
+ndims : 3;
 nnodes : 2**ndims;
 ndofs : nnodes*ndims;
 xyz : firstn([x, y, z], ndims);
@@ -18,12 +18,26 @@ print("- components of displacement:", uvw);
 print("");
 print("NUMBERING OF NODES");
 print("------------------");
-print("");
+newline();
 print("This node numbering is slightly unusual, but is more convenient to");
 print("implement in a dimension-independent way.");
+print("In 2 dimensions:");
+newline();
 print("  2---4");
 print("  |   |");
 print("  1---3");
+newline();
+print("In 3 dimensions");
+newline();
+print("      4--------8");
+print("     /|       /|");
+print("    / |      / |");
+print("   /  |     /  |");
+print("  2--------6 --7");
+print("  |  /3    |  / ");
+print("  | /      | /  ");
+print("  |/       |/   ");
+print("  1--------5    ");
 /* Create a list of lists of 1D shape functions, then compute the product. */
 shape_functions_list : lreduce(
   lambda([L1, L2], create_list(x1*x2, x1, L1, x2, L2)),
@@ -31,25 +45,30 @@ shape_functions_list : lreduce(
 
 N : transpose(matrix(shape_functions_list));
 
-node1 : [x=0, y=0];
-node2 : [x=0, y=b];
-node3 : [x=a, y=0];
-node4 : [x=a, y=b];
+if ndims = 2 then nodes : [[x=0, y=0], [x=0, y=b], [x=a, y=0], [x=a, y=b]]
+else nodes : [[x=0, y=0, z=0], [x=0, y=0, z=c], [x=0, y=b, z=0], [x=0, y=b, z=c], [x=a, y=0, z=0], [x=a, y=0, z=c], [x=a, y=b, z=0], [x=a, y=b, z=c]];
 
-if transpose(subst(node1, N)) # matrix([1, 0, 0, 0]) then error();
-if transpose(subst(node2, N)) # matrix([0, 1, 0, 0]) then error();
-if transpose(subst(node3, N)) # matrix([0, 0, 1, 0]) then error();
-if transpose(subst(node4, N)) # matrix([0, 0, 0, 1]) then error();
+
+print("Testing numbering of nodes...");
+N_list : list_matrix_entries(N);
+expected : ident(nnodes);
+actual : apply(matrix, makelist(subst(nodes[i], N_list), i, 1, nnodes));
+if actual # expected then error();
+kill(N_list, expected, actual);
+print("... OK");
 
 dofs_[i, j] := concat(uvw[i], j);
 dofs : genmatrix(dofs_, ndims, nnodes);
 
 u : dofs.N;
 
-if subst(node1, u) # transpose(matrix([u1, v1])) then error();
-if subst(node2, u) # transpose(matrix([u2, v2])) then error();
-if subst(node3, u) # transpose(matrix([u3, v3])) then error();
-if subst(node4, u) # transpose(matrix([u4, v4])) then error();
+print("Testing numbering of dofs...");
+u_list : list_matrix_entries(u);
+expected : transpose(dofs);
+actual : apply(matrix, makelist(subst(nodes[i], u_list), i, 1, nnodes));
+if actual # expected then error();
+kill(u_list, expected, actual);
+print("... OK");
 
 eps_[i, j] := factor((diff(u[i, 1], xyz[j])+diff(u[j, 1], xyz[i]))/2);
 eps : genmatrix(eps_, ndims, ndims);
@@ -71,42 +90,23 @@ K_II : coeff(K, lame_II);
 res : ratsimp(1/2*transpose(q).(lame_I*K_I+lame_II*K_II).q-U);
 if res # 0 then error();
 
+indices_ : makelist(makelist(j, j, (i-1)*nnodes+1, i*nnodes), i, 1, ndims);
+
+print("");
 print("Blocks of matrix K_I");
-print("---------------------");
-print("Upper-left block");
-print("");
-print(submatrix(5, 6, 7, 8, K_I, 5, 6, 7, 8));
-print("");
-print("Upper-right block");
-print("");
-print(submatrix(5, 6, 7, 8, K_I, 1, 2, 3, 4));
-print("");
-print("Lower-left block");
-print("");
-print(submatrix(1, 2, 3, 4, K_I, 5, 6, 7, 8));
-print("");
-print("Lower-right block");
-print("");
-print(submatrix(1, 2, 3, 4, K_I, 1, 2, 3, 4));
+print("--------------------");
+
+for i : 1 thru ndims do for j : 1 thru ndims do block(
+  print("K_I(", i, ",", j, ") =", apply(submatrix, append(indices_[i], [K_I], indices_[j]))),
+  newline());
 
 print("");
 print("Blocks of matrix K_II");
 print("---------------------");
-print("Upper-left block");
-print("");
-print(submatrix(5, 6, 7, 8, K_II, 5, 6, 7, 8));
-print("");
-print("Upper-right block");
-print("");
-print(submatrix(5, 6, 7, 8, K_II, 1, 2, 3, 4));
-print("");
-print("Lower-left block");
-print("");
-print(submatrix(1, 2, 3, 4, K_II, 5, 6, 7, 8));
-print("");
-print("Lower-right block");
-print("");
-print(submatrix(1, 2, 3, 4, K_II, 1, 2, 3, 4));
+
+for i : 1 thru ndims do for j : 1 thru ndims do block(
+  print("K_II(", i, ",", j, ") =", apply(submatrix, append(indices_[i], [K_II], indices_[j]))),
+  newline());
 
 print("");
 print("Some numerical values");
@@ -114,7 +114,7 @@ print("---------------------");
 print("");
 nu_val : 3/10;
 mu_val : 56/10;
-num_val : [lame_II=mu_val, lame_I=2*mu_val*nu_val/(1-2*nu_val), a=11/10, b=12/10];
+num_val : [lame_II=mu_val, lame_I=2*mu_val*nu_val/(1-2*nu_val), a=11/10, b=12/10, c=13/10];
 K_num : float(subst(num_val, K));
 
 text : "";
