@@ -101,7 +101,8 @@ class StiffnessMatrixFactory {
     }
   }
 
-  void run(Eigen::MatrixXd &K) {
+  Eigen::MatrixXd run() {
+    Eigen::MatrixXd K{ndofs, ndofs};
     for (size_t i = 0; i < ndofs; i++) {
       u.cpp_data[i] = 0;
     }
@@ -117,16 +118,17 @@ class StiffnessMatrixFactory {
       }
       u.cpp_data[j] = 0;
     }
-  };
+    return K;
+  }
 };
 
 template <size_t DIM>
-void assemble_expected_stiffness_matrix(const bri17::CartesianGrid<DIM> &grid,
-                                        const Eigen::MatrixXd &Ke,
-                                        Eigen::MatrixXd &K) {
+Eigen::MatrixXd assemble_expected_stiffness_matrix(
+    const bri17::CartesianGrid<DIM> &grid, const Eigen::MatrixXd &Ke) {
   // TODO Check dimensions of Ke and K.
   const size_t num_dofs_per_cell = grid.num_nodes_per_cell * DIM;
   const size_t num_dofs = grid.num_cells * DIM;
+  Eigen::MatrixXd K{num_dofs, num_dofs};
   K.setZero();
   size_t cell_nodes[grid.num_nodes_per_cell];
   for (size_t cell = 0; cell < grid.num_cells; cell++) {
@@ -141,6 +143,7 @@ void assemble_expected_stiffness_matrix(const bri17::CartesianGrid<DIM> &grid,
       }
     }
   }
+  return K;
 }
 
 TEST_CASE("2D stiffness matrix") {
@@ -169,13 +172,11 @@ TEST_CASE("2D stiffness matrix") {
       8.025252525252526;
 
   const size_t num_dofs = grid.num_cells * dim;
-  Eigen::MatrixXd K_exp{num_dofs, num_dofs};
-  assemble_expected_stiffness_matrix(grid, Ke, K_exp);
+  auto K_exp = assemble_expected_stiffness_matrix(grid, Ke);
 
   bri17::Hooke<dim> hooke{mu, nu, grid};
   StiffnessMatrixFactory<dim> factory{hooke};
-  Eigen::MatrixXd K_act{num_dofs, num_dofs};
-  factory.run(K_act);
+  auto K_act = factory.run();
 
   assert_equal(K_exp, K_act, 1e-15, 1e-14);
 }
