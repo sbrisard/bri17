@@ -34,7 +34,7 @@ class FFTWComplexBuffer {
 template <size_t DIM>
 class StiffnessMatrixFactory {
  private:
-  const size_t ndofs;
+  const size_t num_dofs;
   const bri17::Hooke<DIM> hooke;
   const FFTWComplexBuffer u;
   const FFTWComplexBuffer u_hat;
@@ -75,19 +75,19 @@ class StiffnessMatrixFactory {
     // 2. The matrix \hat{K}_k^N in [Bri17] is a scaled modal stiffness, as
     //    shown by Eq. (45), where this matrix must be scaled by the cell volume
     //    to get the potential energy.
-    for (size_t i = 0; i < ndofs; i++) {
+    for (size_t i = 0; i < num_dofs; i++) {
       Ku.cpp_data[i] *= correction;
     }
   };
 
  public:
   StiffnessMatrixFactory(bri17::Hooke<DIM> hooke)
-      : ndofs{DIM * hooke.grid.num_cells},
+      : num_dofs{DIM * hooke.grid.num_cells},
         hooke{hooke},
-        u{ndofs},
-        u_hat{ndofs},
-        Ku{ndofs},
-        Ku_hat{ndofs} {
+        u{num_dofs},
+        u_hat{num_dofs},
+        Ku{num_dofs},
+        Ku_hat{num_dofs} {
     int N_[DIM];
     for (size_t i = 0; i < DIM; i++) N_[i] = hooke.grid.N[i];
     for (size_t i = 0; i < DIM; i++) {
@@ -102,14 +102,14 @@ class StiffnessMatrixFactory {
   }
 
   Eigen::MatrixXd run() {
-    Eigen::MatrixXd K{ndofs, ndofs};
-    for (size_t i = 0; i < ndofs; i++) {
+    Eigen::MatrixXd K{num_dofs, num_dofs};
+    for (size_t i = 0; i < num_dofs; i++) {
       u.cpp_data[i] = 0;
     }
-    for (size_t j = 0; j < ndofs; j++) {
+    for (size_t j = 0; j < num_dofs; j++) {
       u.cpp_data[j] = 1;
       compute_Ku();
-      for (size_t i = 0; i < ndofs; i++) {
+      for (size_t i = 0; i < num_dofs; i++) {
         const auto K_ij = Ku.cpp_data[i];
         if (fabs(std::imag(K_ij)) > 1e-14) {
           throw std::runtime_error(std::to_string(std::imag(K_ij)));
