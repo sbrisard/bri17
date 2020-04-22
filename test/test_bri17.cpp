@@ -153,6 +153,8 @@ TEST_CASE("2D stiffness matrix") {
   size_t N[] = {3, 4};
   double L[] = {3. * 1.1, 4. * 1.2};
   bri17::CartesianGrid<dim> grid{N, L};
+  bri17::Hooke<dim> hooke{mu, nu, grid};
+  StiffnessMatrixFactory<dim> factory{hooke};
 
   const size_t num_dofs_per_cell = grid.num_nodes_per_cell * dim;
   Eigen::MatrixXd Ke{num_dofs_per_cell, num_dofs_per_cell};
@@ -171,12 +173,7 @@ TEST_CASE("2D stiffness matrix") {
       3.5, -4.012626262626263, 0.9580808080808081, -4.97070707070707,
       8.025252525252526;
 
-  const size_t num_dofs = grid.num_cells * dim;
   auto K_exp = assemble_expected_stiffness_matrix(grid, Ke);
-
-  bri17::Hooke<dim> hooke{mu, nu, grid};
-  StiffnessMatrixFactory<dim> factory{hooke};
   auto K_act = factory.run();
-
   assert_equal(K_exp, K_act, 1e-15, 1e-14);
 }
