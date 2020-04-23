@@ -135,25 +135,30 @@ class Hooke {
 
   void modal_stiffness(size_t const *k,
                        Eigen::Matrix<std::complex<double>, DIM, DIM> &K) const {
-    // {phi, chi, psi}[i] = {?, ?, psi}(z_i) in the notation of [Bri17]
-    double h_inv[DIM];
+    // In the notation of [Bri17, see Eq. (B.17)]
+    //
+    // phi[i] = phi(z_i) / h_i^2
+    // chi[i] = chi(z_i)
+    // psi[i] = psi(z_i) / h_i
+    //
+    // Which simplifies the expression of H_k (there are no h_i's).
     double phi[DIM];
     double psi[DIM];
     double chi[DIM];
     for (size_t i = 0; i < DIM; i++) {
-      h_inv[i] = grid.N[i] / grid.L[i];
+      double h = grid.L[i] / grid.N[i];
       double beta = 2 * M_PI * k[i] / grid.N[i];
-      phi[i] = 2 * (1 - cos(beta));
+      phi[i] = 2 * (1 - cos(beta)) / (h * h);
       chi[i] = (2 + cos(beta)) / 3;
-      psi[i] = sin(beta);
+      psi[i] = sin(beta) / h;
     }
 
     const double scaling = mu / (1. - 2. * nu);
-    if (DIM == 2) {
-      const double H_00 = h_inv[0] * h_inv[0] * phi[0] * chi[1];
+    if constexpr (DIM == 2) {
+      const double H_00 = phi[0] * chi[1];
       K(0, 0) = scaling * H_00;
-      K(0, 1) = scaling * h_inv[0] * h_inv[1] * psi[0] * psi[1];
-      const double H_11 = h_inv[1] * h_inv[1] * chi[0] * phi[1];
+      K(0, 1) = scaling * psi[0] * psi[1];
+      const double H_11 = chi[0] * phi[1];
       K(1, 1) = scaling * H_11;
 
       // Symmetrization
@@ -162,15 +167,15 @@ class Hooke {
       const double K_diag = mu * (H_00 + H_11);
       K(0, 0) += K_diag;
       K(1, 1) += K_diag;
-    } else if (DIM == 3) {
-      const double H_00 = h_inv[0] * h_inv[0] * phi[0] * chi[1] * chi[2];
+    } else if constexpr (DIM == 3) {
+      const double H_00 = phi[0] * chi[1] * chi[2];
       K(0, 0) = scaling * H_00;
-      K(0, 1) = scaling * h_inv[0] * h_inv[1] * psi[0] * psi[1] * chi[2];
-      K(0, 2) = scaling * h_inv[0] * h_inv[2] * psi[0] * chi[1] * psi[2];
-      const double H_11 = h_inv[1] * h_inv[1] * chi[0] * phi[1] * chi[2];
+      K(0, 1) = scaling * psi[0] * psi[1] * chi[2];
+      K(0, 2) = scaling * psi[0] * chi[1] * psi[2];
+      const double H_11 = chi[0] * phi[1] * chi[2];
       K(1, 1) = scaling * H_11;
-      K(1, 2) = scaling * h_inv[1] * h_inv[2] * chi[0] * psi[1] * psi[2];
-      const double H_22 = h_inv[2] * h_inv[2] * chi[0] * chi[1] * phi[2];
+      K(1, 2) = scaling * chi[0] * psi[1] * psi[2];
+      const double H_22 = chi[0] * chi[1] * phi[2];
       K(2, 2) = scaling * H_22;
 
       K(1, 0) = K(0, 1);
