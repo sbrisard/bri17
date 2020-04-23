@@ -50,7 +50,7 @@ class StiffnessMatrixFactory {
     size_t k[DIM] = {0};
     Eigen::Matrix<std::complex<double>, DIM, DIM> K_k;
     Eigen::Matrix<std::complex<double>, DIM, 1> u_k;
-    if (DIM == 2) {
+    if constexpr (DIM == 2) {
       size_t i = 0;
       for (k[0] = 0; k[0] < hooke.grid.N[0]; k[0]++) {
         for (k[1] = 0; k[1] < hooke.grid.N[1]; k[1]++) {
@@ -63,8 +63,8 @@ class StiffnessMatrixFactory {
           i++;
         }
       }
-    }
-    if (DIM == 3) {
+    } else if constexpr (DIM == 3) {
+      // TODO: the two cases should be merged
       size_t i = 0;
       for (k[0] = 0; k[0] < hooke.grid.N[0]; k[0]++) {
         for (k[1] = 0; k[1] < hooke.grid.N[1]; k[1]++) {
@@ -76,7 +76,7 @@ class StiffnessMatrixFactory {
             auto Ku_k = K_k * u_k;
             Ku_hat.cpp_data[i] = Ku_k(0);
             Ku_hat.cpp_data[i + hooke.grid.num_cells] = Ku_k(1);
-	    Ku_hat.cpp_data[i + 2*hooke.grid.num_cells] = Ku_k(2);
+            Ku_hat.cpp_data[i + 2 * hooke.grid.num_cells] = Ku_k(2);
             i++;
           }
         }
