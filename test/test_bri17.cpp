@@ -1,3 +1,4 @@
+#include <sstream>
 #include "bri17/bri17.hpp"
 #include "catch2/catch.hpp"
 
@@ -63,6 +64,24 @@ class StiffnessMatrixFactory {
         }
       }
     }
+    if (DIM == 3) {
+      size_t i = 0;
+      for (k[0] = 0; k[0] < hooke.grid.N[0]; k[0]++) {
+        for (k[1] = 0; k[1] < hooke.grid.N[1]; k[1]++) {
+          for (k[2] = 0; k[2] < hooke.grid.N[2]; k[2]++) {
+            hooke.modal_stiffness(k, K_k);
+            u_k(0) = u_hat.cpp_data[i];
+            u_k(1) = u_hat.cpp_data[i + hooke.grid.num_cells];
+            u_k(2) = u_hat.cpp_data[i + 2 * hooke.grid.num_cells];
+            auto Ku_k = K_k * u_k;
+            Ku_hat.cpp_data[i] = Ku_k(0);
+            Ku_hat.cpp_data[i + hooke.grid.num_cells] = Ku_k(1);
+	    Ku_hat.cpp_data[i + 2*hooke.grid.num_cells] = Ku_k(2);
+            i++;
+          }
+        }
+      }
+    }
     for (size_t i = 0; i < DIM; i++) fftw_execute(idft_Ku[i]);
     double correction = 1.0;
     for (size_t i = 0; i < DIM; i++)
@@ -112,7 +131,9 @@ class StiffnessMatrixFactory {
       for (size_t i = 0; i < num_dofs; i++) {
         const auto K_ij = Ku.cpp_data[i];
         if (fabs(std::imag(K_ij)) > 1e-14) {
-          throw std::runtime_error(std::to_string(std::imag(K_ij)));
+          std::ostringstream msg;
+          msg << "imag(K[" << i << ", " << j << "]) = " << std::imag(K_ij);
+          throw std::runtime_error(msg.str());
         }
         K(i, j) = std::real(K_ij);
       }
@@ -159,33 +180,34 @@ TEST_CASE("Stiffness matrix") {
     L[i] = N[i] * h[i];
   }
 
-  SECTION("2D stiffness matrix") {
-    const size_t dim = 2;
-    bri17::CartesianGrid<dim> grid{N, L};
-    bri17::Hooke<dim> hooke{mu, nu, grid};
-    StiffnessMatrixFactory<dim> factory{hooke};
+  // SECTION("2D stiffness matrix") {
+  //   const size_t dim = 2;
+  //   bri17::CartesianGrid<dim> grid{N, L};
+  //   bri17::Hooke<dim> hooke{mu, nu, grid};
+  //   StiffnessMatrixFactory<dim> factory{hooke};
 
-    const size_t num_dofs_per_cell = grid.num_nodes_per_cell * dim;
-    Eigen::MatrixXd Ke{num_dofs_per_cell, num_dofs_per_cell};
-    // This is a copy-paste from Maxima
-    Ke << 8.83838383838384, 1.852525252525252, -6.271717171717172,
-        -4.41919191919192, 3.5, -0.7, 0.7, -3.5, 1.852525252525252,
-        8.83838383838384, -4.41919191919192, -6.271717171717172, 0.7, -3.5, 3.5,
-        -0.7, -6.271717171717172, -4.41919191919192, 8.83838383838384,
-        1.852525252525252, -0.7, 3.5, -3.5, 0.7, -4.41919191919192,
-        -6.271717171717172, 1.852525252525252, 8.83838383838384, -3.5, 0.7,
-        -0.7, 3.5, 3.5, 0.7, -0.7, -3.5, 8.025252525252526, -4.97070707070707,
-        0.9580808080808081, -4.012626262626263, -0.7, -3.5, 3.5, 0.7,
-        -4.97070707070707, 8.025252525252526, -4.012626262626263,
-        0.9580808080808081, 0.7, 3.5, -3.5, -0.7, 0.9580808080808081,
-        -4.012626262626263, 8.025252525252526, -4.97070707070707, -3.5, -0.7,
-        0.7, 3.5, -4.012626262626263, 0.9580808080808081, -4.97070707070707,
-        8.025252525252526;
+  //   const size_t num_dofs_per_cell = grid.num_nodes_per_cell * dim;
+  //   Eigen::MatrixXd Ke{num_dofs_per_cell, num_dofs_per_cell};
+  //   // This is a copy-paste from Maxima
+  //   Ke << 8.83838383838384, 1.852525252525252, -6.271717171717172,
+  //       -4.41919191919192, 3.5, -0.7, 0.7, -3.5, 1.852525252525252,
+  //       8.83838383838384, -4.41919191919192, -6.271717171717172, 0.7,
+  //       -3.5, 3.5, -0.7, -6.271717171717172,
+  //       -4.41919191919192, 8.83838383838384, 1.852525252525252, -0.7, 3.5,
+  //       -3.5, 0.7, -4.41919191919192,
+  //       -6.271717171717172, 1.852525252525252, 8.83838383838384, -3.5, 0.7,
+  //       -0.7, 3.5, 3.5, 0.7, -0.7, -3.5, 8.025252525252526,
+  //       -4.97070707070707, 0.9580808080808081, -4.012626262626263, -0.7,
+  //       -3.5, 3.5, 0.7, -4.97070707070707, 8.025252525252526,
+  //       -4.012626262626263, 0.9580808080808081, 0.7, 3.5, -3.5, -0.7,
+  //       0.9580808080808081, -4.012626262626263, 8.025252525252526,
+  //       -4.97070707070707, -3.5, -0.7, 0.7, 3.5, -4.012626262626263,
+  //       0.9580808080808081, -4.97070707070707, 8.025252525252526;
 
-    auto K_exp = assemble_expected_stiffness_matrix(grid, Ke);
-    auto K_act = factory.run();
-    assert_equal(K_exp, K_act, 1e-15, 1e-14);
-  }
+  //   auto K_exp = assemble_expected_stiffness_matrix(grid, Ke);
+  //   auto K_act = factory.run();
+  //   assert_equal(K_exp, K_act, 1e-15, 1e-14);
+  // }
 
   SECTION("3D stiffness matrix") {
     const size_t dim = 3;
