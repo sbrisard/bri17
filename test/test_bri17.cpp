@@ -83,17 +83,10 @@ class StiffnessMatrixFactory {
       }
     }
     for (size_t i = 0; i < DIM; i++) fftw_execute(idft_Ku[i]);
-    double correction = 1.0;
-    for (size_t i = 0; i < DIM; i++)
-      correction *= hooke.grid.L[i] / hooke.grid.N[i];
-    correction /= hooke.grid.num_cells;
-    // The following correction is due to the fact that
-    //
-    // 1. FFTW's backward Fourier transform returns the inverse DFT, scaled by
-    //    the number of cells (see FFTW's FAQ, 3.10).
-    // 2. The matrix \hat{K}_k^N in [Bri17] is a scaled modal stiffness, as
-    //    shown by Eq. (45), where this matrix must be scaled by the cell volume
-    //    to get the potential energy.
+    double correction = 1.0 / hooke.grid.num_cells;
+    // The following correction is due to the fact that FFTW's backward Fourier
+    // transform returns the inverse DFT, scaled by the number of cells (see
+    // FFTW's FAQ, 3.10).
     for (size_t i = 0; i < num_dofs; i++) {
       Ku.cpp_data[i] *= correction;
     }
@@ -191,18 +184,17 @@ TEST_CASE("Stiffness matrix") {
     // This is a copy-paste from Maxima
     Ke << 8.83838383838384, 1.852525252525252, -6.271717171717172,
         -4.41919191919192, 3.5, -0.7, 0.7, -3.5, 1.852525252525252,
-        8.83838383838384, -4.41919191919192, -6.271717171717172, 0.7,
-        -3.5, 3.5, -0.7, -6.271717171717172,
-        -4.41919191919192, 8.83838383838384, 1.852525252525252, -0.7, 3.5,
-        -3.5, 0.7, -4.41919191919192,
+        8.83838383838384, -4.41919191919192, -6.271717171717172, 0.7, -3.5, 3.5,
+        -0.7, -6.271717171717172, -4.41919191919192, 8.83838383838384,
+        1.852525252525252, -0.7, 3.5, -3.5, 0.7, -4.41919191919192,
         -6.271717171717172, 1.852525252525252, 8.83838383838384, -3.5, 0.7,
-        -0.7, 3.5, 3.5, 0.7, -0.7, -3.5, 8.025252525252526,
-        -4.97070707070707, 0.9580808080808081, -4.012626262626263, -0.7,
-        -3.5, 3.5, 0.7, -4.97070707070707, 8.025252525252526,
-        -4.012626262626263, 0.9580808080808081, 0.7, 3.5, -3.5, -0.7,
-        0.9580808080808081, -4.012626262626263, 8.025252525252526,
-        -4.97070707070707, -3.5, -0.7, 0.7, 3.5, -4.012626262626263,
-        0.9580808080808081, -4.97070707070707, 8.025252525252526;
+        -0.7, 3.5, 3.5, 0.7, -0.7, -3.5, 8.025252525252526, -4.97070707070707,
+        0.9580808080808081, -4.012626262626263, -0.7, -3.5, 3.5, 0.7,
+        -4.97070707070707, 8.025252525252526, -4.012626262626263,
+        0.9580808080808081, 0.7, 3.5, -3.5, -0.7, 0.9580808080808081,
+        -4.012626262626263, 8.025252525252526, -4.97070707070707, -3.5, -0.7,
+        0.7, 3.5, -4.012626262626263, 0.9580808080808081, -4.97070707070707,
+        8.025252525252526;
 
     auto K_exp = assemble_expected_stiffness_matrix(grid, Ke);
     auto K_act = factory.run();

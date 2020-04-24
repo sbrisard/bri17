@@ -137,20 +137,22 @@ class Hooke {
                        Eigen::Matrix<std::complex<double>, DIM, DIM> &K) const {
     // In the notation of [Bri17, see Eq. (B.17)]
     //
-    // phi[i] = phi(z_i) / h_i^2
-    // chi[i] = chi(z_i)
-    // psi[i] = psi(z_i) / h_i
+    // phi[i] = phi(z_i) / h_i
+    // chi[i] = chi(z_i) * h_i
+    // psi[i] = psi(z_i)
     //
     // Which simplifies the expression of H_k (there are no h_i's).
+    // Note that H_k is multiplied by the cell volume, so that the
+    // modal_stiffness is the true modal stiffness
     double phi[DIM];
     double psi[DIM];
     double chi[DIM];
     for (size_t i = 0; i < DIM; i++) {
       double h = grid.L[i] / grid.N[i];
       double beta = 2 * M_PI * k[i] / grid.N[i];
-      phi[i] = 2 * (1 - cos(beta)) / (h * h);
-      chi[i] = (2 + cos(beta)) / 3;
-      psi[i] = sin(beta) / h;
+      phi[i] = 2 * (1 - cos(beta)) / h;
+      chi[i] = (2 + cos(beta)) * h / 3;
+      psi[i] = sin(beta);
     }
 
     const double scaling = mu / (1. - 2. * nu);
