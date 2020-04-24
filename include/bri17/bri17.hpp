@@ -107,27 +107,26 @@ class Hooke {
 
   void modal_strain_displacement(
       size_t const *k, Eigen::Matrix<std::complex<double>, DIM, 1> &B) const {
-    double h_inv[DIM];
     double c[DIM];
     double s[DIM];
     double sum_alpha = 0.;
 
     for (size_t i = 0; i < DIM; i++) {
-      h_inv[i] = grid.N[i] / grid.L[i];
       const double alpha = M_PI * k[i] / grid.N[i];
-      c[i] = cos(alpha);
+      sum_alpha+= alpha;
+      c[i] = cos(alpha) * grid.L[i] / grid.N[i];
       s[i] = sin(alpha);
     }
 
     std::complex prefactor{-2 * sin(sum_alpha), 2 * cos(sum_alpha)};
 
-    if (DIM == 2) {
-      B(0) << prefactor * h_inv[0] * s[0] * c[1];
-      B(1) = prefactor * h_inv[1] * c[0] * s[1];
-    } else if (DIM == 3) {
-      B(0) = prefactor * h_inv[0] * s[0] * c[1] * c[2];
-      B(1) = prefactor * h_inv[1] * c[0] * s[1] * c[2];
-      B(2) = prefactor * h_inv[2] * c[0] * c[1] * s[2];
+    if constexpr (DIM == 2) {
+      B(0) << prefactor * s[0] * c[1];
+      B(1) = prefactor * c[0] * s[1];
+    } else if constexpr (DIM == 3) {
+      B(0) = prefactor * s[0] * c[1] * c[2];
+      B(1) = prefactor * c[0] * s[1] * c[2];
+      B(2) = prefactor * c[0] * c[1] * s[2];
     } else {
       throw std::logic_error("this should never occur");
     }
