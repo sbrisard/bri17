@@ -1,9 +1,9 @@
 kill(all);
 load(functs);
 verbose_ : false;
-print("+--------------------------+");
-print("| ELEMENT STIFFNESS MATRIX |");
-print("+--------------------------+");
+print("+----------------------+");
+print("| Q4/Q8 FINITE ELEMENT |");
+print("+----------------------+");
 newline();
 print("Nomenclature");
 print("============");
