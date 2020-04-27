@@ -22,13 +22,14 @@ print("==================");
 newline();
 print("This node numbering is slightly unusual, but is more convenient to");
 print("implement in a dimension-independent way.");
+newline();
 print("In 2 dimensions:");
 newline();
 print("  2---4");
 print("  |   |");
 print("  1---3");
 newline();
-print("In 3 dimensions");
+print("In 3 dimensions:");
 newline();
 print("      4--------8");
 print("     /|       /|");
@@ -147,5 +148,52 @@ text : "";
 for i:1 thru ndofs do for j:1 thru ndofs do text : concat(text, K_num[i, j], ", ");
 
 print("Row-major list of coefficients of the element stiffness matrix");
+newline();
+sprint(text);
+
+newline();
+newline();
+print("Strain-displacement matrix");
+print("==========================");
+
+eps_avg : eps;
+for i:1 thru ndims do eps_avg : integrate(eps_avg, xyz[i], 0, abc[i]);
+
+eps_avg : expand(eps_avg);
+
+mv_first : [1, 2, 3, 2, 3, 1];
+mv_second : [1, 2, 3, 3, 1, 2];
+mv_weight : [1, 1, 1, sqrt(2), sqrt(2), sqrt(2)];
+
+B_[ij, k] := (if ij <= ndims
+  then coeff(eps_avg[ij, ij], q[k])
+  else coeff(eps_avg[mv_first[ij], mv_second[ij]], q[k]));
+B : genmatrix(B_, (ndims*(ndims+1))/2, ndofs);
+
+if verbose_ then block(
+  all_rows : makelist(i, i, 1, length(B)),
+  newline(),
+  print("Blocks of matrix B"),
+  print("------------------"),
+  newline(),
+  for j : 1 thru ndims do block(
+    print("B(", j, ") =",
+      apply(submatrix, append(all_rows, [B], indices_[j]))),
+    newline()),
+  newline());
+
+newline();
+print("Numerical value of the element strain-displacement matrix");
+print("---------------------------------------------------------");
+newline();
+print("We use the same numerical values of the parameters as previously.");
+newline();
+
+B_num : float(subst(num_val, B));
+
+text : "";
+for i:1 thru length(B) do for j:1 thru ndofs do text : concat(text, B_num[i, j], ", ");
+
+print("Row-major list of coefficients of the element strain-displacement matrix");
 newline();
 sprint(text);
