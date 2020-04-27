@@ -160,6 +160,28 @@ Eigen::MatrixXd assemble_expected_stiffness_matrix(
   return K;
 }
 
+template <size_t DIM>
+Eigen::MatrixXd assemble_expected_strain_displacement_matrix(
+    const bri17::CartesianGrid<DIM> &grid, const Eigen::MatrixXd &Be) {
+  const size_t sym = (DIM * (DIM + 1)) / 2;
+  const size_t num_dofs_per_cell = grid.num_nodes_per_cell * DIM;
+  const size_t num_dofs = grid.num_cells * DIM;
+  Eigen::MatrixXd B{DIM, num_dofs};
+  B.setZero();
+  size_t cell_nodes[grid.num_nodes_per_cell];
+  for (size_t cell = 0; cell < grid.num_cells; cell++) {
+    grid.get_cell_nodes(cell, cell_nodes);
+    for (size_t i = 0; i < sym; i++) {
+      for (size_t je = 0; je < num_dofs_per_cell; je++) {
+        size_t j = cell_nodes[je % grid.num_nodes_per_cell] +
+                   grid.num_cells * (je / grid.num_nodes_per_cell);
+        B(i, j) += Be(ie, je);
+      }
+    }
+  }
+  return B;
+}
+
 TEST_CASE("Stiffness matrix") {
   const size_t max_dim = 3;
   const double mu = 5.6;
