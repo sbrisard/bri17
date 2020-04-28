@@ -163,15 +163,17 @@ Eigen::MatrixXd assemble_expected_stiffness_matrix(
 template <size_t DIM>
 Eigen::MatrixXd assemble_expected_strain_displacement_matrix(
     const bri17::CartesianGrid<DIM> &grid, const Eigen::MatrixXd &Be) {
-  const size_t sym = (DIM * (DIM + 1)) / 2;
+  const size_t num_strain_components = (DIM * (DIM + 1)) / 2;
+  const size_t num_rows = grid.num_cells * num_strain_components;
   const size_t num_dofs_per_cell = grid.num_nodes_per_cell * DIM;
   const size_t num_dofs = grid.num_cells * DIM;
-  Eigen::MatrixXd B{DIM, num_dofs};
+  Eigen::MatrixXd B{num_rows, num_dofs};
   B.setZero();
   size_t cell_nodes[grid.num_nodes_per_cell];
   for (size_t cell = 0; cell < grid.num_cells; cell++) {
     grid.get_cell_nodes(cell, cell_nodes);
-    for (size_t i = 0; i < sym; i++) {
+    for (size_t ie = 0; ie < num_strain_components; ie++) {
+      size_t i = cell * num_strain_components + ie;
       for (size_t je = 0; je < num_dofs_per_cell; je++) {
         size_t j = cell_nodes[je % grid.num_nodes_per_cell] +
                    grid.num_cells * (je / grid.num_nodes_per_cell);
@@ -182,7 +184,7 @@ Eigen::MatrixXd assemble_expected_strain_displacement_matrix(
   return B;
 }
 
-TEST_CASE("Stiffness matrix") {
+TEST_CASE("Global assembly tests") {
   const size_t max_dim = 3;
   const double mu = 5.6;
   const double nu = 0.3;
@@ -396,5 +398,19 @@ TEST_CASE("Stiffness matrix") {
     auto K_exp = assemble_expected_stiffness_matrix(grid, Ke);
     auto K_act = factory.run();
     assert_equal(K_exp, K_act, 1e-15, 1e-14);
+  }
+
+  SECTION("2D strain-displacement matrix") {
+    const size_t dim = 2;
+    bri17::CartesianGrid<dim> grid{N, L};
+    bri17::Hooke<dim> hooke{mu, nu, grid};
+
+    const size_t num_dofs_per_cell = grid.num_nodes_per_cell * dim;
+    const size_t num_strain_components_per_cell = (dim * (dim + 1)) / 2;
+    Eigen::MatrixXd Be{num_strain_components_per_cell, num_dofs_per_cell};
+    // This is a copy-paste from Maxima
+    Be << -0.6, -0.6, 0.6, 0.6, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.55,
+        0.55, -0.55, 0.55, -0.275, 0.275, -0.275, 0.275, -0.3, -0.3, 0.3, 0.3;
+    auto B_exp = assemble_expected_strain_displacement_matrix(grid, Be);
   }
 }
