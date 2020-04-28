@@ -7,7 +7,7 @@ print("+----------------------+");
 newline();
 print("Nomenclature");
 print("============");
-ndims : 3;
+ndims : 2;
 nnodes : 2**ndims;
 ndofs : nnodes*ndims;
 xyz : firstn([x, y, z], ndims);
@@ -161,9 +161,14 @@ for i:1 thru ndims do eps_avg : integrate(eps_avg, xyz[i], 0, abc[i]);
 
 eps_avg : expand(eps_avg);
 
-mv_first : [1, 2, 3, 2, 3, 1];
-mv_second : [1, 2, 3, 3, 1, 2];
-mv_weight : [1, 1, 1, sqrt(2), sqrt(2), sqrt(2)];
+if ndims = 2 then block(
+  mv_first : [1, 2, 1],
+  mv_second: [1, 2, 2],
+  mv_weight: [1, 1, sqrt(2)])
+else block(
+  mv_first : [1, 2, 3, 2, 3, 1],
+  mv_second : [1, 2, 3, 3, 1, 2],
+  mv_weight : [1, 1, 1, sqrt(2), sqrt(2), sqrt(2)]);
 
 B_[ij, k] := (if ij <= ndims
   then coeff(eps_avg[ij, ij], q[k])
