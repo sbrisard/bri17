@@ -29,9 +29,7 @@ class CartesianGrid {
   double L[DIM];
   size_t N[DIM];
 
-  // Default value for L may have inconsistent dimension, but only the
-  // DIM first elements will be considered.
-  CartesianGrid(size_t N[], double L[] = {1., 1., 1.})
+  CartesianGrid(size_t N[], double L[])
       : num_nodes_per_cell{1 << DIM}, num_cells{product(DIM, N)} {
     static_assert((DIM == 2) || (DIM == 3));
     for (size_t i = 0; i < DIM; i++) {
