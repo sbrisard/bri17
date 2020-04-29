@@ -121,7 +121,7 @@ class Hooke {
     std::complex prefactor{-2 * sin(sum_alpha), 2 * cos(sum_alpha)};
 
     if constexpr (DIM == 2) {
-      B(0) << prefactor * s[0] * c[1];
+      B(0) = prefactor * s[0] * c[1];
       B(1) = prefactor * c[0] * s[1];
     } else if constexpr (DIM == 3) {
       B(0) = prefactor * s[0] * c[1] * c[2];
