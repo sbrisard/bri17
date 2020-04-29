@@ -14,7 +14,12 @@ void assert_equal(const Eigen::MatrixXd &expected,
       double a_ij = actual(i, j);
       double tol = rtol * fabs(e_ij) + atol;
       double err = fabs(a_ij - e_ij);
-      REQUIRE(err <= tol);
+      CHECKED_ELSE(err <= tol) {
+        std::ostringstream msg;
+        msg << "[" << i << ", " << j << "]: expected = " << e_ij
+            << ", actual = " << a_ij;
+        FAIL(msg.str());
+      }
     }
   }
 }
