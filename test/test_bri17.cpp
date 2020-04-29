@@ -186,7 +186,7 @@ class StrainDisplacementMatrixFactory {
   void compute_Bu() {
     for (size_t i = 0; i < DIM; i++) fftw_execute(dft_u[i]);
     size_t k[DIM] = {0};
-    Eigen::Matrix<std::complex<double>, num_strain_components<DIM>(), DIM> B_k;
+    Eigen::Matrix<std::complex<double>, DIM, 1> B_k;
     Eigen::Matrix<std::complex<double>, DIM, 1> u_k;
     if constexpr (DIM == 2) {
       size_t i = 0;
@@ -195,15 +195,16 @@ class StrainDisplacementMatrixFactory {
           hooke.modal_strain_displacement(k, B_k);
           u_k(0) = u_hat.cpp_data[i];
           u_k(1) = u_hat.cpp_data[i + hooke.grid.num_cells];
-          auto Bu_k = B_k * u_k;
-          for (size_t j = 0; j < num_strain_components<DIM>(); j++) {
-            Bu_hat.cpp_data[i + j * hooke.grid.num_cells] = Bu_k(j);
-          }
+          auto eps_k = 0.5 * (B_k * u_k.transpose() + u_k * B_k.transpose());
+          Bu_hat.cpp_data[i] = eps_k(0, 0);
+          Bu_hat.cpp_data[i + hooke.grid.num_cells] = eps_k(1, 1);
+          Bu_hat.cpp_data[i + 2 * hooke.grid.num_cells] = sqrt(2) * eps_k(0, 1);
           i++;
         }
       }
     } else if constexpr (DIM == 3) {
       // TODO: the two cases should be merged
+      throw std::logic_error("not implemented");
       size_t i = 0;
       for (k[0] = 0; k[0] < hooke.grid.N[0]; k[0]++) {
         for (k[1] = 0; k[1] < hooke.grid.N[1]; k[1]++) {
