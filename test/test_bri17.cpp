@@ -532,7 +532,9 @@ TEST_CASE("Global assembly tests") {
     Eigen::MatrixXd Be{num_strain_components_per_cell, num_dofs_per_cell};
     // This is a copy-paste from Maxima
     Be << -0.6, -0.6, 0.6, 0.6, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.55,
-        0.55, -0.55, 0.55, -0.275, 0.275, -0.275, 0.275, -0.3, -0.3, 0.3, 0.3;
+        0.55, -0.55, 0.55, -0.3889087296526009, 0.3889087296526009,
+        -0.3889087296526009, 0.3889087296526009, -0.4242640687119284,
+        -0.4242640687119284, 0.4242640687119284, 0.4242640687119284;
     auto B_exp = assemble_expected_strain_displacement_matrix(grid, Be);
 
     StrainDisplacementMatrixFactory<dim> factory{hooke};

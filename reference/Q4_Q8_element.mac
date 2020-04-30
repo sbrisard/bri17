@@ -163,16 +163,14 @@ eps_avg : expand(eps_avg);
 
 if ndims = 2 then block(
   mv_first : [1, 2, 1],
-  mv_second: [1, 2, 2],
-  mv_weight: [1, 1, sqrt(2)])
+  mv_second: [1, 2, 2])
 else block(
   mv_first : [1, 2, 3, 2, 3, 1],
-  mv_second : [1, 2, 3, 3, 1, 2],
-  mv_weight : [1, 1, 1, sqrt(2), sqrt(2), sqrt(2)]);
+  mv_second : [1, 2, 3, 3, 1, 2]);
 
 B_[ij, k] := (if ij <= ndims
   then coeff(eps_avg[ij, ij], q[k])
-  else coeff(eps_avg[mv_first[ij], mv_second[ij]], q[k]));
+  else sqrt(2)*coeff(eps_avg[mv_first[ij], mv_second[ij]], q[k]));
 B : genmatrix(B_, (ndims*(ndims+1))/2, ndofs);
 
 if verbose_ then block(
@@ -202,3 +200,4 @@ for i:1 thru length(B) do for j:1 thru ndofs do text : concat(text, B_num[i, j],
 print("Row-major list of coefficients of the element strain-displacement matrix");
 newline();
 sprint(text);
+newline();
