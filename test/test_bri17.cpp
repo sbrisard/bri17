@@ -205,7 +205,6 @@ class StrainDisplacementMatrixFactory {
       }
     } else if constexpr (DIM == 3) {
       // TODO: the two cases should be merged
-      throw std::logic_error("not implemented");
       size_t i = 0;
       for (k[0] = 0; k[0] < hooke.grid.N[0]; k[0]++) {
         for (k[1] = 0; k[1] < hooke.grid.N[1]; k[1]++) {
@@ -214,10 +213,17 @@ class StrainDisplacementMatrixFactory {
             u_k(0) = u_hat.cpp_data[i];
             u_k(1) = u_hat.cpp_data[i + hooke.grid.num_cells];
             u_k(2) = u_hat.cpp_data[i + 2 * hooke.grid.num_cells];
-            auto Bu_k = B_k * u_k;
-            for (size_t j = 0; j < num_strain_components<DIM>(); j++) {
-              Bu_hat.cpp_data[i + j * hooke.grid.num_cells] = Bu_k(j);
-            }
+            auto eps_k = 0.5 * (B_k * u_k.transpose() + u_k * B_k.transpose());
+            Bu_hat.cpp_data[i] = eps_k(0, 0);
+            Bu_hat.cpp_data[i + hooke.grid.num_cells] = eps_k(1, 1);
+            Bu_hat.cpp_data[i + 2 * hooke.grid.num_cells] = eps_k(2, 2);
+
+            Bu_hat.cpp_data[i + 3 * hooke.grid.num_cells] =
+                sqrt(2) * eps_k(1, 2);
+            Bu_hat.cpp_data[i + 4 * hooke.grid.num_cells] =
+                sqrt(2) * eps_k(2, 0);
+            Bu_hat.cpp_data[i + 5 * hooke.grid.num_cells] =
+                sqrt(2) * eps_k(0, 1);
             i++;
           }
         }
@@ -536,6 +542,47 @@ TEST_CASE("Global assembly tests") {
         0.55, -0.55, 0.55, -0.3889087296526009, 0.3889087296526009,
         -0.3889087296526009, 0.3889087296526009, -0.4242640687119284,
         -0.4242640687119284, 0.4242640687119284, 0.4242640687119284;
+    auto B_exp = assemble_expected_strain_displacement_matrix(grid, Be);
+
+    StrainDisplacementMatrixFactory<dim> factory{hooke};
+    auto B_act = factory.run();
+
+    assert_equal(B_exp, B_act, 1e-15, 1e-14);
+  }
+
+  SECTION("3D strain-displacement matrix") {
+    const size_t dim = 3;
+    bri17::CartesianGrid<dim> grid{N, L};
+    bri17::Hooke<dim> hooke{mu, nu, grid};
+
+    const size_t num_dofs_per_cell = grid.num_nodes_per_cell * dim;
+    const size_t num_strain_components_per_cell = (dim * (dim + 1)) / 2;
+    Eigen::MatrixXd Be{num_strain_components_per_cell, num_dofs_per_cell};
+    // This is a copy-paste from Maxima
+    Be << -0.39, -0.39, -0.39, -0.39, 0.39, 0.39, 0.39, 0.39, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.3575, -0.3575, 0.3575, 0.3575,
+        -0.3575, -0.3575, 0.3575, 0.3575, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, -0.33, 0.33, -0.33, 0.33, -0.33, 0.33, -0.33, 0.33, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.2333452377915605,
+        0.2333452377915605, -0.2333452377915605, 0.2333452377915605,
+        -0.2333452377915605, 0.2333452377915605, -0.2333452377915605,
+        0.2333452377915605, -0.2527906742741904, -0.2527906742741904,
+        0.2527906742741904, 0.2527906742741904, -0.2527906742741904,
+        -0.2527906742741904, 0.2527906742741904, 0.2527906742741904,
+        -0.2333452377915605, 0.2333452377915605, -0.2333452377915605,
+        0.2333452377915605, -0.2333452377915605, 0.2333452377915605,
+        -0.2333452377915605, 0.2333452377915605, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, -0.2757716446627534, -0.2757716446627534, -0.2757716446627534,
+        -0.2757716446627534, 0.2757716446627534, 0.2757716446627534,
+        0.2757716446627534, 0.2757716446627534, -0.2527906742741904,
+        -0.2527906742741904, 0.2527906742741904, 0.2527906742741904,
+        -0.2527906742741904, -0.2527906742741904, 0.2527906742741904,
+        0.2527906742741904, -0.2757716446627534, -0.2757716446627534,
+        -0.2757716446627534, -0.2757716446627534, 0.2757716446627534,
+        0.2757716446627534, 0.2757716446627534, 0.2757716446627534, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
     auto B_exp = assemble_expected_strain_displacement_matrix(grid, Be);
 
     StrainDisplacementMatrixFactory<dim> factory{hooke};
