@@ -14,6 +14,7 @@ void assert_equal(const Eigen::MatrixXd &expected,
       double a_ij = actual(i, j);
       double tol = rtol * fabs(e_ij) + atol;
       double err = fabs(a_ij - e_ij);
+
       CHECKED_ELSE(err <= tol) {
         std::ostringstream msg;
         msg << "[" << i << ", " << j << "]: expected = " << e_ij
@@ -294,12 +295,12 @@ Eigen::MatrixXd assemble_expected_strain_displacement_matrix(
   size_t cell_nodes[grid.num_nodes_per_cell];
   for (size_t cell = 0; cell < grid.num_cells; cell++) {
     grid.get_cell_nodes(cell, cell_nodes);
-    for (size_t ie = 0; ie < num_strain_components; ie++) {
-      size_t i = cell * num_strain_components + ie;
-      for (size_t je = 0; je < num_dofs_per_cell; je++) {
-        size_t j = cell_nodes[je % grid.num_nodes_per_cell] +
-                   grid.num_cells * (je / grid.num_nodes_per_cell);
-        B(i, j) += Be(ie, je);
+    for (size_t i_local = 0; i_local < num_strain_components; i_local++) {
+      size_t i = i_local * grid.num_cells + cell;
+      for (size_t j_local = 0; j_local < num_dofs_per_cell; j_local++) {
+        size_t j = cell_nodes[j_local % grid.num_nodes_per_cell] +
+                   grid.num_cells * (j_local / grid.num_nodes_per_cell);
+        B(i, j) += Be(i_local, j_local);
       }
     }
   }
