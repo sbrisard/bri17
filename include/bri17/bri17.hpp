@@ -1,3 +1,13 @@
+/**
+ * @brief Matrix-free finite element method introduced in doi:10.1002/nme.5263
+ *
+ * This library provides classes to compute the modal stiffness
+ * matrices and strain-displacement vectors in Fourier space for a
+ * homogeneous, periodic unit-cell. Combined with a FFT library, these
+ * can be used to compute the solution to any problem of homogeneous,
+ * periodic linear elasticity.
+ */
+
 #ifndef __BRI17_H_20200315__
 #define __BRI17_H_20200315__
 
@@ -20,13 +30,45 @@ T product(size_t n, T a[]) {
   return out;
 }
 
+/**
+ * @brief A rectangular grid with fixed spacing in each direction.
+ *
+ * @tparam DIM the number of spatial dimensions (must be 2 or 3)
+ *
+ * @todo Implement concepts to restrict values of DIM?
+ */
 template <size_t DIM>
 class CartesianGrid {
  public:
+
+  /**
+   * @brief Number of nodes per cell
+   *
+   * This is equal to <tt>2 ** DIM</tt>.
+   */
   const size_t num_nodes_per_cell;
+
+  /**
+   * @brief Total number of cells.
+   *
+   * This is equal to <tt>N[0] * N[1] * ... * N[DIM-1]</tt>.
+   */
   const size_t num_cells;
-  // TODO How to make these arrays const?
+
+  /**
+   * @brief Size of the grid in each direction
+   *
+   * @c L[i] is expressed in arbitrary units of length.
+   *
+   * @todo This array should be @c const.
+   */
   double L[DIM];
+
+  /**
+   * @brief Number of cells in each direction
+   *
+   * @todo This array should be @c const.
+   */
   size_t N[DIM];
 
   CartesianGrid(size_t N[], double L[])
