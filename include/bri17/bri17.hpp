@@ -21,15 +21,15 @@
 
 namespace bri17 {
 
-  /**
-   * Return the product of the elements of the specified array.
-   *
-   * This function returns the product
-   *
-   * @code{.cpp}
-   * a[0] * ... * a[n-1].
-   * @endcode
-   */
+/**
+ * Return the product of the elements of the specified array.
+ *
+ * This function returns the product
+ *
+ * @code{.cpp}
+ * a[0] * ... * a[n-1].
+ * @endcode
+ */
 template <typename T>
 T product(size_t n, T a[]) {
   T out{1};
@@ -172,6 +172,20 @@ std::ostream &operator<<(std::ostream &os, const CartesianGrid<DIM> &grid) {
   return os << "]}";
 }
 
+/**
+ * @brief Implementation of the results of [Bri17] per se.
+ *
+ * This class provides methods to compute the modal stiffness and
+ * strain-displacement matrices.
+ *
+ * Assumptions are
+ *
+ * - homogeneous material obeying the standard Hooke law (isotropic,
+ *   linear elasticity),
+ * - periodic boundary conditions,
+ * - uniform cartesian grid, each cell of the grid is a displacement-based
+ *   finite element with linear shape functions (Q4/Q8 element).
+ */
 template <size_t DIM>
 class Hooke {
  public:
