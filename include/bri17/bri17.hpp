@@ -21,6 +21,15 @@
 
 namespace bri17 {
 
+  /**
+   * Return the product of the elements of the specified array.
+   *
+   * This function returns the product
+   *
+   * @code{.cpp}
+   * a[0] * ... * a[n-1].
+   * @endcode
+   */
 template <typename T>
 T product(size_t n, T a[]) {
   T out{1};
@@ -40,7 +49,6 @@ T product(size_t n, T a[]) {
 template <size_t DIM>
 class CartesianGrid {
  public:
-
   /**
    * @brief Number of nodes per cell
    *
@@ -71,6 +79,12 @@ class CartesianGrid {
    */
   size_t N[DIM];
 
+  /**
+   * @brief Class constructor
+   *
+   * @param N number of cells in each direction
+   * @param L size of the grid in each direction (arbitrary units of length)
+   */
   CartesianGrid(size_t N[], double L[])
       : num_nodes_per_cell{1 << DIM}, num_cells{product(DIM, N)} {
     static_assert((DIM == 2) || (DIM == 3));
@@ -80,16 +94,38 @@ class CartesianGrid {
     }
   }
 
+  /**
+   * Return the index of the node located at <tt>[i, j]</tt>.
+   *
+   * This method cannot be called with a 3D grid (this condition is
+   * checked at compile time). Nodes numbering follows the row-major
+   * order convention.
+   */
   size_t get_node_at(size_t i, size_t j) const {
     static_assert(DIM == 2, "this method expects a 2D grid");
     return i * N[1] + j;
   }
 
+  /**
+   * Return the index of the node located at <tt>[i, j, k]</tt>.
+   *
+   * This method cannot be called with a 2D grid (this condition is
+   * checked at compile time). Nodes numbering follows the row-major
+   * order convention.
+   */
   size_t get_node_at(size_t i, size_t j, size_t k) const {
     static_assert(DIM == 3, "this method expects a 3D grid");
     return (i * N[1] + j) * N[2] + k;
   }
 
+  /**
+   * Return the indices of the vertices of a specific cell.
+   *
+   * @param index of the cell (row-major order)
+   * @param array of node indices. This array is modified by the method.
+   *
+   * @todo Use move semantics?
+   */
   void get_cell_nodes(const size_t cell, size_t nodes[]) const {
     if constexpr (DIM == 2) {
       const size_t i1 = cell / N[1];
@@ -122,6 +158,7 @@ class CartesianGrid {
   }
 };
 
+/** @brief Print the grid to the specified @c ostream. */
 template <size_t DIM>
 std::ostream &operator<<(std::ostream &os, const CartesianGrid<DIM> &grid) {
   os << "CartesianGrid<" << DIM << ">={L=[";
@@ -153,7 +190,7 @@ class Hooke {
 
     for (size_t i = 0; i < DIM; i++) {
       const double alpha = M_PI * k[i] / grid.N[i];
-      sum_alpha+= alpha;
+      sum_alpha += alpha;
       c[i] = cos(alpha) * grid.L[i] / grid.N[i];
       s[i] = sin(alpha);
     }
