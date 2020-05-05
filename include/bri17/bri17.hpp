@@ -175,8 +175,8 @@ std::ostream &operator<<(std::ostream &os, const CartesianGrid<DIM> &grid) {
 /**
  * @brief Implementation of the results of [Bri17] per se.
  *
- * This class provides methods to compute the modal stiffness and
- * strain-displacement matrices.
+ * This class provides methods to compute the modal strain-displacement and
+ * stiffness matrices defined by Eqs. (38) and (45) in [Bri17].
  *
  * Assumptions are
  *
@@ -185,6 +185,15 @@ std::ostream &operator<<(std::ostream &os, const CartesianGrid<DIM> &grid) {
  * - periodic boundary conditions,
  * - uniform cartesian grid, each cell of the grid is a displacement-based
  *   finite element with linear shape functions (Q4/Q8 element).
+ *
+ * Attention should be paid to the fact that the normalization of the matrices
+ * differs from that of the paper, in order to lead to a more intuitive formula
+ * for the total potential energy (in real space), see documentations of the
+ * methods ::modal_strain_dispacement and ::modal_stiffness.
+ *
+ * Wave-vectors are defined here through their multi-index (<tt>size_t
+ * k[DIM]</tt>). The components of the wave-vector are <tt>2π⋅kᵢ/Lᵢ</tt>, where
+ * <tt>0 ≤ kᵢ < Nᵢ</tt>, <tt>i = 0, DIM-1</tt>.
  */
 template <size_t DIM>
 class Hooke {
@@ -196,6 +205,12 @@ class Hooke {
   Hooke(double mu, double nu, CartesianGrid<DIM> &grid)
       : mu{mu}, nu{nu}, grid{grid} {};
 
+  /**
+   * Compute the modal strain-displacement matrix for the specified wave-vector.
+   *
+   * \param k the multi-index of the wave-vector
+   * \param B the strain-displacement matrix (output parameter)
+   */
   void modal_strain_displacement(
       size_t const *k, Eigen::Matrix<std::complex<double>, DIM, 1> &B) const {
     double c[DIM];
