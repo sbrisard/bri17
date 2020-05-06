@@ -186,14 +186,41 @@ std::ostream &operator<<(std::ostream &os, const CartesianGrid<DIM> &grid) {
  * - uniform cartesian grid, each cell of the grid is a displacement-based
  *   finite element with linear shape functions (Q4/Q8 element).
  *
- * Attention should be paid to the fact that the normalization of the matrices
- * differs from that of the paper, in order to lead to a more intuitive formula
- * for the total potential energy (in real space), see documentations of the
- * methods ::modal_strain_dispacement and ::modal_stiffness.
+ * The nodal displacements are defined at each vertex of the cells. Owing to
+ * periodic boundary conditions, there are only `∏ N[d]` nodal displacements
+ * (`d = 0, …, DIM-1`). The displacements are stored in a `(DIM+1)`-dimensional
+ * array, where the first `DIM` dimensions are the vertex indices, while the
+ * last dimension is the component of the displacement under consideration:
+ * `u[n[0], …, n[DIM-1], i]` with `0 ≤ n[d] < N[d]` (`d = 0, …, DIM-1`) and
+ * `0 ≤ i < DIM`. The shorthand notation `u[n, i]`, where `n` is a multi-index,
+ * will be adopted in what follows. It is understood that all multi-indices span
+ * `{0, …, N[0]} × … × {0, …, N[DIM-1]}`.
  *
- * Wave-vectors are defined here through their multi-index (<tt>size_t
- * k[DIM]</tt>). The components of the wave-vector are <tt>2π⋅kᵢ/Lᵢ</tt>, where
- * <tt>0 ≤ kᵢ < Nᵢ</tt>, <tt>i = 0, DIM-1</tt>.
+ * The *modal* displacements are the DFT of the *nodal* displacements,
+ * defined here as
+ *
+ * ```
+ * DFT(u)[k, i] = ∑ u[n, i] * exp(-i⋅φ[0] - … - i⋅φ[DIM-1]),
+ * ```
+ *
+ * where `k = (k[0], …, k[DIM-1])` is a multi-index and the above sum extends to
+ * all multi-indices `n`. Furthermore
+ *
+ * ```
+ *           k[d]⋅n[d]
+ * φ[d] = 2π⋅─────────    (d = 0, … DIM-1),
+               L[d]
+ * ```
+ *
+ * see e.g.
+ * [Wikipedia](https://en.wikipedia.org/wiki/Discrete_Fourier_transform). The
+ * above formula is inverted as follows
+ *
+ * ```
+ * u[n, i] = ∑ DFT(u)[k, i] * exp(i⋅φ[0] + … + i⋅φ[DIM-1]),
+ * ```
+ *
+ * where the sum now extends to all multi-indices `k`.
  */
 template <size_t DIM>
 class Hooke {
@@ -206,9 +233,24 @@ class Hooke {
       : mu{mu}, nu{nu}, grid{grid} {};
 
   /**
-   * Compute the modal strain-displacement matrix for the specified wave-vector.
+   * Compute modal strain-displacement vector for specified spatial frequency.
    *
-   * \param k the multi-index of the wave-vector
+   * The modal strain-displacement matrix is defined in §3.3 of
+   * [Bri17]. It maps the nodal displacements to cell-averages of the
+   * strains. More precisely, let `u[n, i]` be the modal displacements. The
+   * quantity `ε[n, i, j]` is defined as the `(i, j)` component of the average
+   * strain in cell `n` (`n` is a multi-index, while `i, j = 0, …, DIM-1`). It
+   * is shown in [Bri17] that the discrete Fourier Transform of `ε` has the
+   * following expression
+   *
+   * ```
+   * DFT(ε)[k, i, j] = (DFT(u)[k, i]⋅B[k, j] + DFT(u)[k, j]⋅B[k, i]) / 2,
+   * ```
+   *
+   * where `B` is the modal strain-displacement vector. The present method
+   * actually computes `B[k, :]` for a fixed `k`.
+   *
+   * \param k the multi-index in the frequency domain
    * \param B the strain-displacement matrix (output parameter)
    */
   void modal_strain_displacement(
