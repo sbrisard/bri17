@@ -10,14 +10,11 @@ include(MorseInit)
 add_subdirectory(include)
 add_subdirectory(test)
 
-# TODO: this should be defined as a variable
-file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/docs/")
-
 set(DOXYGEN_SOURCE_BROWSER YES)
-set(DOXYGEN_GENERATE_HTML YES)
-set(DOXYGEN_HTML_OUTPUT "${CMAKE_SOURCE_DIR}/docs")
-set(DOXYGEN_GENERATE_LATEX YES)
-set(DOXYGEN_LATEX_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/docs/latex")
+set(DOXYGEN_GENERATE_HTML NO)
+set(DOXYGEN_GENERATE_LATEX NO)
+set(DOXYGEN_GENERATE_XML YES)
+set(DOXYGEN_XML_OUTPUT "${CMAKE_SOURCE_DIR}/sphinx/doxyxml")
 
 find_package(Doxygen)
 doxygen_add_docs(
