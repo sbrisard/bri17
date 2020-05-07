@@ -301,6 +301,32 @@ class Hooke {
     }
   }
 
+  /**
+   * Compute modal stiffnes matrix for specified spatial frequency.
+   *
+   * The modal stiffness matrix `K[k, i, j]` is defined in §4.1 of [Bri17]. For
+   * the nodal displacements `u[n, i]`, the elastic contribution to the strain
+   * energy is given by the sum
+   *
+   * ```
+   *  |L|
+   * ───── ∑ conj(DFT(u)[k, i])⋅K[k, i, j]⋅conj(DFT(u)[k, j]),
+   * 2|N|²
+   * ```
+   *
+   * where the sum extends to all multi-indices `k`. The present method computes
+   * `K[k, :]` for a fixed `k`.
+   *
+   * For prestressed materials, minimization of the potential energy delivers
+   * the following linear equations for the modal displacement
+   *
+   * ```
+   * K[k]⋅DFT(u)[k] = -ϖ[k]⋅conj(B[k])    (matrix-vector products).
+   * ```
+   *
+   * \param k the multi-index in the frequency domain
+   * \param K the stiffness matrix (output parameter)
+   */
   void modal_stiffness(size_t const *k,
                        Eigen::Matrix<std::complex<double>, DIM, DIM> &K) const {
     // In the notation of [Bri17, see Eq. (B.17)]
