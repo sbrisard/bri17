@@ -4,3 +4,9 @@
 .vscode/
 compile_commands.json
 .dir-locals.el
+
+# Sphinx output
+
+docs/.doctrees
+docs/_sources
+docs/breathe
