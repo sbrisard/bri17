@@ -217,7 +217,9 @@ std::ostream &operator<<(std::ostream &os, const CartesianGrid<DIM> &grid) {
  * above formula is inverted as follows
  *
  * ```
- * u[n, i] = ∑ DFT(u)[k, i] * exp(i⋅φ[0] + … + i⋅φ[DIM-1]),
+ *            1
+ * u[n, i] = ─── ∑ DFT(u)[k, i] * exp(i⋅φ[0] + … + i⋅φ[DIM-1]),
+ *           |N| ₖ
  * ```
  *
  * where the sum now extends to all multi-indices `k`.
@@ -259,7 +261,7 @@ class Hooke {
    * ```
    * |L|
    * ───  ∑ conj(DFT(u)[k, i])⋅DFT(ϖ)[k, i, j]⋅conj(DFT(B)[k, j]),
-   * |N|²
+   * |N|² ₖ
    * ```
    *
    * where `conj(…)` denotes the complex conjugate and the sum extends to all
@@ -302,7 +304,7 @@ class Hooke {
   }
 
   /**
-   * Compute modal stiffnes matrix for specified spatial frequency.
+   * Compute modal stiffness matrix for specified spatial frequency.
    *
    * The modal stiffness matrix `K[k, i, j]` is defined in §4.1 of [Bri17]. For
    * the nodal displacements `u[n, i]`, the elastic contribution to the strain
@@ -311,7 +313,7 @@ class Hooke {
    * ```
    *  |L|
    * ───── ∑ conj(DFT(u)[k, i])⋅K[k, i, j]⋅conj(DFT(u)[k, j]),
-   * 2|N|²
+   * 2|N|² ₖ
    * ```
    *
    * where the sum extends to all multi-indices `k`. The present method computes
