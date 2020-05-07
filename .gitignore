@@ -1,2 +1,6 @@
 *build*
+.clangd/
 .idea/
+.vscode/
+compile_commands.json
+.dir-locals.el
