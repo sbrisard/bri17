@@ -10,6 +10,7 @@ Welcome to bri17's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   installation
    api
 
 Indices and tables
