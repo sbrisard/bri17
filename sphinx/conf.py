@@ -14,6 +14,7 @@
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
 
+import pathlib
 
 # -- Project information -----------------------------------------------------
 
@@ -53,6 +54,9 @@ html_theme = "alabaster"
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
 
+sphinx_root = pathlib.Path.cwd()
+project_root = sphinx_root.parent
 
-breathe_projects = { "bri17": "./doxyxml/" }
-breathe_default_project = "bri17"
+breathe_projects_source = {
+    "bri17": (str(project_root / "include" / "bri17"), ["bri17.hpp"])
+}

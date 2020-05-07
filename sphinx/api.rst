@@ -2,4 +2,5 @@
 API documentation
 #################
 
-.. doxygenfile:: bri17/bri17.hpp
+.. autodoxygenfile:: bri17.hpp
+   :project: bri17
