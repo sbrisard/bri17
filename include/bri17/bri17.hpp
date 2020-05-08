@@ -415,8 +415,8 @@ class Hooke {
    * strains `ε[n, i, j]`.
    *
    * @param k multi-index of the Fourier component
-   * @param tau the `k`-th Fourier component of `τ`, `DFT(τ)[k, :, :]`
-   * @param eps the `k`-th Fourier component of `ε`, `DFT(ε)[k, :, :]`
+   * @param tau the `k`-th Fourier component of `τ`, `̂τ[k, :, :]`
+   * @param eps the `k`-th Fourier component of `ε`, `̂ε[k, :, :]`
    */
   void modal_eigenstress_to_strain(
       size_t const *k, Eigen::Matrix<std::complex<double>, DIM, DIM> &tau,
