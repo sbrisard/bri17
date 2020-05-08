@@ -1,5 +1,5 @@
 /**
- * @brief Matrix-free finite element method introduced in doi:10.1002/nme.5263
+ * Matrix-free finite element method introduced in doi:10.1002/nme.5263
  *
  * This library provides classes to compute the modal stiffness
  * matrices and strain-displacement vectors in Fourier space for a
@@ -26,9 +26,9 @@ namespace bri17 {
  *
  * This function returns the product
  *
- * @code{.cpp}
+ * ```
  * a[0] * ... * a[n-1].
- * @endcode
+ * ```
  */
 template <typename T>
 T product(size_t n, T a[]) {
@@ -40,7 +40,7 @@ T product(size_t n, T a[]) {
 }
 
 /**
- * @brief A rectangular grid with fixed spacing in each direction.
+ * A rectangular grid with fixed spacing in each direction.
  *
  * @tparam DIM the number of spatial dimensions (must be 2 or 3)
  *
@@ -49,39 +49,27 @@ T product(size_t n, T a[]) {
 template <size_t DIM>
 class CartesianGrid {
  public:
-  /**
-   * @brief Number of nodes per cell
-   *
-   * This is equal to <tt>2 ** DIM</tt>.
-   */
+  /** Number of nodes per cell: `2 ** DIM`. */
   const size_t num_nodes_per_cell;
 
-  /**
-   * @brief Total number of cells.
-   *
-   * This is equal to <tt>N[0] * N[1] * ... * N[DIM-1]</tt>.
-   */
+  /** Total number of cells: `N[0] * N[1] * ... * N[DIM-1]`. */
   const size_t num_cells;
 
   /**
-   * @brief Size of the grid in each direction
-   *
-   * @c L[i] is expressed in arbitrary units of length.
+   * Size of the grid in each direction (arbitrary units of length).
    *
    * @todo This array should be @c const.
    */
   double L[DIM];
 
   /**
-   * @brief Number of cells in each direction
+   * Number of cells in each direction
    *
    * @todo This array should be @c const.
    */
   size_t N[DIM];
 
   /**
-   * @brief Class constructor
-   *
    * @param N number of cells in each direction
    * @param L size of the grid in each direction (arbitrary units of length)
    */
@@ -121,7 +109,7 @@ class CartesianGrid {
   /**
    * Return the indices of the vertices of a specific cell.
    *
-   * @param index of the cell (row-major order)
+   * @param cell index of the cell (row-major order)
    * @param array of node indices. This array is modified by the method.
    *
    * @todo Use move semantics?
@@ -158,7 +146,7 @@ class CartesianGrid {
   }
 };
 
-/** @brief Print the grid to the specified @c ostream. */
+/** Print the grid to the specified `ostream`. */
 template <size_t DIM>
 std::ostream &operator<<(std::ostream &os, const CartesianGrid<DIM> &grid) {
   os << "CartesianGrid<" << DIM << ">={L=[";
@@ -173,7 +161,7 @@ std::ostream &operator<<(std::ostream &os, const CartesianGrid<DIM> &grid) {
 }
 
 /**
- * @brief Implementation of the results of [Bri17] per se.
+ * Implementation of the results of [Bri17] per se.
  *
  * This class provides methods to compute the modal strain-displacement and
  * stiffness matrices defined by Eqs. (38) and (45) in [Bri17].
@@ -273,8 +261,8 @@ class Hooke {
    * |L| = ∏ L[d],    and    |N| = ∏ N[d],    with    d = 0, …, DIM-1.
    * ```
    *
-   * \param k the multi-index in the frequency domain
-   * \param B the strain-displacement matrix (output parameter)
+   * @param k the multi-index in the frequency domain
+   * @param B the strain-displacement matrix (output parameter)
    */
   void modal_strain_displacement(
       size_t const *k, Eigen::Matrix<std::complex<double>, DIM, 1> &B) const {
@@ -326,8 +314,8 @@ class Hooke {
    * K[k]⋅DFT(u)[k] = -ϖ[k]⋅conj(B[k])    (matrix-vector products).
    * ```
    *
-   * \param k the multi-index in the frequency domain
-   * \param K the stiffness matrix (output parameter)
+   * @param k the multi-index in the frequency domain
+   * @param K the stiffness matrix (output parameter)
    */
   void modal_stiffness(size_t const *k,
                        Eigen::Matrix<std::complex<double>, DIM, DIM> &K) const {
