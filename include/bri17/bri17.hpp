@@ -109,8 +109,34 @@ class CartesianGrid {
   /**
    * Return the indices of the vertices of a specific cell.
    *
+   * Numbering of vertices in 2D
+   *
+   * ```
+   * 2────4
+   * │    │
+   * │    │
+   * 1────3
+   * ```
+   *
+   *
+   * Numbering of vertices in 3D
+   *
+   * ```
+   *      4────────8
+   *     ╱│       ╱│
+        ╱ │      ╱ │
+   *   ╱  │     ╱  │
+   *  ╱   │    ╱   │
+   * 2────────6 ───7
+   * │   ╱3   │   ╱
+   * │  ╱     │  ╱
+     │ ╱      │ ╱
+   * │╱       │╱
+   * 1────────5
+   * ```
+   *
    * @param cell index of the cell (row-major order)
-   * @param array of node indices. This array is modified by the method.
+   * @param noeds array of node indices (return parameter).
    *
    * @todo Use move semantics?
    */
@@ -215,8 +241,13 @@ std::ostream &operator<<(std::ostream &os, const CartesianGrid<DIM> &grid) {
 template <size_t DIM>
 class Hooke {
  public:
+  /** The shear modulus of the material. */
   const double mu;
+
+  /** The Poisson ratio of the material. */
   const double nu;
+
+  /** Geometric description of the underlying FE grid. */
   const CartesianGrid<DIM> &grid;
 
   Hooke(double mu, double nu, CartesianGrid<DIM> &grid)
@@ -377,6 +408,16 @@ class Hooke {
     }
   }
 
+  /**
+   * Compute the strains induced by the specified eigenstresses.
+   *
+   * The eigenstresses `τ[n, i, j]` are constant in each cell n. They induce the
+   * strains `ε[n, i, j]`.
+   *
+   * @param k multi-index of the Fourier component
+   * @param tau the `k`-th Fourier component of `τ`, `DFT(τ)[k, :, :]`
+   * @param eps the `k`-th Fourier component of `ε`, `DFT(ε)[k, :, :]`
+   */
   void modal_eigenstress_to_strain(
       size_t const *k, Eigen::Matrix<std::complex<double>, DIM, DIM> &tau,
       Eigen::Matrix<std::complex<double>, DIM, DIM> &eps) const {
