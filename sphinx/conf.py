@@ -60,3 +60,9 @@ project_root = sphinx_root.parent
 breathe_projects_source = {
     "bri17": (str(project_root / "include" / "bri17"), ["bri17.hpp"])
 }
+
+breathe_doxygen_config_options = {
+    "GENERATE_TODOLIST": "YES"
+}
+
+todo_include_todos = True
