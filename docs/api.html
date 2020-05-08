@@ -36,7 +36,7 @@
 <dl class="cpp type">
 <dt id="_CPPv45bri17">
 <span id="_CPPv35bri17"></span><span id="_CPPv25bri17"></span><span id="bri17"></span><span class="target" id="namespacebri17"></span><em class="property">namespace </em><code class="sig-name descname">bri17</code><a class="headerlink" href="#_CPPv45bri17" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>Matrix-free finite element method introduced in doi:10.1002/nme.5263. </p>
+<dd><p>Matrix-free finite element method introduced in doi:10.1002/nme.5263</p>
 <p>This library provides classes to compute the modal stiffness matrices and strain-displacement vectors in Fourier space for a homogeneous, periodic unit-cell. Combined with a FFT library, these can be used to compute the solution to any problem of homogeneous, periodic linear elasticity. </p>
 <div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric">Functions</p>
@@ -61,7 +61,7 @@
 <dl class="cpp class">
 <dt id="_CPPv4I_6size_tEN5bri1713CartesianGridE">
 <span id="_CPPv3I_6size_tEN5bri1713CartesianGridE"></span><span id="_CPPv2I_6size_tEN5bri1713CartesianGridE"></span>template&lt;size_t <code class="sig-name descname">DIM</code>&gt;<br /><span class="target" id="classbri17_1_1_cartesian_grid"></span><em class="property">class </em><code class="sig-name descname">CartesianGrid</code><a class="headerlink" href="#_CPPv4I_6size_tEN5bri1713CartesianGridE" title="Permalink to this definition">¶</a><br /></dt>
-<dd><em>#include &lt;bri17.hpp&gt;</em><p>A rectangular grid with fixed spacing in each direction. </p>
+<dd><em>#include &lt;bri17.hpp&gt;</em><p>A rectangular grid with fixed spacing in each direction.</p>
 <p><dl class="simple">
 <dt><strong>Template Parameters</strong></dt><dd><ul class="breatheparameterlist simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">DIM</span></code>: the number of spatial dimensions (must be 2 or 3)</p></li>
@@ -74,8 +74,7 @@
 <dl class="cpp function">
 <dt id="_CPPv4N5bri1713CartesianGrid13CartesianGridEA_6size_tA_d">
 <span id="_CPPv3N5bri1713CartesianGrid13CartesianGridEA_6size_tA_d"></span><span id="_CPPv2N5bri1713CartesianGrid13CartesianGridEA_6size_tA_d"></span><span id="bri17::CartesianGrid::CartesianGrid__sA.doubleA"></span><span class="target" id="classbri17_1_1_cartesian_grid_1a91d7ec4eec34b6664413b56287e47168"></span><code class="sig-name descname">CartesianGrid</code><span class="sig-paren">(</span>size_t <em>N</em>[], double <em>L</em>[]<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5bri1713CartesianGrid13CartesianGridEA_6size_tA_d" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>Class constructor. </p>
-<p><dl class="simple">
+<dd><p><dl class="simple">
 <dt><strong>Parameters</strong></dt><dd><ul class="breatheparameterlist simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">N</span></code>: number of cells in each direction </p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">L</span></code>: size of the grid in each direction (arbitrary units of length) </p></li>
@@ -103,10 +102,33 @@
 <dt id="_CPPv4NK5bri1713CartesianGrid14get_cell_nodesEK6size_tA_6size_t">
 <span id="_CPPv3NK5bri1713CartesianGrid14get_cell_nodesEK6size_tA_6size_t"></span><span id="_CPPv2NK5bri1713CartesianGrid14get_cell_nodesEK6size_tA_6size_t"></span><span id="bri17::CartesianGrid::get_cell_nodes__sC.sAC"></span><span class="target" id="classbri17_1_1_cartesian_grid_1a5a6aaa22b7b64a5965092de2ae0f687a"></span>void <code class="sig-name descname">get_cell_nodes</code><span class="sig-paren">(</span><em class="property">const</em> size_t <em>cell</em>, size_t <em>nodes</em>[]<span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv4NK5bri1713CartesianGrid14get_cell_nodesEK6size_tA_6size_t" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Return the indices of the vertices of a specific cell.</p>
+<p>Numbering of vertices in 2D</p>
+<p><div class="highlight-default notranslate"><div class="highlight"><pre><span></span>2────4
+│    │
+│    │
+1────3
+</pre></div>
+</div>
+</p>
+<p>Numbering of vertices in 3D</p>
+<p><div class="highlight-default notranslate"><div class="highlight"><pre><span></span>     4────────8
+    ╱│       ╱│
+   ╱ │      ╱ │
+  ╱  │     ╱  │
+ ╱   │    ╱   │
+2────────6 ───7
+│   ╱3   │   ╱
+│  ╱     │  ╱
+│ ╱      │ ╱
+│╱       │╱
+1────────5
+</pre></div>
+</div>
+</p>
 <p><dl class="simple">
 <dt><strong>Parameters</strong></dt><dd><ul class="breatheparameterlist simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">index</span></code>: of the cell (row-major order) </p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">array</span></code>: of node indices. This array is modified by the method.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">cell</span></code>: index of the cell (row-major order) </p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">noeds</span></code>: array of node indices (return parameter).</p></li>
 </ul>
 </dd>
 </dl>
@@ -119,29 +141,26 @@
 <dl class="cpp var">
 <dt id="_CPPv4N5bri1713CartesianGrid18num_nodes_per_cellE">
 <span id="_CPPv3N5bri1713CartesianGrid18num_nodes_per_cellE"></span><span id="_CPPv2N5bri1713CartesianGrid18num_nodes_per_cellE"></span><span id="bri17::CartesianGrid::num_nodes_per_cell__sC"></span><span class="target" id="classbri17_1_1_cartesian_grid_1a78f954865c851d57beee39f27e10adb1"></span><em class="property">const</em> size_t <code class="sig-name descname">num_nodes_per_cell</code><a class="headerlink" href="#_CPPv4N5bri1713CartesianGrid18num_nodes_per_cellE" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>Number of nodes per cell. </p>
-<p>This is equal to <code class="docutils literal notranslate"><span class="pre">2</span> <span class="pre">**</span> <span class="pre">DIM</span></code>. </p>
+<dd><p>Number of nodes per cell: <code class="docutils literal notranslate"><span class="pre">2</span> <span class="pre">**</span> <span class="pre">DIM</span></code>. </p>
 </dd></dl>
 
 <dl class="cpp var">
 <dt id="_CPPv4N5bri1713CartesianGrid9num_cellsE">
 <span id="_CPPv3N5bri1713CartesianGrid9num_cellsE"></span><span id="_CPPv2N5bri1713CartesianGrid9num_cellsE"></span><span id="bri17::CartesianGrid::num_cells__sC"></span><span class="target" id="classbri17_1_1_cartesian_grid_1a0b976a2e3c140a0f5b66a09703d6bcb6"></span><em class="property">const</em> size_t <code class="sig-name descname">num_cells</code><a class="headerlink" href="#_CPPv4N5bri1713CartesianGrid9num_cellsE" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>Total number of cells. </p>
-<p>This is equal to <code class="docutils literal notranslate"><span class="pre">N[0]</span> <span class="pre">*</span> <span class="pre">N[1]</span> <span class="pre">*</span> <span class="pre">...</span> <span class="pre">*</span> <span class="pre">N[DIM-1]</span></code>. </p>
+<dd><p>Total number of cells: <code class="docutils literal notranslate"><span class="pre">N[0]</span> <span class="pre">*</span> <span class="pre">N[1]</span> <span class="pre">*</span> <span class="pre">...</span> <span class="pre">*</span> <span class="pre">N[DIM-1]</span></code>. </p>
 </dd></dl>
 
 <dl class="cpp var">
 <dt id="_CPPv4N5bri1713CartesianGrid1LE">
 <span id="_CPPv3N5bri1713CartesianGrid1LE"></span><span id="_CPPv2N5bri1713CartesianGrid1LE"></span><span id="bri17::CartesianGrid::L__doubleA"></span><span class="target" id="classbri17_1_1_cartesian_grid_1a51cf9b01a804ebd0e12c8db45f93e3d8"></span>double <code class="sig-name descname">L</code>[<code class="sig-name descname">DIM</code>]<a class="headerlink" href="#_CPPv4N5bri1713CartesianGrid1LE" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>Size of the grid in each direction. </p>
-<p><code class="docutils literal notranslate"><span class="pre">L</span></code>[i] is expressed in arbitrary units of length.</p>
+<dd><p>Size of the grid in each direction (arbitrary units of length).</p>
 <p></p>
 </dd></dl>
 
 <dl class="cpp var">
 <dt id="_CPPv4N5bri1713CartesianGrid1NE">
 <span id="_CPPv3N5bri1713CartesianGrid1NE"></span><span id="_CPPv2N5bri1713CartesianGrid1NE"></span><span id="bri17::CartesianGrid::N__sA"></span><span class="target" id="classbri17_1_1_cartesian_grid_1ad32448d6c6fbd9fe694b560948010742"></span>size_t <code class="sig-name descname">N</code>[<code class="sig-name descname">DIM</code>]<a class="headerlink" href="#_CPPv4N5bri1713CartesianGrid1NE" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>Number of cells in each direction. </p>
+<dd><p>Number of cells in each direction</p>
 <p></p>
 </dd></dl>
 
@@ -151,7 +170,7 @@
 <dl class="cpp class">
 <dt id="_CPPv4I_6size_tEN5bri175HookeE">
 <span id="_CPPv3I_6size_tEN5bri175HookeE"></span><span id="_CPPv2I_6size_tEN5bri175HookeE"></span>template&lt;size_t <code class="sig-name descname">DIM</code>&gt;<br /><span class="target" id="classbri17_1_1_hooke"></span><em class="property">class </em><code class="sig-name descname">Hooke</code><a class="headerlink" href="#_CPPv4I_6size_tEN5bri175HookeE" title="Permalink to this definition">¶</a><br /></dt>
-<dd><em>#include &lt;bri17.hpp&gt;</em><p>Implementation of the results of [Bri17] per se. </p>
+<dd><em>#include &lt;bri17.hpp&gt;</em><p>Implementation of the results of [Bri17] per se.</p>
 <p>This class provides methods to compute the modal strain-displacement and stiffness matrices defined by Eqs. (38) and (45) in [Bri17].</p>
 <p>Assumptions are</p>
 <p><ul class="simple">
@@ -250,7 +269,18 @@ u[n, i] = ─── ∑ DFT(u)[k, i] * exp(i⋅φ[0] + … + i⋅φ[DIM-1]),
 <dl class="cpp function">
 <dt id="_CPPv4NK5bri175Hooke27modal_eigenstress_to_strainEPK6size_tRN5Eigen6MatrixINSt7complexIdEE3DIM3DIMEERN5Eigen6MatrixINSt7complexIdEE3DIM3DIMEE">
 <span id="_CPPv3NK5bri175Hooke27modal_eigenstress_to_strainEPK6size_tRN5Eigen6MatrixINSt7complexIdEE3DIM3DIMEERN5Eigen6MatrixINSt7complexIdEE3DIM3DIMEE"></span><span id="_CPPv2NK5bri175Hooke27modal_eigenstress_to_strainEPK6size_tRN5Eigen6MatrixINSt7complexIdEE3DIM3DIMEERN5Eigen6MatrixINSt7complexIdEE3DIM3DIMEE"></span><span id="bri17::Hooke::modal_eigenstress_to_strain__sCP.Eigen::Matrix:std::complex:double:.DIM.DIM:R.Eigen::Matrix:std::complex:double:.DIM.DIM:RC"></span><span class="target" id="classbri17_1_1_hooke_1a1c19ae2c7d32ee07fd1303ce023bacce"></span>void <code class="sig-name descname">modal_eigenstress_to_strain</code><span class="sig-paren">(</span>size_t <em class="property">const</em> *<em>k</em>, Eigen::Matrix&lt;std::complex&lt;double&gt;, <a class="reference internal" href="#_CPPv4I_6size_tEN5bri175HookeE" title="bri17::Hooke::DIM">DIM</a>, <a class="reference internal" href="#_CPPv4I_6size_tEN5bri175HookeE" title="bri17::Hooke::DIM">DIM</a>&gt; &amp;<em>tau</em>, Eigen::Matrix&lt;std::complex&lt;double&gt;, <a class="reference internal" href="#_CPPv4I_6size_tEN5bri175HookeE" title="bri17::Hooke::DIM">DIM</a>, <a class="reference internal" href="#_CPPv4I_6size_tEN5bri175HookeE" title="bri17::Hooke::DIM">DIM</a>&gt; &amp;<em>eps</em><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv4NK5bri175Hooke27modal_eigenstress_to_strainEPK6size_tRN5Eigen6MatrixINSt7complexIdEE3DIM3DIMEERN5Eigen6MatrixINSt7complexIdEE3DIM3DIMEE" title="Permalink to this definition">¶</a><br /></dt>
-<dd></dd></dl>
+<dd><p>Compute the strains induced by the specified eigenstresses.</p>
+<p>The eigenstresses <code class="docutils literal notranslate"><span class="pre">τ[n,</span> <span class="pre">i,</span> <span class="pre">j]</span></code> are constant in each cell n. They induce the strains <code class="docutils literal notranslate"><span class="pre">ε[n,</span> <span class="pre">i,</span> <span class="pre">j]</span></code>.</p>
+<p><dl class="simple">
+<dt><strong>Parameters</strong></dt><dd><ul class="breatheparameterlist simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">k</span></code>: multi-index of the Fourier component </p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tau</span></code>: the <code class="docutils literal notranslate"><span class="pre">k</span></code>-th Fourier component of <code class="docutils literal notranslate"><span class="pre">τ</span></code>, <code class="docutils literal notranslate"><span class="pre">̂τ[k,</span> <span class="pre">:,</span> <span class="pre">:]</span></code> </p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">eps</span></code>: the <code class="docutils literal notranslate"><span class="pre">k</span></code>-th Fourier component of <code class="docutils literal notranslate"><span class="pre">ε</span></code>, <code class="docutils literal notranslate"><span class="pre">̂ε[k,</span> <span class="pre">:,</span> <span class="pre">:]</span></code> </p></li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd></dl>
 
 </div>
 <div class="breathe-sectiondef docutils container">
@@ -258,17 +288,20 @@ u[n, i] = ─── ∑ DFT(u)[k, i] * exp(i⋅φ[0] + … + i⋅φ[DIM-1]),
 <dl class="cpp var">
 <dt id="_CPPv4N5bri175Hooke2muE">
 <span id="_CPPv3N5bri175Hooke2muE"></span><span id="_CPPv2N5bri175Hooke2muE"></span><span id="bri17::Hooke::mu__doubleC"></span><span class="target" id="classbri17_1_1_hooke_1af1cd6dc898ec7fd6afa7314bdf6c6877"></span><em class="property">const</em> double <code class="sig-name descname">mu</code><a class="headerlink" href="#_CPPv4N5bri175Hooke2muE" title="Permalink to this definition">¶</a><br /></dt>
-<dd></dd></dl>
+<dd><p>The shear modulus of the material. </p>
+</dd></dl>
 
 <dl class="cpp var">
 <dt id="_CPPv4N5bri175Hooke2nuE">
 <span id="_CPPv3N5bri175Hooke2nuE"></span><span id="_CPPv2N5bri175Hooke2nuE"></span><span id="bri17::Hooke::nu__doubleC"></span><span class="target" id="classbri17_1_1_hooke_1a32cb2c0bb858edade2fcd96cb1a02b3d"></span><em class="property">const</em> double <code class="sig-name descname">nu</code><a class="headerlink" href="#_CPPv4N5bri175Hooke2nuE" title="Permalink to this definition">¶</a><br /></dt>
-<dd></dd></dl>
+<dd><p>The Poisson ratio of the material. </p>
+</dd></dl>
 
 <dl class="cpp var">
 <dt id="_CPPv4N5bri175Hooke4gridE">
 <span id="_CPPv3N5bri175Hooke4gridE"></span><span id="_CPPv2N5bri175Hooke4gridE"></span><span id="bri17::Hooke::grid__CartesianGrid:DIM:CR"></span><span class="target" id="classbri17_1_1_hooke_1ac5298dc3b8fb9293a586dba939c2f8a9"></span><em class="property">const</em> <a class="reference internal" href="#_CPPv4I_6size_tEN5bri1713CartesianGridE" title="bri17::CartesianGrid">CartesianGrid</a>&lt;<a class="reference internal" href="#_CPPv4I_6size_tEN5bri175HookeE" title="bri17::Hooke::DIM">DIM</a>&gt; &amp;<code class="sig-name descname">grid</code><a class="headerlink" href="#_CPPv4N5bri175Hooke4gridE" title="Permalink to this definition">¶</a><br /></dt>
-<dd></dd></dl>
+<dd><p>Geometric description of the underlying FE grid. </p>
+</dd></dl>
 
 </div>
 </dd></dl>
