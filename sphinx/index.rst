@@ -11,6 +11,7 @@ Welcome to bri17's documentation!
    :caption: Contents:
 
    installation
+   theory
    api
 
 Indices and tables

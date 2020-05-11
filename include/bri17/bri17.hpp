@@ -192,51 +192,19 @@ std::ostream &operator<<(std::ostream &os, const CartesianGrid<DIM> &grid) {
  * This class provides methods to compute the modal strain-displacement and
  * stiffness matrices defined by Eqs. (38) and (45) in [Bri17].
  *
- * Assumptions are
- *
- * - homogeneous material obeying the standard Hooke law (isotropic,
- *   linear elasticity),
- * - periodic boundary conditions,
- * - uniform cartesian grid, each cell of the grid is a displacement-based
- *   finite element with linear shape functions (Q4/Q8 element).
  *
  * The nodal displacements are defined at each vertex of the cells. Owing to
  * periodic boundary conditions, there are only `∏ N[d]` nodal displacements
  * (`d = 0, …, DIM-1`). The displacements are stored in a `(DIM+1)`-dimensional
  * array, where the first `DIM` dimensions are the vertex indices, while the
  * last dimension is the component of the displacement under consideration:
- * `u[n[0], …, n[DIM-1], i]` with `0 ≤ n[d] < N[d]` (`d = 0, …, DIM-1`) and
+ * `u[n[0], …, n[DIM-1], i]` with  and
  * `0 ≤ i < DIM`. The shorthand notation `u[n, i]`, where `n` is a multi-index,
- * will be adopted in what follows. It is understood that all multi-indices span
- * `{0, …, N[0]} × … × {0, …, N[DIM-1]}`.
+ * will be adopted in what follows.
  *
  * The *modal* displacements are the DFT of the *nodal* displacements,
  * defined here as
  *
- * ```
- * DFT(u)[k, i] = ∑ u[n, i] * exp(-i⋅φ[0] - … - i⋅φ[DIM-1]),
- * ```
- *
- * where `k = (k[0], …, k[DIM-1])` is a multi-index and the above sum extends to
- * all multi-indices `n`. Furthermore
- *
- * ```
- *           k[d]⋅n[d]
- * φ[d] = 2π⋅─────────    (d = 0, … DIM-1),
-               L[d]
- * ```
- *
- * see e.g.
- * [Wikipedia](https://en.wikipedia.org/wiki/Discrete_Fourier_transform). The
- * above formula is inverted as follows
- *
- * ```
- *            1
- * u[n, i] = ─── ∑ DFT(u)[k, i] * exp(i⋅φ[0] + … + i⋅φ[DIM-1]),
- *           |N| ₖ
- * ```
- *
- * where the sum now extends to all multi-indices `k`.
  */
 template <size_t DIM>
 class Hooke {
