@@ -233,10 +233,10 @@ class Hooke {
    * following expression
    *
    * ```
-   * DFT(ε)[k, i, j] = (DFT(u)[k, i]⋅B[k, j] + DFT(u)[k, j]⋅B[k, i]) / 2,
+   *
    * ```
    *
-   * where `B` is the modal strain-displacement vector. The present method
+   * The present method
    * actually computes `B[k, :]` for a fixed `k`.
    *
    * The strain-displacement vector is also used to compute the contribution to

@@ -69,11 +69,38 @@ The above formula is inverted as follows::
   (3)    X[n] = ─── ∑ DFT(X)[k]⋅exp[i⋅(φ[0] + … + φ[DIM-1])],
                 |N| k
 
-where the sum now extends to all multi-indices ``k``.
+where the sum now extends to all multi-indices ``k``. ``|N|`` denotes the total
+number of cells (product of the components of ``N``)::
+
+  (4)    |N| = N[0]⋅…⋅N[DIM-1].
 
 
 The modal strain-displacement vector
 ====================================
+
+The nodal displacements are ``u[n, i]``, where ``n`` is the multi-index of the
+node and ``i`` is the index of the component. The cell-averages of the strains
+are denoted ``ε[n, i, j]``::
+
+                    1  ⌠        1 ┌ ∂u[i]   ∂u[j] ┐
+  (5) ε[n, i, j] = ─── │        ─ │ ───── + ───── │ dx[0] … dx[DIM-1],
+                   |h| ⌡cell[n] 2 └ ∂x[j]   ∂x[i] ┘
+
+where ``|h|`` is the cell volume::
+
+                                             L[d]
+  (6) |h| = h[0] … h[DIM-1],    where h[d] = ────.
+                                             N[d]
+
+In [Bri17]_, the DFT of ``ε`` is expressed as follows::
+
+                        1 ┌                                             ┐
+  (7) DFT(ε)[k, i, j] = ─ │ DFT(u)[k, i]⋅B[k, j] + DFT(u)[k, j]⋅B[k, i] │,
+                        2 └                                             ┘
+
+where ``B`` is the so-called modal strain-displacement vector, which is computed
+(for a specified value of ``k``) by the method
+:cpp:member:`Hooke\<DIM>::modal_strain_displacement`.
 
 
 The modal stiffness matrix
