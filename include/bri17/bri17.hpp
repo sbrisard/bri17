@@ -298,9 +298,6 @@ class Hooke {
    * energy is given by the sum
    *
    * ```
-   *  |L|
-   * ───── ∑ conj(DFT(u)[k, i])⋅K[k, i, j]⋅conj(DFT(u)[k, j]),
-   * 2|N|² ₖ
    * ```
    *
    * where the sum extends to all multi-indices `k`. The present method computes

@@ -82,14 +82,14 @@ The nodal displacements are ``u[n, i]``, where ``n`` is the multi-index of the
 node and ``i`` is the index of the component. The cell-averages of the strains
 are denoted ``ε[n, i, j]``::
 
-                    1  ⌠        1 ┌ ∂u[i]   ∂u[j] ┐
-  (5) ε[n, i, j] = ─── │        ─ │ ───── + ───── │ dx[0] … dx[DIM-1],
-                   |h| ⌡cell[n] 2 └ ∂x[j]   ∂x[i] ┘
+                       1  ⌠        1 ┌ ∂u[i]   ∂u[j] ┐
+  (5)    ε[n, i, j] = ─── │        ─ │ ───── + ───── │ dx[0] … dx[DIM-1],
+                      |h| ⌡cell[n] 2 └ ∂x[j]   ∂x[i] ┘
 
 where ``|h|`` is the cell volume::
 
                                              L[d]
-  (6) |h| = h[0] … h[DIM-1],    where h[d] = ────.
+  (6)    |h| = h[0] … h[DIM-1],    where h[d] = ────.
                                              N[d]
 
 In [Bri17]_, the DFT of ``ε`` is expressed as follows::
@@ -106,11 +106,54 @@ where ``B`` is the so-called modal strain-displacement vector, which is computed
 The modal stiffness matrix
 ==========================
 
+It is recalled that the strain energy ``U`` is defined as the following integral
+over the whole unit-cell ``Ω``::
+
+             1
+  (8)    U = ─ ∫ [λ tr(ε)² + 2μ ε:ε] dx[0] … dx[DIM-1].
+             2 Ω
+
+For the FE descretization considered here, the strain energy appears as a
+quadratic form of the nodal displacements. This quadratic form is best expressed
+in Fourier space [Bri17]_::
+
+               1    ______
+  (9)    U = ──── ∑ DFT(u)[k, i]⋅Kₘ[k, i, j]⋅DFT(u)[k, j],
+             2|N| k
+
+where overlined quantities denote complex conjugates. ``Kₘ`` is the *modal
+stiffness matrix*. For each frequency ``k``, ``Kₘ[k, i, j]`` is a ``DIM × DIM``
+matrix. Its value is delivered by the method
+:cpp:member:`Hooke\<DIM>::modal_stiffness`.
+
+.. note:: It is important to note that the scaling adopted in the present
+          implementation differs from the initial publication [Bri17]_, where
+          the strain energy is expressed as::
+                          1 |h|   ______
+            (9bis)    U = ─ ─── ∑ DFT(u)[k, i]⋅Kₘ[k, i, j]⋅DFT(u)[k, j],
+                          2 |N| k
+	  where it is recalled that ``|h|`` denotes the ``DIM`` dimensional
+	  volume of the cell. The new scaling adopted here makes more sense in
+	  view of the connection with the *nodal* stiffness matrix to be
+	  discussed below.
+
+The strain energy is in general expressed in the real space by means of the
+*nodal stiffness matrix* ``Kₙ[m, n, i, j]`` as follows::
+
+              1
+  (10)    U = ─ ∑ ∑ ∑ ∑ u[m, i]⋅Kₙ[m, n, i, j]⋅u[n, j],
+              2 m n i j
+
+where ``m`` and ``n`` span all node indices, while ``i`` and ``j`` span the
+whole range of component indices. There is of course a connection between the
+*modal* stiffness matrix ``Kₘ`` and the *nodal* stiffness matrix ``Kₙ``, that is
+expressed below.
+
 
 References
 ==========
 
-.. [Bri17] Brisard, S. (2017). Reconstructing displacements from the solution to
-           the periodic Lippmann–Schwinger equation discretized on a uniform
+.. [Bri17]  Brisard, S. (2017). Reconstructing displacements from the solution
+           to the periodic Lippmann–Schwinger equation discretized on a uniform
            grid. *International Journal for Numerical Methods in Engineering*,
            109(4), 459–486. https://doi.org/10.1002/nme.5263
