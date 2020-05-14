@@ -54,25 +54,25 @@ The discrete Fourier transform ``̂DFT(X)[k]`` of ``X[n]`` is also a
 multi-index. Like ``n``, ``k`` spans ``{0, …, N[0]-1} × …
 × {0, …, N[DIM-1]-1}``. The Fourier components are defined through the formula::
 
-  (1)    DFT(X)[k] = ∑ X[n]⋅exp[-i⋅(φ[0] + … + φ[DIM-1])],
+  (1)    DFT(X)[k] = ∑ X[n]⋅exp(-i⋅φ[n, k]),
 	             n
 
 where the above sum extends to all multi-indices ``n`` and::
 
-                   k[d]⋅n[d]
-  (2)    φ[d] = 2π⋅─────────    (d = 0, … DIM-1),
-                     L[d]
+                      ┌ k[0]⋅n[0]       k[DIM-1]⋅n[DIM-1] ┐
+  (2)    φ[n, k] = 2π │ ───────── + … + ───────────────── │
+                      └   L[0]   	     L[DIM-1]     ┘
 
 The above formula is inverted as follows::
 
                  1
-  (3)    X[n] = ─── ∑ DFT(X)[k]⋅exp[i⋅(φ[0] + … + φ[DIM-1])],
+  (3)    X[n] = ─── ∑ DFT(X)[k]⋅exp(i⋅φ[n, k]),
                 |N| k
 
 where the sum now extends to all multi-indices ``k``. ``|N|`` denotes the total
 number of cells (product of the components of ``N``)::
 
-  (4)    |N| = N[0]⋅…⋅N[DIM-1].
+  (4)    |N| = N[0] … N[DIM-1].
 
 
 The modal strain-displacement vector
