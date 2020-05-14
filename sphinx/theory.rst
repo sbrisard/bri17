@@ -52,10 +52,11 @@ all multi-indices span ``{0, …, N[0]-1} × … × {0, …, N[DIM-1]-1}`
 The discrete Fourier transform ``̂DFT(X)[k]`` of ``X[n]`` is also a
 ``DIM``-dimensional array, where ``k`` now denotes the frequency
 multi-index. Like ``n``, ``k`` spans ``{0, …, N[0]-1} × …
-× {0, …, N[DIM-1]-1}``. The Fourier components are defined through the formula::
+× {0, …, N[DIM-1]-1}``. The Fourier components ``X^[k]`` are defined through the
+formula::
 
-  (1)    DFT(X)[k] = ∑ X[n]⋅exp(-i⋅φ[n, k]),
-	             n
+  (1)    X^[k] = DFT(X)[k] = ∑ X[n]⋅exp(-i⋅φ[n, k]),
+	                   n
 
 where the above sum extends to all multi-indices ``n`` and::
 
@@ -66,7 +67,7 @@ where the above sum extends to all multi-indices ``n`` and::
 The above formula is inverted as follows::
 
                  1
-  (3)    X[n] = ─── ∑ DFT(X)[k]⋅exp(i⋅φ[n, k]),
+  (3)    X[n] = ─── ∑ X^[k]⋅exp(i⋅φ[n, k]),
                 |N| k
 
 where the sum now extends to all multi-indices ``k``. ``|N|`` denotes the total
@@ -88,18 +89,18 @@ are denoted ``ε[n, i, j]``::
 
 where ``|h|`` is the cell volume::
 
-                                             L[d]
+                                                L[d]
   (6)    |h| = h[0] … h[DIM-1],    where h[d] = ────.
-                                             N[d]
+                                                N[d]
 
-In [Bri17]_, the DFT of ``ε`` is expressed as follows::
+In [Bri17]_, the DFT ``ε^`` of ``ε`` is expressed as follows::
 
-                        1 ┌                                             ┐
-  (7) DFT(ε)[k, i, j] = ─ │ DFT(u)[k, i]⋅B[k, j] + DFT(u)[k, j]⋅B[k, i] │,
-                        2 └                                             ┘
+                    1 ┌                                       ┐
+  (7) ε^[k, i, j] = ─ │ u^[k, i]⋅B^[k, j] + u^[k, j]⋅B^[k, i] │,
+                    2 └                                       ┘
 
-where ``B`` is the so-called modal strain-displacement vector, which is computed
-(for a specified value of ``k``) by the method
+where ``B^`` is the so-called modal strain-displacement vector, which is
+computed (for a specified value of ``k``) by the method
 :cpp:member:`Hooke\<DIM>::modal_strain_displacement`.
 
 
