@@ -3,6 +3,8 @@
 Implementation of the matrix-free finite element method introduced in
 [\[Bri17\]](#bri17).
 
+See [documentation](https://sbrisard.github.io/bri17).
+
 ## References
 
 <a name="bri17"></a>\[Bri17\] S. Brisard, “Reconstructing
