@@ -190,21 +190,7 @@ std::ostream &operator<<(std::ostream &os, const CartesianGrid<DIM> &grid) {
  * Implementation of the results of [Bri17] per se.
  *
  * This class provides methods to compute the modal strain-displacement and
- * stiffness matrices defined by Eqs. (38) and (45) in [Bri17].
- *
- *
- * The nodal displacements are defined at each vertex of the cells. Owing to
- * periodic boundary conditions, there are only `∏ N[d]` nodal displacements
- * (`d = 0, …, DIM-1`). The displacements are stored in a `(DIM+1)`-dimensional
- * array, where the first `DIM` dimensions are the vertex indices, while the
- * last dimension is the component of the displacement under consideration:
- * `u[n[0], …, n[DIM-1], i]` with  and
- * `0 ≤ i < DIM`. The shorthand notation `u[n, i]`, where `n` is a multi-index,
- * will be adopted in what follows.
- *
- * The *modal* displacements are the DFT of the *nodal* displacements,
- * defined here as
- *
+ * stiffness matrices.
  */
 template <size_t DIM>
 class Hooke {
@@ -224,20 +210,7 @@ class Hooke {
   /**
    * Compute modal strain-displacement vector for specified spatial frequency.
    *
-   * The modal strain-displacement matrix is defined in §3.3 of
-   * [Bri17]. It maps the nodal displacements to cell-averages of the
-   * strains. More precisely, let `u[n, i]` be the modal displacements. The
-   * quantity `ε[n, i, j]` is defined as the `(i, j)` component of the average
-   * strain in cell `n` (`n` is a multi-index, while `i, j = 0, …, DIM-1`). It
-   * is shown in [Bri17] that the discrete Fourier Transform of `ε` has the
-   * following expression
-   *
-   * ```
-   *
-   * ```
-   *
-   * The present method
-   * actually computes `B[k, :]` for a fixed `k`.
+   * The present method actually computes `B^[k, :]` for a fixed `k`.
    *
    * The strain-displacement vector is also used to compute the contribution to
    * the potential energy of eigenstresses. Let `ϖ[n, i, j]` denote the `(i, j)`
@@ -261,7 +234,7 @@ class Hooke {
    * ```
    *
    * @param k the multi-index in the frequency domain
-   * @param B the strain-displacement matrix (output parameter)
+   * @param B the strain-displacement vector ``B^[k, :] (output parameter)
    */
   void modal_strain_displacement(
       size_t const *k, Eigen::Matrix<std::complex<double>, DIM, 1> &B) const {
@@ -293,25 +266,10 @@ class Hooke {
   /**
    * Compute modal stiffness matrix for specified spatial frequency.
    *
-   * The modal stiffness matrix `K[k, i, j]` is defined in §4.1 of [Bri17]. For
-   * the nodal displacements `u[n, i]`, the elastic contribution to the strain
-   * energy is given by the sum
-   *
-   * ```
-   * ```
-   *
-   * where the sum extends to all multi-indices `k`. The present method computes
-   * `K[k, :]` for a fixed `k`.
-   *
-   * For prestressed materials, minimization of the potential energy delivers
-   * the following linear equations for the modal displacement
-   *
-   * ```
-   * K[k]⋅DFT(u)[k] = -ϖ[k]⋅conj(B[k])    (matrix-vector products).
-   * ```
+   * The present method computes `K^[k, :, :]` for a fixed `k`.
    *
    * @param k the multi-index in the frequency domain
-   * @param K the stiffness matrix (output parameter)
+   * @param K the stiffness matrix `K^[k, :, :]` (output parameter)
    */
   void modal_stiffness(size_t const *k,
                        Eigen::Matrix<std::complex<double>, DIM, DIM> &K) const {

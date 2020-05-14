@@ -1,3 +1,5 @@
+.. _20200514061549:
+
 ######
 Theory
 ######
@@ -92,6 +94,8 @@ where ``|h|`` is the cell volume::
                                                 L[d]
   (6)    |h| = h[0] … h[DIM-1],    where h[d] = ────.
                                                 N[d]
+
+.. _20200514061118:
 
 In [Bri17]_, the DFT ``ε^`` of ``ε`` is expressed as follows::
 
