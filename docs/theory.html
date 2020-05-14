@@ -1,0 +1,281 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Theory &#8212; bri17 0.1 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="API documentation" href="api.html" />
+    <link rel="prev" title="Installation" href="installation.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="theory">
+<span id="id1"></span><h1>Theory<a class="headerlink" href="#theory" title="Permalink to this headline">¶</a></h1>
+<p>This section gives a brief theoretical overview of the functions that are
+implemented in bri17. For a full derivation, refer to the paper <a class="reference internal" href="#bri17" id="id2"><span>[Bri17]</span></a>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The preprint of this paper is freely available on the <a class="reference external" href="https://hal-enpc.archives-ouvertes.fr/hal-01304603">HAL archive</a>; it is not the
+final version, but the theoretical sections were unchanged through the
+review process.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For the sake of consistency with the code, we use zero-based indices
+here: index <cite>0</cite> is the <cite>x</cite>-coordinate, index <cite>1</cite> is the <cite>y</cite>-coordinate
+and index <cite>2</cite> is the <cite>z</cite> coordinate.  We also use the bracket notation
+(<code class="docutils literal notranslate"><span class="pre">σ[i, j]</span></code>) for indices.</p>
+</div>
+<div class="section" id="assumptions">
+<h2>Assumptions<a class="headerlink" href="#assumptions" title="Permalink to this headline">¶</a></h2>
+<p>bri17 is a matrix-free implementation of the finite element method. It exposes
+methods to compute the solution to linear elasticity problems, under the
+following assumptions</p>
+<ul class="simple">
+<li><p>the number of spatial dimensions is <code class="docutils literal notranslate"><span class="pre">DIM</span></code> (<code class="docutils literal notranslate"><span class="pre">DIM ∈ {2,</span> <span class="pre">3}</span></code>),</p></li>
+<li><p>the material is <strong>homogeneous</strong> and obeys the standard Hooke law for
+isotropic, linear elasticity: <code class="docutils literal notranslate"><span class="pre">σ[i, j] = λ⋅ε[k, k]⋅δ[i, j] + 2⋅μ⋅ε[i, j]</span></code></p></li>
+<li><p>periodic boundary conditions apply to the unit-cell <code class="docutils literal notranslate"><span class="pre">Ω = (0, L[0]) × …</span>
+<span class="pre">× (0, L[DIM-1])</span></code>,</p></li>
+<li><p>the mesh is a uniform cartesian grid of size <code class="docutils literal notranslate"><span class="pre">N[0] × … × N[DIM-1]</span></code>,</p></li>
+<li><p>each cell of the grid is a displacement-based finite element with linear shape
+functions (Q4/Q8 element).</p></li>
+</ul>
+</div>
+<div class="section" id="discrete-fourier-transform-conventions-adopted-in-bri17">
+<h2>Discrete Fourier Transform: conventions adopted in bri17<a class="headerlink" href="#discrete-fourier-transform-conventions-adopted-in-bri17" title="Permalink to this headline">¶</a></h2>
+<p>The essential assumption is homogeneity. The loading might be very complex,
+provided that each cell is made of the same material. The global stiffness
+matrix of the system is then block-circulant, which allows for an efficient
+formulation in the Fourier space, by means of the <a class="reference external" href="https://en.wikipedia.org/wiki/Discrete_Fourier_transform">discrete Fourier transform</a>. Conventions
+adopted here regarding this transform are recalled in this section.</p>
+<p>Let <code class="docutils literal notranslate"><span class="pre">X[n[0], …, n[DM-1]]</span></code> be a set of data points defined at the vertices of
+the grid. Owing to periodic boundary conditions, the node indices <code class="docutils literal notranslate"><span class="pre">n[d]</span></code> are
+such that: <code class="docutils literal notranslate"><span class="pre">0 ≤ n[d] &lt; N[d]</span></code> for all <code class="docutils literal notranslate"><span class="pre">d = 0, …, DIM-1</span></code>. Wxse will adopt the
+short-hand notation <code class="docutils literal notranslate"><span class="pre">X[n]</span></code> where <code class="docutils literal notranslate"><span class="pre">n</span></code> is a multi-index. It is understood that
+all multi-indices span <code class="docutils literal notranslate"><span class="pre">{0, …, N[0]-1} × …</span> <span class="pre">× {0, …, N[DIM-1]-1}</span></code>.</p>
+<p>The discrete Fourier transform <code class="docutils literal notranslate"><span class="pre">̂DFT(X)[k]</span></code> of <code class="docutils literal notranslate"><span class="pre">X[n]</span></code> is also a
+<code class="docutils literal notranslate"><span class="pre">DIM</span></code>-dimensional array, where <code class="docutils literal notranslate"><span class="pre">k</span></code> now denotes the frequency
+multi-index. Like <code class="docutils literal notranslate"><span class="pre">n</span></code>, <code class="docutils literal notranslate"><span class="pre">k</span></code> spans <code class="docutils literal notranslate"><span class="pre">{0, …, N[0]-1} × …</span>
+<span class="pre">× {0, …, N[DIM-1]-1}</span></code>. The Fourier components <code class="docutils literal notranslate"><span class="pre">X^[k]</span></code> are defined through the
+formula:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(1)    X^[k] = DFT(X)[k] = ∑ X[n]⋅exp(-i⋅φ[n, k]),
+                         n
+</pre></div>
+</div>
+<p>where the above sum extends to all multi-indices <code class="docutils literal notranslate"><span class="pre">n</span></code> and:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>                    ┌ k[0]⋅n[0]       k[DIM-1]⋅n[DIM-1] ┐
+(2)    φ[n, k] = 2π │ ───────── + … + ───────────────── │
+                    └   L[0]               L[DIM-1]     ┘
+</pre></div>
+</div>
+<p>The above formula is inverted as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>               1
+(3)    X[n] = ─── ∑ X^[k]⋅exp(i⋅φ[n, k]),
+              |N| k
+</pre></div>
+</div>
+<p>where the sum now extends to all multi-indices <code class="docutils literal notranslate"><span class="pre">k</span></code>. <code class="docutils literal notranslate"><span class="pre">|N|</span></code> denotes the total
+number of cells (product of the components of <code class="docutils literal notranslate"><span class="pre">N</span></code>):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(4)    |N| = N[0] … N[DIM-1].
+</pre></div>
+</div>
+</div>
+<div class="section" id="the-modal-strain-displacement-vector">
+<h2>The modal strain-displacement vector<a class="headerlink" href="#the-modal-strain-displacement-vector" title="Permalink to this headline">¶</a></h2>
+<p>The nodal displacements are <code class="docutils literal notranslate"><span class="pre">u[n,</span> <span class="pre">i]</span></code>, where <code class="docutils literal notranslate"><span class="pre">n</span></code> is the multi-index of the
+node and <code class="docutils literal notranslate"><span class="pre">i</span></code> is the index of the component. The cell-averages of the strains
+are denoted <code class="docutils literal notranslate"><span class="pre">ε[n,</span> <span class="pre">i,</span> <span class="pre">j]</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>                     1  ⌠        1 ┌ ∂u[i]   ∂u[j] ┐
+(5)    ε[n, i, j] = ─── │        ─ │ ───── + ───── │ dx[0] … dx[DIM-1],
+                    |h| ⌡cell[n] 2 └ ∂x[j]   ∂x[i] ┘
+</pre></div>
+</div>
+<p>where <code class="docutils literal notranslate"><span class="pre">|h|</span></code> is the cell volume:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>                                              L[d]
+(6)    |h| = h[0] … h[DIM-1],    where h[d] = ────.
+                                              N[d]
+</pre></div>
+</div>
+<p id="id3">In <a class="reference internal" href="#bri17" id="id4"><span>[Bri17]</span></a>, the DFT <code class="docutils literal notranslate"><span class="pre">ε^</span></code> of <code class="docutils literal notranslate"><span class="pre">ε</span></code> is expressed as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>                  1 ┌                                       ┐
+(7) ε^[k, i, j] = ─ │ u^[k, i]⋅B^[k, j] + u^[k, j]⋅B^[k, i] │,
+                  2 └                                       ┘
+</pre></div>
+</div>
+<p>where <code class="docutils literal notranslate"><span class="pre">B^</span></code> is the so-called modal strain-displacement vector, which is
+computed (for a specified value of <code class="docutils literal notranslate"><span class="pre">k</span></code>) by the method
+<code class="xref cpp cpp-member docutils literal notranslate"><span class="pre">Hooke&lt;DIM&gt;::modal_strain_displacement</span></code>.</p>
+</div>
+<div class="section" id="the-modal-stiffness-matrix">
+<h2>The modal stiffness matrix<a class="headerlink" href="#the-modal-stiffness-matrix" title="Permalink to this headline">¶</a></h2>
+<p>It is recalled that the strain energy <code class="docutils literal notranslate"><span class="pre">U</span></code> is defined as the following integral
+over the whole unit-cell <code class="docutils literal notranslate"><span class="pre">Ω</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>           1
+(8)    U = ─ ∫ [λ tr(ε)² + 2μ ε:ε] dx[0] … dx[DIM-1].
+           2 Ω
+</pre></div>
+</div>
+<p id="id5">For the FE descretization considered here, the strain energy appears as a
+quadratic form of the nodal displacements. This quadratic form is best expressed
+in Fourier space <a class="reference internal" href="#bri17" id="id6"><span>[Bri17]</span></a>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>           1 |h|   ________
+(9)    U = ─ ─── ∑ u^[k, i]⋅K^[k, i, j]⋅u^[k, j],
+           2 |N| k
+</pre></div>
+</div>
+<p>where overlined quantities denote complex conjugates. <code class="docutils literal notranslate"><span class="pre">K^</span></code> is the <em>modal
+stiffness matrix</em>. For each frequency <code class="docutils literal notranslate"><span class="pre">k</span></code>, <code class="docutils literal notranslate"><span class="pre">K^[k,</span> <span class="pre">i,</span> <span class="pre">j]</span></code> is a <code class="docutils literal notranslate"><span class="pre">DIM × DIM</span></code>
+matrix. Its value is delivered by the method
+<code class="xref cpp cpp-member docutils literal notranslate"><span class="pre">Hooke&lt;DIM&gt;::modal_stiffness</span></code>.</p>
+<p id="id7">The strain energy is in general expressed in the real space by means of the
+<em>nodal stiffness matrix</em> <code class="docutils literal notranslate"><span class="pre">K[m,</span> <span class="pre">n,</span> <span class="pre">i,</span> <span class="pre">j]</span></code> as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>            1
+(10)    U = ─ ∑ ∑ ∑ ∑ u[m, i]⋅K[m, n, i, j]⋅u[n, j],
+            2 m n i j
+</pre></div>
+</div>
+<p>where <code class="docutils literal notranslate"><span class="pre">m</span></code> and <code class="docutils literal notranslate"><span class="pre">n</span></code> span all node indices, while <code class="docutils literal notranslate"><span class="pre">i</span></code> and <code class="docutils literal notranslate"><span class="pre">j</span></code> span the
+whole range of component indices. There is of course a connection between the
+<em>modal</em> stiffness matrix <code class="docutils literal notranslate"><span class="pre">K^</span></code> and the <em>nodal</em> stiffness matrix <code class="docutils literal notranslate"><span class="pre">K</span></code>, that is
+expressed below. To do so, we introduce the following vector field, first in
+Fourier space (<em>modal</em> forces):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(11)    F^[k, i] = |h| ∑ K^[k, i, j]⋅u^[k, j]
+                       k
+</pre></div>
+</div>
+<p>then in the real space (<em>nodal</em> forces), <code class="docutils literal notranslate"><span class="pre">F = DFT⁻¹(F^)</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>                   1
+(12)    F[n, j] = ─── ∑ F^[k, j]⋅exp(i⋅φ[n, k]),
+                  |N| k
+</pre></div>
+</div>
+<p id="id8">and Eq. <a class="reference internal" href="#id5"><span class="std std-ref">(9)</span></a> reads (using Plancherel theorem):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>            1  1      ________            1
+(13)    U = ─ ─── ∑ ∑ u^[k, i]⋅F^[k, i] = ─ ∑ ∑ u[n, i]⋅F[n, i].
+            2 |N| k i                     2 n i
+</pre></div>
+</div>
+<p>Comparing Eqs. <a class="reference internal" href="#id7"><span class="std std-ref">(10)</span></a> and <a class="reference internal" href="#id8"><span class="std std-ref">(13)</span></a>, we
+find:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(14)    F[m, i] = ∑ ∑ K[m, n, i, j]⋅u[n, j],
+                  n j
+</pre></div>
+</div>
+<p>which provides the link between <code class="docutils literal notranslate"><span class="pre">K^</span></code> and <code class="docutils literal notranslate"><span class="pre">K</span></code>.</p>
+</div>
+<div class="section" id="references">
+<h2>References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h2>
+<dl class="citation">
+<dt class="label" id="bri17"><span class="brackets">Bri17</span><span class="fn-backref">(<a href="#id2">1</a>,<a href="#id4">2</a>,<a href="#id6">3</a>)</span></dt>
+<dd><p> Brisard, S. (2017). Reconstructing displacements from the solution
+to the periodic Lippmann–Schwinger equation discretized on a uniform
+grid. <em>International Journal for Numerical Methods in Engineering</em>,
+109(4), 459–486. <a class="reference external" href="https://doi.org/10.1002/nme.5263">https://doi.org/10.1002/nme.5263</a></p>
+</dd>
+</dl>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">bri17</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Theory</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#assumptions">Assumptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#discrete-fourier-transform-conventions-adopted-in-bri17">Discrete Fourier Transform: conventions adopted in bri17</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#the-modal-strain-displacement-vector">The modal strain-displacement vector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#the-modal-stiffness-matrix">The modal stiffness matrix</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#references">References</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API documentation</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="installation.html" title="previous chapter">Installation</a></li>
+      <li>Next: <a href="api.html" title="next chapter">API documentation</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Sébastien Brisard.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/theory.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

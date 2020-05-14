@@ -14,7 +14,7 @@
     <script src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="prev" title="Installation" href="installation.html" />
+    <link rel="prev" title="Theory" href="theory.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -171,35 +171,7 @@
 <dt id="_CPPv4I_6size_tEN5bri175HookeE">
 <span id="_CPPv3I_6size_tEN5bri175HookeE"></span><span id="_CPPv2I_6size_tEN5bri175HookeE"></span>template&lt;size_t <code class="sig-name descname">DIM</code>&gt;<br /><span class="target" id="classbri17_1_1_hooke"></span><em class="property">class </em><code class="sig-name descname">Hooke</code><a class="headerlink" href="#_CPPv4I_6size_tEN5bri175HookeE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><em>#include &lt;bri17.hpp&gt;</em><p>Implementation of the results of [Bri17] per se.</p>
-<p>This class provides methods to compute the modal strain-displacement and stiffness matrices defined by Eqs. (38) and (45) in [Bri17].</p>
-<p>Assumptions are</p>
-<p><ul class="simple">
-<li><p>homogeneous material obeying the standard <a class="reference internal" href="#classbri17_1_1_hooke"><span class="std std-ref">Hooke</span></a> law (isotropic, linear elasticity),</p></li>
-<li><p>periodic boundary conditions,</p></li>
-<li><p>uniform cartesian grid, each cell of the grid is a displacement-based finite element with linear shape functions (Q4/Q8 element).</p></li>
-</ul>
-</p>
-<p>The nodal displacements are defined at each vertex of the cells. Owing to periodic boundary conditions, there are only <code class="docutils literal notranslate"><span class="pre">∏</span><span class="pre">N[d]</span></code> nodal displacements (<code class="docutils literal notranslate"><span class="pre">d</span><span class="pre">=</span><span class="pre">0,</span> <span class="pre">…,</span><span class="pre">DIM-1</span></code>). The displacements are stored in a <code class="docutils literal notranslate"><span class="pre">(DIM+1)</span></code>-dimensional array, where the first <code class="docutils literal notranslate"><span class="pre">DIM</span></code> dimensions are the vertex indices, while the last dimension is the component of the displacement under consideration: <code class="docutils literal notranslate"><span class="pre">u[n[0],</span><span class="pre">…,</span><span class="pre">n[DIM-1],</span><span class="pre">i]</span></code> with <code class="docutils literal notranslate"><span class="pre">0</span><span class="pre">≤</span><span class="pre">n[d]</span><span class="pre">&lt;</span><span class="pre">N[d]</span></code> (<code class="docutils literal notranslate"><span class="pre">d</span><span class="pre">=</span><span class="pre">0,</span><span class="pre">…,</span><span class="pre">DIM-1</span></code>) and <code class="docutils literal notranslate"><span class="pre">0</span><span class="pre">≤</span><span class="pre">i</span><span class="pre">&lt;</span><span class="pre">DIM</span></code>. The shorthand notation <code class="docutils literal notranslate"><span class="pre">u[n,</span><span class="pre">i]</span></code>, where <code class="docutils literal notranslate"><span class="pre">n</span></code> is a multi-index, will be adopted in what follows. It is understood that all multi-indices span <code class="docutils literal notranslate"><span class="pre">{0,</span><span class="pre">…,</span><span class="pre">N[0]}</span><span class="pre">×</span><span class="pre">…</span><span class="pre">×</span><span class="pre">{0,</span><span class="pre">…,</span><span class="pre">N[DIM-1]}</span></code>.</p>
-<p>The <em>modal</em> displacements are the DFT of the <em>nodal</em> displacements, defined here as</p>
-<p><div class="highlight-default notranslate"><div class="highlight"><pre><span></span>DFT(u)[k, i] = ∑ u[n, i] * exp(-i⋅φ[0] - … - i⋅φ[DIM-1]),
-</pre></div>
-</div>
-</p>
-<p>where <code class="docutils literal notranslate"><span class="pre">k</span> <span class="pre">=</span> <span class="pre">(k[0],</span> <span class="pre">…,</span> <span class="pre">k[DIM-1])</span></code> is a multi-index and the above sum extends to all multi-indices <code class="docutils literal notranslate"><span class="pre">n</span></code>. Furthermore</p>
-<p><div class="highlight-default notranslate"><div class="highlight"><pre><span></span>          k[d]⋅n[d]
-φ[d] = 2π⋅─────────    (d = 0, … DIM-1),
-            L[d]
-</pre></div>
-</div>
-</p>
-<p>see e.g. <a class="reference external" href="https://en.wikipedia.org/wiki/Discrete_Fourier_transform">Wikipedia</a>. The above formula is inverted as follows</p>
-<p><div class="highlight-default notranslate"><div class="highlight"><pre><span></span>           1
-u[n, i] = ─── ∑ DFT(u)[k, i] * exp(i⋅φ[0] + … + i⋅φ[DIM-1]),
-          |N| ₖ
-</pre></div>
-</div>
-</p>
-<p>where the sum now extends to all multi-indices <code class="docutils literal notranslate"><span class="pre">k</span></code>. </p>
+<p>This class provides methods to compute the modal strain-displacement and stiffness matrices. </p>
 <div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric">Public Functions</p>
 <dl class="cpp function">
@@ -211,12 +183,7 @@ u[n, i] = ─── ∑ DFT(u)[k, i] * exp(i⋅φ[0] + … + i⋅φ[DIM-1]),
 <dt id="_CPPv4NK5bri175Hooke25modal_strain_displacementEPK6size_tRN5Eigen6MatrixINSt7complexIdEE3DIMXL1EEEE">
 <span id="_CPPv3NK5bri175Hooke25modal_strain_displacementEPK6size_tRN5Eigen6MatrixINSt7complexIdEE3DIMXL1EEEE"></span><span id="_CPPv2NK5bri175Hooke25modal_strain_displacementEPK6size_tRN5Eigen6MatrixINSt7complexIdEE3DIMX1EEE"></span><span id="bri17::Hooke::modal_strain_displacement__sCP.Eigen::Matrix:std::complex:double:.DIM.1:RC"></span><span class="target" id="classbri17_1_1_hooke_1a011d5036ef86057eed0ec6167274147e"></span>void <code class="sig-name descname">modal_strain_displacement</code><span class="sig-paren">(</span>size_t <em class="property">const</em> *<em>k</em>, Eigen::Matrix&lt;std::complex&lt;double&gt;, <a class="reference internal" href="#_CPPv4I_6size_tEN5bri175HookeE" title="bri17::Hooke::DIM">DIM</a>, 1&gt; &amp;<em>B</em><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv4NK5bri175Hooke25modal_strain_displacementEPK6size_tRN5Eigen6MatrixINSt7complexIdEE3DIMXL1EEEE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Compute modal strain-displacement vector for specified spatial frequency.</p>
-<p>The modal strain-displacement matrix is defined in §3.3 of [Bri17]. It maps the nodal displacements to cell-averages of the strains. More precisely, let <code class="docutils literal notranslate"><span class="pre">u[n,</span><span class="pre">i]</span></code> be the modal displacements. The quantity <code class="docutils literal notranslate"><span class="pre">ε[n,</span><span class="pre">i,</span><span class="pre">j]</span></code> is defined as the <code class="docutils literal notranslate"><span class="pre">(i,</span><span class="pre">j)</span></code> component of the average strain in cell <code class="docutils literal notranslate"><span class="pre">n</span></code> (<code class="docutils literal notranslate"><span class="pre">n</span></code> is a multi-index, while <code class="docutils literal notranslate"><span class="pre">i,</span><span class="pre">j</span><span class="pre">=</span><span class="pre">0,</span><span class="pre">…,</span><span class="pre">DIM-1</span></code>). It is shown in [Bri17] that the discrete Fourier Transform of <code class="docutils literal notranslate"><span class="pre">ε</span></code> has the following expression</p>
-<p><div class="highlight-default notranslate"><div class="highlight"><pre><span></span>DFT(ε)[k, i, j] = (DFT(u)[k, i]⋅B[k, j] + DFT(u)[k, j]⋅B[k, i]) / 2,
-</pre></div>
-</div>
-</p>
-<p>where <code class="docutils literal notranslate"><span class="pre">B</span></code> is the modal strain-displacement vector. The present method actually computes <code class="docutils literal notranslate"><span class="pre">B[k,</span> <span class="pre">:]</span></code> for a fixed <code class="docutils literal notranslate"><span class="pre">k</span></code>.</p>
+<p>The present method actually computes <code class="docutils literal notranslate"><span class="pre">B^[k,</span> <span class="pre">:]</span></code> for a fixed <code class="docutils literal notranslate"><span class="pre">k</span></code>.</p>
 <p>The strain-displacement vector is also used to compute the contribution to the potential energy of eigenstresses. Let <code class="docutils literal notranslate"><span class="pre">ϖ[n,</span><span class="pre">i,</span><span class="pre">j]</span></code> denote the <code class="docutils literal notranslate"><span class="pre">(i,</span><span class="pre">j)</span></code> component of the eigenstress in cell <code class="docutils literal notranslate"><span class="pre">n</span></code> (eigenstresses are assumed constant in each cell). Then, the contribution of <code class="docutils literal notranslate"><span class="pre">ϖ</span></code> to the potential energy is</p>
 <p><div class="highlight-default notranslate"><div class="highlight"><pre><span></span>|L|
 ───  ∑ conj(DFT(u)[k, i])⋅DFT(ϖ)[k, i, j]⋅conj(DFT(B)[k, j]),
@@ -232,7 +199,7 @@ u[n, i] = ─── ∑ DFT(u)[k, i] * exp(i⋅φ[0] + … + i⋅φ[DIM-1]),
 <p><dl class="simple">
 <dt><strong>Parameters</strong></dt><dd><ul class="breatheparameterlist simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">k</span></code>: the multi-index in the frequency domain </p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">B</span></code>: the strain-displacement matrix (output parameter) </p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">B</span></code>: the strain-displacement vector ``B^[k, :] (output parameter) </p></li>
 </ul>
 </dd>
 </dl>
@@ -243,23 +210,11 @@ u[n, i] = ─── ∑ DFT(u)[k, i] * exp(i⋅φ[0] + … + i⋅φ[DIM-1]),
 <dt id="_CPPv4NK5bri175Hooke15modal_stiffnessEPK6size_tRN5Eigen6MatrixINSt7complexIdEE3DIM3DIMEE">
 <span id="_CPPv3NK5bri175Hooke15modal_stiffnessEPK6size_tRN5Eigen6MatrixINSt7complexIdEE3DIM3DIMEE"></span><span id="_CPPv2NK5bri175Hooke15modal_stiffnessEPK6size_tRN5Eigen6MatrixINSt7complexIdEE3DIM3DIMEE"></span><span id="bri17::Hooke::modal_stiffness__sCP.Eigen::Matrix:std::complex:double:.DIM.DIM:RC"></span><span class="target" id="classbri17_1_1_hooke_1aee2faf56b3e30acb4106c5f7e6b3b154"></span>void <code class="sig-name descname">modal_stiffness</code><span class="sig-paren">(</span>size_t <em class="property">const</em> *<em>k</em>, Eigen::Matrix&lt;std::complex&lt;double&gt;, <a class="reference internal" href="#_CPPv4I_6size_tEN5bri175HookeE" title="bri17::Hooke::DIM">DIM</a>, <a class="reference internal" href="#_CPPv4I_6size_tEN5bri175HookeE" title="bri17::Hooke::DIM">DIM</a>&gt; &amp;<em>K</em><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv4NK5bri175Hooke15modal_stiffnessEPK6size_tRN5Eigen6MatrixINSt7complexIdEE3DIM3DIMEE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Compute modal stiffness matrix for specified spatial frequency.</p>
-<p>The modal stiffness matrix <code class="docutils literal notranslate"><span class="pre">K[k,</span> <span class="pre">i,</span> <span class="pre">j]</span></code> is defined in §4.1 of [Bri17]. For the nodal displacements <code class="docutils literal notranslate"><span class="pre">u[n,</span> <span class="pre">i]</span></code>, the elastic contribution to the strain energy is given by the sum</p>
-<p><div class="highlight-default notranslate"><div class="highlight"><pre><span></span> |L|
-───── ∑ conj(DFT(u)[k, i])⋅K[k, i, j]⋅conj(DFT(u)[k, j]),
-2|N|² ₖ
-</pre></div>
-</div>
-</p>
-<p>where the sum extends to all multi-indices <code class="docutils literal notranslate"><span class="pre">k</span></code>. The present method computes <code class="docutils literal notranslate"><span class="pre">K[k,</span> <span class="pre">:]</span></code> for a fixed <code class="docutils literal notranslate"><span class="pre">k</span></code>.</p>
-<p>For prestressed materials, minimization of the potential energy delivers the following linear equations for the modal displacement</p>
-<p><div class="highlight-default notranslate"><div class="highlight"><pre><span></span>K[k]⋅DFT(u)[k] = -ϖ[k]⋅conj(B[k])    (matrix-vector products).
-</pre></div>
-</div>
-</p>
+<p>The present method computes <code class="docutils literal notranslate"><span class="pre">K^[k,</span> <span class="pre">:,</span> <span class="pre">:]</span></code> for a fixed <code class="docutils literal notranslate"><span class="pre">k</span></code>.</p>
 <p><dl class="simple">
 <dt><strong>Parameters</strong></dt><dd><ul class="breatheparameterlist simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">k</span></code>: the multi-index in the frequency domain </p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">K</span></code>: the stiffness matrix (output parameter) </p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">K</span></code>: the stiffness matrix <code class="docutils literal notranslate"><span class="pre">K^[k,</span> <span class="pre">:,</span> <span class="pre">:]</span></code> (output parameter) </p></li>
 </ul>
 </dd>
 </dl>
@@ -330,6 +285,7 @@ u[n, i] = ─── ∑ DFT(u)[k, i] * exp(i⋅φ[0] + … + i⋅φ[DIM-1]),
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="theory.html">Theory</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">API documentation</a></li>
 </ul>
 
@@ -337,7 +293,7 @@ u[n, i] = ─── ∑ DFT(u)[k, i] * exp(i⋅φ[0] + … + i⋅φ[DIM-1]),
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="installation.html" title="previous chapter">Installation</a></li>
+      <li>Previous: <a href="theory.html" title="previous chapter">Theory</a></li>
   </ul></li>
 </ul>
 </div>
