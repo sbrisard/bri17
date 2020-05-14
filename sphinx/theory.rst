@@ -114,42 +114,60 @@ over the whole unit-cell ``Ω``::
   (8)    U = ─ ∫ [λ tr(ε)² + 2μ ε:ε] dx[0] … dx[DIM-1].
              2 Ω
 
+.. _20200514055905:
+
 For the FE descretization considered here, the strain energy appears as a
 quadratic form of the nodal displacements. This quadratic form is best expressed
 in Fourier space [Bri17]_::
 
-               1    ______
-  (9)    U = ──── ∑ DFT(u)[k, i]⋅Kₘ[k, i, j]⋅DFT(u)[k, j],
-             2|N| k
+             1 |h|   ________
+  (9)    U = ─ ─── ∑ u^[k, i]⋅K^[k, i, j]⋅u^[k, j],
+             2 |N| k
 
-where overlined quantities denote complex conjugates. ``Kₘ`` is the *modal
-stiffness matrix*. For each frequency ``k``, ``Kₘ[k, i, j]`` is a ``DIM × DIM``
+where overlined quantities denote complex conjugates. ``K^`` is the *modal
+stiffness matrix*. For each frequency ``k``, ``K^[k, i, j]`` is a ``DIM × DIM``
 matrix. Its value is delivered by the method
 :cpp:member:`Hooke\<DIM>::modal_stiffness`.
 
-.. note:: It is important to note that the scaling adopted in the present
-          implementation differs from the initial publication [Bri17]_, where
-          the strain energy is expressed as::
-                          1 |h|   ______
-            (9bis)    U = ─ ─── ∑ DFT(u)[k, i]⋅Kₘ[k, i, j]⋅DFT(u)[k, j],
-                          2 |N| k
-	  where it is recalled that ``|h|`` denotes the ``DIM`` dimensional
-	  volume of the cell. The new scaling adopted here makes more sense in
-	  view of the connection with the *nodal* stiffness matrix to be
-	  discussed below.
+.. _20200514060358:
 
 The strain energy is in general expressed in the real space by means of the
-*nodal stiffness matrix* ``Kₙ[m, n, i, j]`` as follows::
+*nodal stiffness matrix* ``K[m, n, i, j]`` as follows::
 
               1
-  (10)    U = ─ ∑ ∑ ∑ ∑ u[m, i]⋅Kₙ[m, n, i, j]⋅u[n, j],
+  (10)    U = ─ ∑ ∑ ∑ ∑ u[m, i]⋅K[m, n, i, j]⋅u[n, j],
               2 m n i j
 
 where ``m`` and ``n`` span all node indices, while ``i`` and ``j`` span the
 whole range of component indices. There is of course a connection between the
-*modal* stiffness matrix ``Kₘ`` and the *nodal* stiffness matrix ``Kₙ``, that is
-expressed below.
+*modal* stiffness matrix ``K^`` and the *nodal* stiffness matrix ``K``, that is
+expressed below. To do so, we introduce the following vector field, first in
+Fourier space (*modal* forces)::
 
+  (11)    F^[k, i] = |h| ∑ K^[k, i, j]⋅u^[k, j]
+	                 k
+
+then in the real space (*nodal* forces), ``F = DFT⁻¹(F^)``::
+
+                     1
+  (12)    F[n, j] = ─── ∑ F^[k, j]⋅exp(i⋅φ[n, k]),
+		    |N| k
+
+.. _20200514060430:
+
+and Eq. :ref:`(9) <20200514055905>` reads (using Plancherel theorem)::
+
+              1  1      ________            1
+  (13)    U = ─ ─── ∑ ∑ u^[k, i]⋅F^[k, i] = ─ ∑ ∑ u[n, i]⋅F[n, i].
+	      2 |N| k i                     2 n i
+
+Comparing Eqs. :ref:`(10) <20200514060358>` and :ref:`(13) <20200514060430>`, we
+find::
+
+  (14)    F[m, i] = ∑ ∑ K[m, n, i, j]⋅u[n, j],
+		    n j
+
+which provides the link between ``K^`` and ``K``.
 
 References
 ==========
