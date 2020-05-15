@@ -21,15 +21,7 @@
 
 namespace bri17 {
 
-/**
- * Return the product of the elements of the specified array.
- *
- * This function returns the product
- *
- * ```
- * a[0] * ... * a[n-1].
- * ```
- */
+/** Return the product `a[0] * ... * a[n-1]`. */
 template <typename T>
 T product(size_t n, T a[]) {
   T out{1};
@@ -211,18 +203,6 @@ class Hooke {
    * Compute modal strain-displacement vector for specified spatial frequency.
    *
    * The present method actually computes `B^[k, :]` for a fixed `k`.
-   *
-   * The strain-displacement vector is also used to compute the contribution to
-   * the potential energy of eigenstresses. Let
-   *
-   * where `conj(…)` denotes the complex conjugate and the sum extends to all
-   * multi-indices `k`. In the above formula, `|L| = ∏ L(d)` denotes the
-   * `DIM`-dimensional volume of the cell, while `|N|` denotes the total number
-   * of cells
-   *
-   * ```
-   * |L| = ∏ L[d],    and    |N| = ∏ N[d],    with    d = 0, …, DIM-1.
-   * ```
    *
    * @param k the multi-index in the frequency domain
    * @param B the strain-displacement vector ``B^[k, :] (output parameter)
