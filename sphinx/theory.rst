@@ -25,7 +25,7 @@ bri17 is a matrix-free implementation of the finite element method. It exposes
 methods to compute the solution to linear elasticity problems, under the
 following assumptions
 
-- the number of spatial dimensions is ``DIM`` (``DIM ∈ {2, 3}``),
+- the number of spatial dimensions is ``DIM ∈ {2, 3}``,
 - the material is **homogeneous** and obeys the standard Hooke law for
   isotropic, linear elasticity: ``σ[i, j] = λ⋅ε[k, k]⋅δ[i, j] + 2⋅μ⋅ε[i, j]``
 - periodic boundary conditions apply to the unit-cell ``Ω = (0, L[0]) × …
@@ -115,7 +115,7 @@ It is recalled that the strain energy ``U`` is defined as the following integral
 over the whole unit-cell ``Ω``::
 
              1
-  (8)    U = ─ ∫ [λ tr(ε)² + 2μ ε:ε] dx[0] … dx[DIM-1].
+  (8)    U = ─ ∫ [λ⋅tr(ε)² + 2μ⋅ε:ε] dx[0] … dx[DIM-1].
              2 Ω
 
 .. _20200514055905:
@@ -181,7 +181,7 @@ When the loading reduces to eigenstresses only, the boudary-value
 problem to be solved reads::
 
   (15a)    div σ = 0
-  (15b)    σ = λ⋅tr(ε)⋅I + 2⋅μ⋅ε + ϖ
+  (15b)    σ = λ⋅tr(ε)⋅I + 2μ⋅ε + ϖ
   (15c)    ε = sym grad u
 
 where ``u`` is periodic over the unit-cell. The eigenstress ``ϖ`` is

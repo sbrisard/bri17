@@ -55,7 +55,7 @@ and index <cite>2</cite> is the <cite>z</cite> coordinate.  We also use the brac
 methods to compute the solution to linear elasticity problems, under the
 following assumptions</p>
 <ul class="simple">
-<li><p>the number of spatial dimensions is <code class="docutils literal notranslate"><span class="pre">DIM</span></code> (<code class="docutils literal notranslate"><span class="pre">DIM ∈ {2,</span> <span class="pre">3}</span></code>),</p></li>
+<li><p>the number of spatial dimensions is <code class="docutils literal notranslate"><span class="pre">DIM ∈ {2,</span> <span class="pre">3}</span></code>,</p></li>
 <li><p>the material is <strong>homogeneous</strong> and obeys the standard Hooke law for
 isotropic, linear elasticity: <code class="docutils literal notranslate"><span class="pre">σ[i, j] = λ⋅ε[k, k]⋅δ[i, j] + 2⋅μ⋅ε[i, j]</span></code></p></li>
 <li><p>periodic boundary conditions apply to the unit-cell <code class="docutils literal notranslate"><span class="pre">Ω = (0, L[0]) × …</span>
@@ -135,7 +135,7 @@ computed (for a specified value of <code class="docutils literal notranslate"><s
 <p>It is recalled that the strain energy <code class="docutils literal notranslate"><span class="pre">U</span></code> is defined as the following integral
 over the whole unit-cell <code class="docutils literal notranslate"><span class="pre">Ω</span></code>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>           1
-(8)    U = ─ ∫ [λ tr(ε)² + 2μ ε:ε] dx[0] … dx[DIM-1].
+(8)    U = ─ ∫ [λ⋅tr(ε)² + 2μ⋅ε:ε] dx[0] … dx[DIM-1].
            2 Ω
 </pre></div>
 </div>
@@ -187,6 +187,42 @@ find:</p>
 </div>
 <p>which provides the link between <code class="docutils literal notranslate"><span class="pre">K^</span></code> and <code class="docutils literal notranslate"><span class="pre">K</span></code>.</p>
 </div>
+<div class="section" id="the-case-of-eigenstressed-materials">
+<h2>The case of eigenstressed materials<a class="headerlink" href="#the-case-of-eigenstressed-materials" title="Permalink to this headline">¶</a></h2>
+<p>When the loading reduces to eigenstresses only, the boudary-value
+problem to be solved reads:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(15a)    div σ = 0
+(15b)    σ = λ⋅tr(ε)⋅I + 2μ⋅ε + ϖ
+(15c)    ε = sym grad u
+</pre></div>
+</div>
+<p>where <code class="docutils literal notranslate"><span class="pre">u</span></code> is periodic over the unit-cell. The eigenstress <code class="docutils literal notranslate"><span class="pre">ϖ</span></code> is
+assumed <em>constant in each grid-cell</em>; let <code class="docutils literal notranslate"><span class="pre">ϖ[n, i, j]</span></code> denote the
+<code class="docutils literal notranslate"><span class="pre">(i, j)</span></code> component of the eigenstress in cell <code class="docutils literal notranslate"><span class="pre">n</span></code> and <code class="docutils literal notranslate"><span class="pre">ϖ^[k,</span> <span class="pre">i,</span>
+<span class="pre">j]</span></code> its discrete Fourier transform. Then, the total potential energy
+of the unit-cell reads <code class="docutils literal notranslate"><span class="pre">Π</span> <span class="pre">=</span> <span class="pre">U</span> <span class="pre">+</span> <span class="pre">U*</span></code>, where <code class="docutils literal notranslate"><span class="pre">U</span></code> is given by
+Eq. <a class="reference internal" href="#id5"><span class="std std-ref">(9)</span></a> and:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>             |h|   ________             ________
+(16)    U* = ─── ∑ u^[k, i]⋅ϖ^[k, i, j]⋅B^[k, j].
+             |N| k
+</pre></div>
+</div>
+<p id="id9">Optimization of <code class="docutils literal notranslate"><span class="pre">Π</span></code> w.r.t. the nodal displacements delivers the
+following equations (in matrix form):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(17)    K^[k]⋅u^[k] = -ϖ^[k]⋅B^[k].
+</pre></div>
+</div>
+<p>The solution to these equations delivers the modal displacements. The
+nodal displacements are then retrieved by inverse DFT.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Eq. <a class="reference internal" href="#id9"><span class="std std-ref">(17)</span></a> is singular for
+<code class="docutils literal notranslate"><span class="pre">k = 0</span></code>. Indeed, in a periodic setting, the displacement
+is defined up to a constant translation. It is convenient to
+select the solution with zero average, that is
+<code class="docutils literal notranslate"><span class="pre">u^[0] = 0</span></code>.</p>
+</div>
+</div>
 <div class="section" id="references">
 <h2>References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h2>
 <dl class="citation">
@@ -225,6 +261,7 @@ grid. <em>International Journal for Numerical Methods in Engineering</em>,
 <li class="toctree-l2"><a class="reference internal" href="#discrete-fourier-transform-conventions-adopted-in-bri17">Discrete Fourier Transform: conventions adopted in bri17</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#the-modal-strain-displacement-vector">The modal strain-displacement vector</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#the-modal-stiffness-matrix">The modal stiffness matrix</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#the-case-of-eigenstressed-materials">The case of eigenstressed materials</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#references">References</a></li>
 </ul>
 </li>

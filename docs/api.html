@@ -43,12 +43,7 @@
 <dl class="cpp function">
 <dt id="_CPPv4I0EN5bri177productE1T6size_tA_1T">
 <span id="_CPPv3I0EN5bri177productE6size_tA_1T"></span><span id="_CPPv2I0EN5bri177productE6size_tA_1T"></span>template&lt;typename <code class="sig-name descname">T</code>&gt;<br /><span class="target" id="namespacebri17_1ada03a85d7715cd00e9a82fe9a1e6210e"></span><a class="reference internal" href="#_CPPv4I0EN5bri177productE1T6size_tA_1T" title="bri17::product::T">T</a> <code class="sig-name descname">product</code><span class="sig-paren">(</span>size_t <em>n</em>, <a class="reference internal" href="#_CPPv4I0EN5bri177productE1T6size_tA_1T" title="bri17::product::T">T</a> <em>a</em>[]<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I0EN5bri177productE1T6size_tA_1T" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>Return the product of the elements of the specified array.</p>
-<p>This function returns the product</p>
-<p><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="o">...</span> <span class="o">*</span> <span class="n">a</span><span class="p">[</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span>
-</pre></div>
-</div>
- </p>
+<dd><p>Return the product <code class="docutils literal notranslate"><span class="pre">a[0]</span> <span class="pre">*</span> <span class="pre">...</span> <span class="pre">*</span> <span class="pre">a[n-1]</span></code>. </p>
 </dd></dl>
 
 <dl class="cpp function">
@@ -184,18 +179,6 @@
 <span id="_CPPv3NK5bri175Hooke25modal_strain_displacementEPK6size_tRN5Eigen6MatrixINSt7complexIdEE3DIMXL1EEEE"></span><span id="_CPPv2NK5bri175Hooke25modal_strain_displacementEPK6size_tRN5Eigen6MatrixINSt7complexIdEE3DIMX1EEE"></span><span id="bri17::Hooke::modal_strain_displacement__sCP.Eigen::Matrix:std::complex:double:.DIM.1:RC"></span><span class="target" id="classbri17_1_1_hooke_1a011d5036ef86057eed0ec6167274147e"></span>void <code class="sig-name descname">modal_strain_displacement</code><span class="sig-paren">(</span>size_t <em class="property">const</em> *<em>k</em>, Eigen::Matrix&lt;std::complex&lt;double&gt;, <a class="reference internal" href="#_CPPv4I_6size_tEN5bri175HookeE" title="bri17::Hooke::DIM">DIM</a>, 1&gt; &amp;<em>B</em><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv4NK5bri175Hooke25modal_strain_displacementEPK6size_tRN5Eigen6MatrixINSt7complexIdEE3DIMXL1EEEE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Compute modal strain-displacement vector for specified spatial frequency.</p>
 <p>The present method actually computes <code class="docutils literal notranslate"><span class="pre">B^[k,</span> <span class="pre">:]</span></code> for a fixed <code class="docutils literal notranslate"><span class="pre">k</span></code>.</p>
-<p>The strain-displacement vector is also used to compute the contribution to the potential energy of eigenstresses. Let <code class="docutils literal notranslate"><span class="pre">ϖ[n,</span><span class="pre">i,</span><span class="pre">j]</span></code> denote the <code class="docutils literal notranslate"><span class="pre">(i,</span><span class="pre">j)</span></code> component of the eigenstress in cell <code class="docutils literal notranslate"><span class="pre">n</span></code> (eigenstresses are assumed constant in each cell). Then, the contribution of <code class="docutils literal notranslate"><span class="pre">ϖ</span></code> to the potential energy is</p>
-<p><div class="highlight-default notranslate"><div class="highlight"><pre><span></span>|L|
-───  ∑ conj(DFT(u)[k, i])⋅DFT(ϖ)[k, i, j]⋅conj(DFT(B)[k, j]),
-|N|² ₖ
-</pre></div>
-</div>
-</p>
-<p>where <code class="docutils literal notranslate"><span class="pre">conj(…)</span></code> denotes the complex conjugate and the sum extends to all multi-indices <code class="docutils literal notranslate"><span class="pre">k</span></code>. In the above formula, <code class="docutils literal notranslate"><span class="pre">|L|</span><span class="pre">=</span><span class="pre">∏</span> <span class="pre">L(d)</span></code> denotes the <code class="docutils literal notranslate"><span class="pre">DIM</span></code>-dimensional volume of the cell, while <code class="docutils literal notranslate"><span class="pre">|N|</span></code> denotes the total number of cells</p>
-<p><div class="highlight-default notranslate"><div class="highlight"><pre><span></span>|L| = ∏ L[d],    and    |N| = ∏ N[d],    with    d = 0, …, DIM-1.
-</pre></div>
-</div>
-</p>
 <p><dl class="simple">
 <dt><strong>Parameters</strong></dt><dd><ul class="breatheparameterlist simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">k</span></code>: the multi-index in the frequency domain </p></li>
