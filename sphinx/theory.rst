@@ -173,6 +173,44 @@ find::
 
 which provides the link between ``K^`` and ``K``.
 
+
+The case of eigenstressed materials
+===================================
+
+When the loading reduces to eigenstresses only, the boudary-value
+problem to be solved reads::
+
+  (15a)    div σ = 0
+  (15b)    σ = λ⋅tr(ε)⋅I + 2⋅μ⋅ε + ϖ
+  (15c)    ε = sym grad u
+
+where ``u`` is periodic over the unit-cell. The eigenstress ``ϖ`` is
+assumed *constant in each grid-cell*; let ``ϖ[n, i, j]`` denote the
+``(i, j)`` component of the eigenstress in cell ``n`` and ``ϖ^[k, i,
+j]`` its discrete Fourier transform. Then, the total potential energy
+of the unit-cell reads ``Π = U + U*``, where ``U`` is given by
+Eq. :ref:`(9) <20200514055905>` and::
+
+               |h|   ________             ________
+  (16)    U* = ─── ∑ u^[k, i]⋅ϖ^[k, i, j]⋅B^[k, j].
+               |N| k
+
+.. _20200515061319:
+
+Optimization of ``Π`` w.r.t. the nodal displacements delivers the
+following equations (in matrix form)::
+
+  (17)    K^[k]⋅u^[k] = -ϖ^[k]⋅B^[k].
+
+The solution to these equations delivers the modal displacements. The
+nodal displacements are then retrieved by inverse DFT.
+
+.. note:: Eq. :ref:`(17) <20200515061319>` is singular for
+          ``k = 0``. Indeed, in a periodic setting, the displacement
+          is defined up to a constant translation. It is convenient to
+          select the solution with zero average, that is
+          ``u^[0] = 0``.
+
 References
 ==========
 

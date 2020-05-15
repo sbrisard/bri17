@@ -213,16 +213,7 @@ class Hooke {
    * The present method actually computes `B^[k, :]` for a fixed `k`.
    *
    * The strain-displacement vector is also used to compute the contribution to
-   * the potential energy of eigenstresses. Let `ϖ[n, i, j]` denote the `(i, j)`
-   * component of the eigenstress in cell `n` (eigenstresses are assumed
-   * constant in each cell). Then, the contribution of `ϖ` to the potential
-   * energy is
-   *
-   * ```
-   * |L|
-   * ───  ∑ conj(DFT(u)[k, i])⋅DFT(ϖ)[k, i, j]⋅conj(DFT(B)[k, j]),
-   * |N|² ₖ
-   * ```
+   * the potential energy of eigenstresses. Let
    *
    * where `conj(…)` denotes the complex conjugate and the sum extends to all
    * multi-indices `k`. In the above formula, `|L| = ∏ L(d)` denotes the
