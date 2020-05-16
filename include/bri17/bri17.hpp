@@ -128,7 +128,7 @@ class CartesianGrid {
    * ```
    *
    * @param cell index of the cell (row-major order)
-   * @param noeds array of node indices (return parameter).
+   * @param nodes array of node indices (return parameter)
    *
    * @todo Use move semantics?
    */
@@ -202,10 +202,8 @@ class Hooke {
   /**
    * Compute modal strain-displacement vector for specified spatial frequency.
    *
-   * The present method actually computes `B^[k, :]` for a fixed `k`.
-   *
    * @param k the multi-index in the frequency domain
-   * @param B the strain-displacement vector ``B^[k, :] (output parameter)
+   * @param B the strain-displacement vector `B^[k, :]` (output parameter)
    */
   void modal_strain_displacement(
       size_t const *k, Eigen::Matrix<std::complex<double>, DIM, 1> &B) const {
@@ -236,8 +234,6 @@ class Hooke {
 
   /**
    * Compute modal stiffness matrix for specified spatial frequency.
-   *
-   * The present method computes `K^[k, :, :]` for a fixed `k`.
    *
    * @param k the multi-index in the frequency domain
    * @param K the stiffness matrix `K^[k, :, :]` (output parameter)
@@ -309,8 +305,10 @@ class Hooke {
    * strains `ε[n, i, j]`.
    *
    * @param k multi-index of the Fourier component
-   * @param tau the `k`-th Fourier component of `τ`, `̂τ[k, :, :]`
-   * @param eps the `k`-th Fourier component of `ε`, `̂ε[k, :, :]`
+   * @param tau the `k`-th Fourier component of the eigenstress `τ`,
+   * `τ^[k, :, :]`
+   * @param eps the `k`-th Fourier component of `ε`, `ε^[k, :, :]` (output
+   * parameter)
    */
   void modal_eigenstress_to_strain(
       size_t const *k, Eigen::Matrix<std::complex<double>, DIM, DIM> &tau,
