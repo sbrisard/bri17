@@ -45,18 +45,10 @@ class CartesianGrid {
   /** Total number of cells: `N[0] * N[1] * ... * N[DIM-1]`. */
   const size_t num_cells;
 
-  /**
-   * Size of the grid in each direction (arbitrary units of length).
-   *
-   * @todo This array should be @c const.
-   */
+  /** Size of the grid in each direction (arbitrary units of length). */
   double L[DIM];
 
-  /**
-   * Number of cells in each direction
-   *
-   * @todo This array should be @c const.
-   */
+  /** Number of cells in each direction. */
   size_t N[DIM];
 
   /**
