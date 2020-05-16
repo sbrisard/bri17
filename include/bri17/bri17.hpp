@@ -299,6 +299,8 @@ class Hooke {
    * The eigenstresses `τ[n, i, j]` are constant in each cell n. They induce the
    * strains `ε[n, i, j]`.
    *
+   * **Warning: this method has not been tested.**
+   *
    * @param k multi-index of the Fourier component
    * @param tau the `k`-th Fourier component of the eigenstress `τ`,
    * `τ^[k, :, :]`
