@@ -186,6 +186,11 @@ class Hooke {
   /** Geometric description of the underlying FE grid. */
   const CartesianGrid<DIM> &grid;
 
+  /**
+   * @param mu shear modulus
+   * @param nu Poisson ratio
+   * @param grid the FE grid
+   */
   Hooke(double mu, double nu, CartesianGrid<DIM> &grid)
       : mu{mu}, nu{nu}, grid{grid} {};
 
