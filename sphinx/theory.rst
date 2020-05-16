@@ -105,7 +105,7 @@ In [Bri17]_, the DFT ``ε^`` of ``ε`` is expressed as follows::
 
 where ``B^`` is the so-called modal strain-displacement vector, which is
 computed (for a specified value of ``k``) by the method
-:cpp:member:`Hooke\<DIM>::modal_strain_displacement`.
+:cpp:func:`bri17::Hooke::modal_strain_displacement`.
 
 
 The modal stiffness matrix
@@ -128,10 +128,10 @@ in Fourier space [Bri17]_::
   (9)    U = ─ ─── ∑ u^[k, i]⋅K^[k, i, j]⋅u^[k, j],
              2 |N| k
 
-where overlined quantities denote complex conjugates. ``K^`` is the *modal
-stiffness matrix*. For each frequency ``k``, ``K^[k, i, j]`` is a ``DIM × DIM``
-matrix. Its value is delivered by the method
-:cpp:member:`Hooke\<DIM>::modal_stiffness`.
+where overlined quantities denote complex conjugates. ``K^`` is the
+*modal stiffness matrix*. For each frequency ``k``, ``K^[k, i, j]`` is
+a ``DIM × DIM`` matrix. Its value is delivered by the method
+:cpp:func:`bri17::Hooke::modal_stiffness`.
 
 .. _20200514060358:
 
