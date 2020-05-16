@@ -35,8 +35,6 @@ T product(size_t n, T a[]) {
  * A rectangular grid with fixed spacing in each direction.
  *
  * @tparam DIM the number of spatial dimensions (must be 2 or 3)
- *
- * @todo Implement concepts to restrict values of DIM?
  */
 template <size_t DIM>
 class CartesianGrid {
