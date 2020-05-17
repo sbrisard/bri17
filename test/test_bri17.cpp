@@ -88,11 +88,17 @@ class StiffnessMatrixFactory {
         }
       }
     }
-    for (size_t i = 0; i < DIM; i++) fftw_execute(idft_Ku[i]);
-    double correction = 1.0 / hooke.grid.num_cells;
-    // The following correction is due to the fact that FFTW's backward Fourier
-    // transform returns the inverse DFT, scaled by the number of cells (see
-    // FFTW's FAQ, 3.10).
+    double cell_volume = 1.0;
+    for (size_t i = 0; i < DIM; i++) {
+      fftw_execute(idft_Ku[i]);
+      cell_volume *= hooke.grid.L[i] / hooke.grid.N[i];
+    }
+    double correction = cell_volume / hooke.grid.num_cells;
+    // The following correction is due to (1) the fact that FFTW's backward
+    // Fourier transform returns the inverse DFT, scaled by the number of cells
+    // (see FFTW's FAQ, 3.10), and (2) the fact that the so-called “modal
+    // stiffness matrix” returns computes the strain energy, scaled by `|h|`
+    // (the volume of the cells, see “Theory” in the documentation.
     for (size_t i = 0; i < num_dofs; i++) {
       Ku.cpp_data[i] *= correction;
     }

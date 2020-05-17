@@ -250,9 +250,9 @@ class Hooke {
     for (size_t i = 0; i < DIM; i++) {
       double h = grid.L[i] / grid.N[i];
       double beta = 2 * M_PI * k[i] / grid.N[i];
-      phi[i] = 2 * (1 - cos(beta)) / h;
-      chi[i] = (2 + cos(beta)) * h / 3;
-      psi[i] = sin(beta);
+      phi[i] = 2 * (1 - cos(beta)) / h / h;
+      chi[i] = (2 + cos(beta)) / 3;
+      psi[i] = sin(beta) / h;
     }
 
     const double scaling = mu / (1. - 2. * nu);
