@@ -14,7 +14,7 @@
     <script src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="API documentation" href="api.html" />
+    <link rel="next" title="Theory" href="theory.html" />
     <link rel="prev" title="Welcome to bri17’s documentation!" href="index.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
@@ -34,14 +34,88 @@
             
   <div class="section" id="installation">
 <h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="documentation">
-<h2>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h2>
-<p>Requires <a class="reference external" href="http://www.doxygen.nl/">Doxygen</a> and the <a class="reference external" href="https://github.com/michaeljones/breathe">Breathe</a> extension to <a class="reference external" href="https://www.sphinx-doc.org/">Sphinx</a>. In the console, issue the following commands:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>cd $PROJECT_ROOT
-sphinx-build . ../docs
+<div class="section" id="installing-and-testing-the-library">
+<h2>Installing and testing the library<a class="headerlink" href="#installing-and-testing-the-library" title="Permalink to this headline">¶</a></h2>
+<p>bri17 has the following dependencies</p>
+<ul class="simple">
+<li><p><a class="reference external" href="http://eigen.tuxfamily.org/">Eigen</a></p></li>
+<li><p><a class="reference external" href="http://www.fftw.org/">FFTW</a> (required for the tests only)</p></li>
+</ul>
+<p>After cloning the repository, <code class="docutils literal notranslate"><span class="pre">cd</span></code> into the root directory of the project:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ mkdir build
+$ cd build
+$ cmake -G Ninja -D CMAKE_INSTALL_PREFIX=&quot;C:\opt\bri17&quot; ..
+$ ninja install
 </pre></div>
 </div>
-<p>The HTML docs are located in the <code class="docutils literal notranslate"><span class="pre">$PROJECT_ROOT/docs</span></code> directory.</p>
+<p>(you can tweak the value of <code class="docutils literal notranslate"><span class="pre">CMAKE_INSTALL_PREFIX</span></code> to your liking). To run the
+tests:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ninja test
+</pre></div>
+</div>
+</div>
+<div class="section" id="compiling-your-first-program">
+<h2>Compiling your first program<a class="headerlink" href="#compiling-your-first-program" title="Permalink to this headline">¶</a></h2>
+<p>In this section, we create a simple example that instantiates a
+<a class="reference internal" href="api.html#_CPPv4I_6size_tEN5bri1713CartesianGridE" title="bri17::CartesianGrid"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">bri17::CartesianGrid</span></code></a> and prints it to <code class="docutils literal notranslate"><span class="pre">stdout</span></code>. The layout of
+this project is:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>example/
+  ├─ src/
+  │   └─ bri17_example.cc
+  └─ CMakeLists.txt
+</pre></div>
+</div>
+<p>And the files are listed below.</p>
+<p><a class="reference download internal" download="" href="_downloads/4df6e7ef6df5adc0c8ee270bcd1f5dee/bri17_example.cc"><code class="xref download docutils literal notranslate"><span class="pre">bri17_example.cc</span></code></a></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">#include &quot;bri17/bri17.hpp&quot;</span>
+
+<span class="nb">int</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+  <span class="n">size_t</span> <span class="n">N</span><span class="p">[]</span> <span class="o">=</span> <span class="p">{</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">};</span>
+  <span class="n">double</span> <span class="n">L</span><span class="p">[]</span> <span class="o">=</span> <span class="p">{</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">2.</span><span class="p">,</span> <span class="mf">3.</span><span class="p">};</span>
+  <span class="n">bri17</span><span class="p">::</span><span class="n">CartesianGrid</span><span class="o">&lt;</span><span class="mi">3</span><span class="o">&gt;</span> <span class="n">grid</span><span class="p">{</span><span class="n">N</span><span class="p">,</span> <span class="n">L</span><span class="p">};</span>
+  <span class="n">std</span><span class="p">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">grid</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="p">::</span><span class="n">endl</span><span class="p">;</span>
+  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><a class="reference download internal" download="" href="_downloads/60ec4631040a17b93814f9da4955c281/CMakeLists.txt"><code class="xref download docutils literal notranslate"><span class="pre">CMakeLists.txt</span></code></a></p>
+<div class="highlight-cmake notranslate"><div class="highlight"><pre><span></span><span class="nb">project</span><span class="p">(</span><span class="s2">&quot;bri17_example&quot;</span><span class="p">)</span>
+
+<span class="nb">find_package</span><span class="p">(</span><span class="s">Eigen3</span> <span class="s">3.3</span> <span class="s">REQUIRED</span> <span class="s">NO_MODULE</span><span class="p">)</span>
+<span class="nb">find_package</span><span class="p">(</span><span class="s">bri17</span> <span class="s">CONFIG</span> <span class="s">REQUIRED</span><span class="p">)</span>
+
+<span class="nb">add_executable</span><span class="p">(</span><span class="o">${</span><span class="nv">PROJECT_NAME</span><span class="o">}</span> <span class="s">src/bri17_example.cc</span><span class="p">)</span>
+<span class="nb">target_link_libraries</span><span class="p">(</span><span class="o">${</span><span class="nv">PROJECT_NAME</span><span class="o">}</span> <span class="s">bri17::bri17</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition-todo admonition" id="id1">
+<p class="admonition-title">Todo</p>
+<p>Is it possible to get rid of the <code class="docutils literal notranslate"><span class="pre">find_package(Eigen3</span> <span class="pre">3.3</span> <span class="pre">REQUIRED</span>
+<span class="pre">NO_MODULE)</span></code>?</p>
+</div>
+<p>Compilation follows the standard procedure:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ cd example
+$ mkdir build
+$ cd build
+$ cmake -G Ninja -D bri17_DIR=&quot;C:\opt\bri17\share\bri17\cmake&quot; ..
+$ ninja
+</pre></div>
+</div>
+<p>If bri17 was installed in a standard location, you might not need to specify the
+variable <code class="docutils literal notranslate"><span class="pre">bri17_DIR</span></code>. If necessary, specify the full path to the folder that
+holds the files <code class="docutils literal notranslate"><span class="pre">bri17Config.cmake</span></code>, <code class="docutils literal notranslate"><span class="pre">bri17ConfigVersion.cmake</span></code> and
+<code class="docutils literal notranslate"><span class="pre">bri17Targets.cmake</span></code>.</p>
+<p>Running the generated program produces the following output:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ./bri17_example.exe
+CartesianGrid&lt;3&gt;={L=[1,2,3,],N=[3,4,5,]}
+</pre></div>
+</div>
+</div>
+<div class="section" id="building-the-documentation">
+<h2>Building the documentation<a class="headerlink" href="#building-the-documentation" title="Permalink to this headline">¶</a></h2>
+<p>Requires <a class="reference external" href="http://www.doxygen.nl/">Doxygen</a> and the <a class="reference external" href="https://github.com/michaeljones/breathe">Breathe</a> extension to <a class="reference external" href="https://www.sphinx-doc.org/">Sphinx</a>. <code class="docutils literal notranslate"><span class="pre">cd</span></code> into the <code class="docutils literal notranslate"><span class="pre">sphinx/</span></code> subdirectory of the
+project and issue the following command: <code class="docutils literal notranslate"><span class="pre">sphinx-build</span> <span class="pre">.</span> <span class="pre">../docs</span></code>. The HTML
+docs are located in the <code class="docutils literal notranslate"><span class="pre">$PROJECT_ROOT/docs</span></code> directory.</p>
 </div>
 </div>
 
@@ -65,9 +139,12 @@ sphinx-build . ../docs
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#documentation">Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#installing-and-testing-the-library">Installing and testing the library</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#compiling-your-first-program">Compiling your first program</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#building-the-documentation">Building the documentation</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="theory.html">Theory</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API documentation</a></li>
 </ul>
 
@@ -76,7 +153,7 @@ sphinx-build . ../docs
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
       <li>Previous: <a href="index.html" title="previous chapter">Welcome to bri17’s documentation!</a></li>
-      <li>Next: <a href="api.html" title="next chapter">API documentation</a></li>
+      <li>Next: <a href="theory.html" title="next chapter">Theory</a></li>
   </ul></li>
 </ul>
 </div>
