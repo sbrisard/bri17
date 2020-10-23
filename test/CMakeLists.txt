@@ -12,7 +12,8 @@ target_link_libraries(test_bri17 Catch2::Catch2)
 find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 target_link_libraries(test_bri17 Eigen3::Eigen)
 
-find_package(FFTW REQUIRED)
-target_link_libraries(test_bri17 fftw3)
+find_path(FFTW3_INCLUDE_DIR fftw3.h)
+find_library(FFTW3_LIBRARY NAMES fftw3 libfftw3 libfftw3-3)
+target_link_libraries(test_bri17 ${FFTW3_LIBRARY})
 
 add_test(NAME test_bri17 COMMAND test_bri17)

@@ -11,9 +11,6 @@ include(GNUInstallDirs)
 
 set(CMAKE_CXX_STANDARD 17)
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake_modules/morse_cmake/modules" )
-include(MorseInit)
-
 add_library(${PROJECT_NAME} INTERFACE)
 
 target_include_directories(
