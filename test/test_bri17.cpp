@@ -158,7 +158,7 @@ Eigen::MatrixXd assemble_expected_stiffness_matrix(
   const size_t num_dofs = grid.num_cells * DIM;
   Eigen::MatrixXd K{num_dofs, num_dofs};
   K.setZero();
-  size_t cell_nodes[grid.num_nodes_per_cell];
+  auto cell_nodes = new size_t[grid.num_nodes_per_cell];
   for (size_t cell = 0; cell < grid.num_cells; cell++) {
     grid.get_cell_nodes(cell, cell_nodes);
     for (size_t ie = 0; ie < num_dofs_per_cell; ie++) {
@@ -171,6 +171,7 @@ Eigen::MatrixXd assemble_expected_stiffness_matrix(
       }
     }
   }
+  delete[] cell_nodes;
   return K;
 }
 
@@ -306,7 +307,7 @@ Eigen::MatrixXd assemble_expected_strain_displacement_matrix(
   const size_t num_dofs = grid.num_cells * DIM;
   Eigen::MatrixXd B{num_rows, num_dofs};
   B.setZero();
-  size_t cell_nodes[grid.num_nodes_per_cell];
+  auto cell_nodes = new size_t[grid.num_nodes_per_cell];
   for (size_t cell = 0; cell < grid.num_cells; cell++) {
     grid.get_cell_nodes(cell, cell_nodes);
     for (size_t i_local = 0; i_local < num_strain_components; i_local++) {
@@ -318,11 +319,12 @@ Eigen::MatrixXd assemble_expected_strain_displacement_matrix(
       }
     }
   }
+  delete[] cell_nodes;
   return B;
 }
 
 TEST_CASE("Global assembly tests") {
-  const size_t max_dim = 3;
+  constexpr size_t max_dim = 3;
   const double mu = 5.6;
   const double nu = 0.3;
   // Arrays N and L are oversized for dim == 2, but that does not
