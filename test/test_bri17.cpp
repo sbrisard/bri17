@@ -1,7 +1,8 @@
-#define _USE_MATH_DEFINES
+// This include should go at the top, so that _USE_MATH_DEFINE is taken into
+// account
+#include "bri17/bri17.hpp"
 
 #include <sstream>
-#include "bri17/bri17.hpp"
 #include "catch2/catch.hpp"
 
 #include <fftw3.h>
