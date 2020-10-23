@@ -11,7 +11,6 @@
 #ifndef __BRI17_H_20200315__
 #define __BRI17_H_20200315__
 
-#define _USE_MATH_DEFINES
 #include <cmath>
 
 #include <Eigen/Dense>
