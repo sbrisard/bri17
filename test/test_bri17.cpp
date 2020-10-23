@@ -1,3 +1,5 @@
+#define _USE_MATH_DEFINES
+
 #include <sstream>
 #include "bri17/bri17.hpp"
 #include "catch2/catch.hpp"
@@ -8,8 +10,8 @@ void assert_equal(const Eigen::MatrixXd &expected,
                   const Eigen::MatrixXd &actual, double rtol, double atol) {
   REQUIRE(expected.rows() == actual.rows());
   REQUIRE(expected.cols() == actual.cols());
-  for (size_t i = 0; i < expected.rows(); i++) {
-    for (size_t j = 0; j < expected.cols(); j++) {
+  for (Eigen::Index i = 0; i < expected.rows(); i++) {
+    for (Eigen::Index j = 0; j < expected.cols(); j++) {
       double e_ij = expected(i, j);
       double a_ij = actual(i, j);
       double tol = rtol * fabs(e_ij) + atol;
@@ -113,7 +115,7 @@ class StiffnessMatrixFactory {
         Ku{num_dofs},
         Ku_hat{num_dofs} {
     int N_[DIM];
-    for (size_t i = 0; i < DIM; i++) N_[i] = hooke.grid.N[i];
+    for (size_t i = 0; i < DIM; i++) N_[i] = int(hooke.grid.N[i]);
     for (size_t i = 0; i < DIM; i++) {
       size_t offset = i * hooke.grid.num_cells;
       dft_u[i] =
@@ -256,7 +258,7 @@ class StrainDisplacementMatrixFactory {
         Bu{num_strain_components<DIM>() * hooke.grid.num_cells},
         Bu_hat{num_strain_components<DIM>() * hooke.grid.num_cells} {
     int N_[DIM];
-    for (size_t i = 0; i < DIM; i++) N_[i] = hooke.grid.N[i];
+    for (size_t i = 0; i < DIM; i++) N_[i] = int(hooke.grid.N[i]);
     for (size_t i = 0; i < DIM; i++) {
       size_t offset = i * hooke.grid.num_cells;
       dft_u[i] =
