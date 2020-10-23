@@ -1,11 +1,9 @@
-// This include should go at the top, so that _USE_MATH_DEFINE is taken into
-// account
-#include "bri17/bri17.hpp"
-
 #include <sstream>
 #include "catch2/catch.hpp"
 
 #include <fftw3.h>
+
+#include "bri17/bri17.hpp"
 
 void assert_equal(const Eigen::MatrixXd &expected,
                   const Eigen::MatrixXd &actual, double rtol, double atol) {
