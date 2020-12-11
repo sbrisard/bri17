@@ -3,6 +3,7 @@
 
 #include <fftw3.h>
 
+#include "Eigen/Dense"
 #include "bri17/bri17.hpp"
 
 void assert_equal(const Eigen::MatrixXd &expected,
