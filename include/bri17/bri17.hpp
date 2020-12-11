@@ -8,8 +8,7 @@
  * periodic linear elasticity.
  */
 
-#ifndef __BRI17_H_20200315__
-#define __BRI17_H_20200315__
+#pragma once
 
 #include <cmath>
 
@@ -314,4 +313,3 @@ class Hooke {
 };
 
 }  // namespace bri17
-#endif  // __BRI17_H_20200315__
