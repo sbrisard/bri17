@@ -236,8 +236,7 @@ class Hooke {
    * @param k the multi-index in the frequency domain
    * @param K the stiffness matrix `K^[k, :, :]` (output parameter)
    */
-  void modal_stiffness(size_t const *k,
-                       Eigen::Matrix<std::complex<double>, DIM, DIM> &K) const {
+  void modal_stiffness(size_t const *k, std::complex<double> *K) const {
     // In the notation of [Bri17, see Eq. (B.17)]
     //
     // phi[i] = phi(z_i) / h_i
@@ -261,36 +260,26 @@ class Hooke {
     const double scaling = mu / (1. - 2. * nu);
     if constexpr (DIM == 2) {
       const double H_00 = phi[0] * chi[1];
-      K(0, 0) = scaling * H_00;
-      K(0, 1) = scaling * psi[0] * psi[1];
       const double H_11 = chi[0] * phi[1];
-      K(1, 1) = scaling * H_11;
-
-      // Symmetrization
-      K(1, 0) = K(0, 1);
-
       const double K_diag = mu * (H_00 + H_11);
-      K(0, 0) += K_diag;
-      K(1, 1) += K_diag;
+      K[0] = scaling * H_00 + K_diag;
+      K[1] = scaling * psi[0] * psi[1];
+      K[2] = K[1];
+      K[3] = scaling * H_11 + K_diag;
     } else if constexpr (DIM == 3) {
       const double H_00 = phi[0] * chi[1] * chi[2];
-      K(0, 0) = scaling * H_00;
-      K(0, 1) = scaling * psi[0] * psi[1] * chi[2];
-      K(0, 2) = scaling * psi[0] * chi[1] * psi[2];
       const double H_11 = chi[0] * phi[1] * chi[2];
-      K(1, 1) = scaling * H_11;
-      K(1, 2) = scaling * chi[0] * psi[1] * psi[2];
       const double H_22 = chi[0] * chi[1] * phi[2];
-      K(2, 2) = scaling * H_22;
-
-      K(1, 0) = K(0, 1);
-      K(2, 0) = K(0, 2);
-      K(2, 1) = K(1, 2);
-
       const double K_diag = mu * (H_00 + H_11 + H_22);
-      K(0, 0) += K_diag;
-      K(1, 1) += K_diag;
-      K(2, 2) += K_diag;
+      K[0] = scaling * H_00 + K_diag;             // [0, 0]
+      K[1] = scaling * psi[0] * psi[1] * chi[2];  // [0, 1]
+      K[2] = scaling * psi[0] * chi[1] * psi[2];  // [0, 2]
+      K[3] = K[1];                                // [1, 0]
+      K[4] = scaling * H_11 + K_diag;             // [1, 1]
+      K[5] = scaling * chi[0] * psi[1] * psi[2];  // [1, 2]
+      K[6] = K[2];                                // [2, 0]
+      K[7] = K[5];                                // [2, 1]
+      K[8] = scaling * H_22 + K_diag;             // [2, 2]
     } else {
       throw std::logic_error("this should never occur");
     }
