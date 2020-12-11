@@ -1,15 +1,23 @@
 cmake_minimum_required(VERSION 3.13)
+
+file(READ ./metadata/version.txt METADATA_VERSION)
+string(STRIP ${METADATA_VERSION} METADATA_VERSION)
+file(READ ./metadata/description.txt METADATA_DESCRIPTION)
+string(STRIP ${METADATA_DESCRIPTION} METADATA_DESCRIPTION)
+file(READ ./metadata/author.txt METADATA_AUTHOR)
+string(STRIP ${METADATA_AUTHOR} METADATA_AUTHOR)
+
 project(
   bri17
-  VERSION 0.1
-  DESCRIPTION "Implementation of the matrix-free finite element method introduced in <https://hal-enpc.archives-ouvertes.fr/hal-01304603>"
+  VERSION ${METADATA_VERSION}
+  DESCRIPTION ${METADATA_AUTHOR}
   LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 17)
 
 include(CMakePackageConfigHelpers)
 include(CTest)
 include(GNUInstallDirs)
-
-set(CMAKE_CXX_STANDARD 17)
 
 add_library(${PROJECT_NAME} INTERFACE)
 
@@ -56,4 +64,4 @@ install(
 
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/bri17 TYPE INCLUDE)
 
-add_subdirectory(test)
+add_subdirectory(tests)
