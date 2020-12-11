@@ -1,0 +1,4 @@
+*.pyd
+*.egg-info
+setup.cfg
+__pycache__
