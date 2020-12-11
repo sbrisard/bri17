@@ -4,9 +4,10 @@
 <html>
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Installation &#8212; bri17 0.1 documentation</title>
-    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
@@ -36,10 +37,10 @@
 <h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="installing-and-testing-the-library">
 <h2>Installing and testing the library<a class="headerlink" href="#installing-and-testing-the-library" title="Permalink to this headline">¶</a></h2>
-<p>bri17 has the following dependencies</p>
+<p>bri17 has the following dependencies, required for the tests only</p>
 <ul class="simple">
 <li><p><a class="reference external" href="http://eigen.tuxfamily.org/">Eigen</a></p></li>
-<li><p><a class="reference external" href="http://www.fftw.org/">FFTW</a> (required for the tests only)</p></li>
+<li><p><a class="reference external" href="http://www.fftw.org/">FFTW</a></p></li>
 </ul>
 <p>After cloning the repository, <code class="docutils literal notranslate"><span class="pre">cd</span></code> into the root directory of the project:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ mkdir build
@@ -79,32 +80,28 @@ this project is:</p>
 </pre></div>
 </div>
 <p><a class="reference download internal" download="" href="_downloads/60ec4631040a17b93814f9da4955c281/CMakeLists.txt"><code class="xref download docutils literal notranslate"><span class="pre">CMakeLists.txt</span></code></a></p>
-<div class="highlight-cmake notranslate"><div class="highlight"><pre><span></span><span class="nb">project</span><span class="p">(</span><span class="s2">&quot;bri17_example&quot;</span><span class="p">)</span>
+<div class="highlight-cmake notranslate"><div class="highlight"><pre><span></span><span class="nb">cmake_minimum_required</span><span class="p">(</span><span class="s">VERSION</span> <span class="s">3.13</span><span class="p">)</span>
 
-<span class="nb">find_package</span><span class="p">(</span><span class="s">Eigen3</span> <span class="s">3.3</span> <span class="s">REQUIRED</span> <span class="s">NO_MODULE</span><span class="p">)</span>
+<span class="nb">project</span><span class="p">(</span><span class="s2">&quot;bri17_example&quot;</span><span class="p">)</span>
+
 <span class="nb">find_package</span><span class="p">(</span><span class="s">bri17</span> <span class="s">CONFIG</span> <span class="s">REQUIRED</span><span class="p">)</span>
 
 <span class="nb">add_executable</span><span class="p">(</span><span class="o">${</span><span class="nv">PROJECT_NAME</span><span class="o">}</span> <span class="s">src/bri17_example.cc</span><span class="p">)</span>
 <span class="nb">target_link_libraries</span><span class="p">(</span><span class="o">${</span><span class="nv">PROJECT_NAME</span><span class="o">}</span> <span class="s">bri17::bri17</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="admonition-todo admonition" id="id1">
-<p class="admonition-title">Todo</p>
-<p>Is it possible to get rid of the <code class="docutils literal notranslate"><span class="pre">find_package(Eigen3</span> <span class="pre">3.3</span> <span class="pre">REQUIRED</span>
-<span class="pre">NO_MODULE)</span></code>?</p>
-</div>
 <p>Compilation follows the standard procedure:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ cd example
 $ mkdir build
 $ cd build
-$ cmake -G Ninja -D bri17_DIR=&quot;C:\opt\bri17\share\bri17\cmake&quot; ..
+$ cmake -G Ninja -D bri17_DIR=&quot;C:\opt\bri17\share\bri17\cmake\bri17&quot; ..
 $ ninja
 </pre></div>
 </div>
 <p>If bri17 was installed in a standard location, you might not need to specify the
 variable <code class="docutils literal notranslate"><span class="pre">bri17_DIR</span></code>. If necessary, specify the full path to the folder that
-holds the files <code class="docutils literal notranslate"><span class="pre">bri17Config.cmake</span></code>, <code class="docutils literal notranslate"><span class="pre">bri17ConfigVersion.cmake</span></code> and
-<code class="docutils literal notranslate"><span class="pre">bri17Targets.cmake</span></code>.</p>
+holds the files <code class="docutils literal notranslate"><span class="pre">bri17-config.cmake</span></code>, <code class="docutils literal notranslate"><span class="pre">bri17-config-version.cmake</span></code> and
+<code class="docutils literal notranslate"><span class="pre">bri17-targets.cmake</span></code>.</p>
 <p>Running the generated program produces the following output:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ./bri17_example.exe
 CartesianGrid&lt;3&gt;={L=[1,2,3,],N=[3,4,5,]}
@@ -183,7 +180,7 @@ docs are located in the <code class="docutils literal notranslate"><span class="
       &copy;2020, Sébastien Brisard.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.3</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.3.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

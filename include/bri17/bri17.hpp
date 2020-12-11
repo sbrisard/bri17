@@ -13,7 +13,6 @@
 
 #include <cmath>
 
-#include <Eigen/Dense>
 #include <complex>
 #include <cstddef>
 #include <iostream>
@@ -198,7 +197,7 @@ class Hooke {
   /**
    * Compute modal strain-displacement vector for specified spatial frequency.
    *
-   * The output parameter `B` must be preallocated array of size `DIM`.
+   * The output parameter `B` must be a preallocated array of size `DIM`.
    *
    * @param k the multi-index in the frequency domain
    * @param B the strain-displacement vector `B^[k, :]` (output parameter)
@@ -232,6 +231,9 @@ class Hooke {
 
   /**
    * Compute modal stiffness matrix for specified spatial frequency.
+   *
+   * The output parameter `K` must be a preallocated array of size
+   * `DIM * DIM`.
    *
    * @param k the multi-index in the frequency domain
    * @param K the stiffness matrix `K^[k, :, :]` (output parameter)
@@ -285,31 +287,31 @@ class Hooke {
     }
   }
 
-  /**
-   * Compute the strains induced by the specified eigenstresses.
-   *
-   * The eigenstresses `τ[n, i, j]` are constant in each cell n. They induce the
-   * strains `ε[n, i, j]`.
-   *
-   * **Warning: this method has not been tested.**
-   *
-   * @param k multi-index of the Fourier component
-   * @param tau the `k`-th Fourier component of the eigenstress `τ`,
-   * `τ^[k, :, :]`
-   * @param eps the `k`-th Fourier component of `ε`, `ε^[k, :, :]` (output
-   * parameter)
-   */
-  void modal_eigenstress_to_strain(
-      size_t const *k, Eigen::Matrix<std::complex<double>, DIM, DIM> &tau,
-      Eigen::Matrix<std::complex<double>, DIM, DIM> &eps) const {
-    Eigen::Matrix<std::complex<double>, DIM, 1> B{};
-    Eigen::Matrix<std::complex<double>, DIM, DIM> K{};
-    modal_strain_displacement(k, B);
-    modal_stiffness<DIM>(k, mu, nu, K);
-    auto u = -K.fullPivLu().solve(tau * B);
-    eps = 0.5 * (B * u.transpose() + u * B.transpose());
-  }
-};
+//  /**
+//   * Compute the strains induced by the specified eigenstresses.
+//   *
+//   * The eigenstresses `τ[n, i, j]` are constant in each cell n. They induce the
+//   * strains `ε[n, i, j]`.
+//   *
+//   * **Warning: this method has not been tested.**
+//   *
+//   * @param k multi-index of the Fourier component
+//   * @param tau the `k`-th Fourier component of the eigenstress `τ`,
+//   * `τ^[k, :, :]`
+//   * @param eps the `k`-th Fourier component of `ε`, `ε^[k, :, :]` (output
+//   * parameter)
+//   */
+//  void modal_eigenstress_to_strain(
+//      size_t const *k, Eigen::Matrix<std::complex<double>, DIM, DIM> &tau,
+//      Eigen::Matrix<std::complex<double>, DIM, DIM> &eps) const {
+//    Eigen::Matrix<std::complex<double>, DIM, 1> B{};
+//    Eigen::Matrix<std::complex<double>, DIM, DIM> K{};
+//    modal_strain_displacement(k, B);
+//    modal_stiffness<DIM>(k, mu, nu, K);
+//    auto u = -K.fullPivLu().solve(tau * B);
+//    eps = 0.5 * (B * u.transpose() + u * B.transpose());
+//  }
+//};
 
 }  // namespace bri17
 #endif  // __BRI17_H_20200315__

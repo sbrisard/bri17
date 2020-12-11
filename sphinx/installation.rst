@@ -6,10 +6,10 @@ Installation
 Installing and testing the library
 ==================================
 
-bri17 has the following dependencies
+bri17 has the following dependencies, required for the tests only
 
 - `Eigen <http://eigen.tuxfamily.org/>`_
-- `FFTW <http://www.fftw.org/>`_ (required for the tests only)
+- `FFTW <http://www.fftw.org/>`_
 
 After cloning the repository, ``cd`` into the root directory of the project::
 
@@ -47,21 +47,18 @@ And the files are listed below.
 .. literalinclude:: example/CMakeLists.txt
    :language: cmake
 
-.. todo:: Is it possible to get rid of the ``find_package(Eigen3 3.3 REQUIRED
-          NO_MODULE)``?
-
 Compilation follows the standard procedure::
 
   $ cd example
   $ mkdir build
   $ cd build
-  $ cmake -G Ninja -D bri17_DIR="C:\opt\bri17\share\bri17\cmake" ..
+  $ cmake -G Ninja -D bri17_DIR="C:\opt\bri17\share\bri17\cmake\bri17" ..
   $ ninja
 
 If bri17 was installed in a standard location, you might not need to specify the
 variable ``bri17_DIR``. If necessary, specify the full path to the folder that
-holds the files ``bri17Config.cmake``, ``bri17ConfigVersion.cmake`` and
-``bri17Targets.cmake``.
+holds the files ``bri17-config.cmake``, ``bri17-config-version.cmake`` and
+``bri17-targets.cmake``.
 
 Running the generated program produces the following output::
 

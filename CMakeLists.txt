@@ -25,9 +25,6 @@ if (MATH_LIBRARY)
 endif()
 add_compile_definitions(_USE_MATH_DEFINES)
 
-find_package(Eigen3 3.3 REQUIRED NO_MODULE)
-target_link_libraries(${PROJECT_NAME} INTERFACE Eigen3::Eigen)
-
 install(
   TARGETS ${PROJECT_NAME}
   EXPORT ${PROJECT_NAME}_Targets

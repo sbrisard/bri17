@@ -4,9 +4,10 @@
 <html>
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Theory &#8212; bri17 0.1 documentation</title>
-    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
@@ -128,7 +129,7 @@ are denoted <code class="docutils literal notranslate"><span class="pre">ε[n,</
 </div>
 <p>where <code class="docutils literal notranslate"><span class="pre">B^</span></code> is the so-called modal strain-displacement vector, which is
 computed (for a specified value of <code class="docutils literal notranslate"><span class="pre">k</span></code>) by the method
-<a class="reference internal" href="api.html#_CPPv4NK5bri175Hooke25modal_strain_displacementEPK6size_tRN5Eigen6MatrixINSt7complexIdEE3DIMXL1EEEE" title="bri17::Hooke::modal_strain_displacement"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">bri17::Hooke::modal_strain_displacement()</span></code></a>.</p>
+<a class="reference internal" href="api.html#_CPPv4NK5bri175Hooke25modal_strain_displacementEPK6size_tPNSt7complexIdEE" title="bri17::Hooke::modal_strain_displacement"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">bri17::Hooke::modal_strain_displacement()</span></code></a>.</p>
 </div>
 <div class="section" id="the-modal-stiffness-matrix">
 <h2>The modal stiffness matrix<a class="headerlink" href="#the-modal-stiffness-matrix" title="Permalink to this headline">¶</a></h2>
@@ -150,7 +151,7 @@ in Fourier space <a class="reference internal" href="#bri17" id="id6"><span>[Bri
 <p>where overlined quantities denote complex conjugates. <code class="docutils literal notranslate"><span class="pre">K^</span></code> is the
 <em>modal stiffness matrix</em>. For each frequency <code class="docutils literal notranslate"><span class="pre">k</span></code>, <code class="docutils literal notranslate"><span class="pre">K^[k,</span> <span class="pre">i,</span> <span class="pre">j]</span></code> is
 a <code class="docutils literal notranslate"><span class="pre">DIM × DIM</span></code> matrix. Its value is delivered by the method
-<a class="reference internal" href="api.html#_CPPv4NK5bri175Hooke15modal_stiffnessEPK6size_tRN5Eigen6MatrixINSt7complexIdEE3DIM3DIMEE" title="bri17::Hooke::modal_stiffness"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">bri17::Hooke::modal_stiffness()</span></code></a>.</p>
+<a class="reference internal" href="api.html#_CPPv4NK5bri175Hooke15modal_stiffnessEPK6size_tPNSt7complexIdEE" title="bri17::Hooke::modal_stiffness"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">bri17::Hooke::modal_stiffness()</span></code></a>.</p>
 <p id="id7">The strain energy is in general expressed in the real space by means of the
 <em>nodal stiffness matrix</em> <code class="docutils literal notranslate"><span class="pre">K[m,</span> <span class="pre">n,</span> <span class="pre">i,</span> <span class="pre">j]</span></code> as follows:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>            1
@@ -303,7 +304,7 @@ grid. <em>International Journal for Numerical Methods in Engineering</em>,
       &copy;2020, Sébastien Brisard.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.3</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.3.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
