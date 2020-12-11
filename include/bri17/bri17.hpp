@@ -311,7 +311,7 @@ class Hooke {
 //    auto u = -K.fullPivLu().solve(tau * B);
 //    eps = 0.5 * (B * u.transpose() + u * B.transpose());
 //  }
-//};
+};
 
 }  // namespace bri17
 #endif  // __BRI17_H_20200315__
