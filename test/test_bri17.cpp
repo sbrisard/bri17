@@ -201,7 +201,7 @@ class StrainDisplacementMatrixFactory {
       size_t i = 0;
       for (k[0] = 0; k[0] < hooke.grid.N[0]; k[0]++) {
         for (k[1] = 0; k[1] < hooke.grid.N[1]; k[1]++) {
-          hooke.modal_strain_displacement(k, B_k);
+          hooke.modal_strain_displacement(k, B_k.data());
           u_k(0) = u_hat.cpp_data[i];
           u_k(1) = u_hat.cpp_data[i + hooke.grid.num_cells];
           auto eps_k = 0.5 * (B_k * u_k.transpose() + u_k * B_k.transpose());
@@ -217,7 +217,7 @@ class StrainDisplacementMatrixFactory {
       for (k[0] = 0; k[0] < hooke.grid.N[0]; k[0]++) {
         for (k[1] = 0; k[1] < hooke.grid.N[1]; k[1]++) {
           for (k[2] = 0; k[2] < hooke.grid.N[2]; k[2]++) {
-            hooke.modal_strain_displacement(k, B_k);
+            hooke.modal_strain_displacement(k, B_k.data());
             u_k(0) = u_hat.cpp_data[i];
             u_k(1) = u_hat.cpp_data[i + hooke.grid.num_cells];
             u_k(2) = u_hat.cpp_data[i + 2 * hooke.grid.num_cells];
