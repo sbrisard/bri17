@@ -4,7 +4,7 @@ project_root = pathlib.Path.cwd().parent
 
 
 def get_metadata(key):
-    with open(project_root / "metadata" / (key + ".txt"), "r") as f:
+    with open(project_root / "metadata" / (key + ".txt"), "r", encoding="utf8") as f:
         return f.read()
 
 

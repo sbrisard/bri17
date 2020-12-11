@@ -5,7 +5,8 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Theory &#8212; bri17 0.1 documentation</title>
+    <title>Theory &#8212; bri17 0.1
+ documentation</title>
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -15,8 +16,8 @@
     <script src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="API documentation" href="api.html" />
-    <link rel="prev" title="Installation" href="installation.html" />
+    <link rel="next" title="API documentation of the C++ library" href="cpp_api.html" />
+    <link rel="prev" title="Tutorial" href="tutorial.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -129,7 +130,7 @@ are denoted <code class="docutils literal notranslate"><span class="pre">ε[n,</
 </div>
 <p>where <code class="docutils literal notranslate"><span class="pre">B^</span></code> is the so-called modal strain-displacement vector, which is
 computed (for a specified value of <code class="docutils literal notranslate"><span class="pre">k</span></code>) by the method
-<a class="reference internal" href="api.html#_CPPv4NK5bri175Hooke25modal_strain_displacementEPK6size_tPNSt7complexIdEE" title="bri17::Hooke::modal_strain_displacement"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">bri17::Hooke::modal_strain_displacement()</span></code></a>.</p>
+<a class="reference internal" href="cpp_api.html#_CPPv4NK5bri175Hooke25modal_strain_displacementEPK6size_tPNSt7complexIdEE" title="bri17::Hooke::modal_strain_displacement"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">bri17::Hooke::modal_strain_displacement()</span></code></a>.</p>
 </div>
 <div class="section" id="the-modal-stiffness-matrix">
 <h2>The modal stiffness matrix<a class="headerlink" href="#the-modal-stiffness-matrix" title="Permalink to this headline">¶</a></h2>
@@ -151,7 +152,7 @@ in Fourier space <a class="reference internal" href="#bri17" id="id6"><span>[Bri
 <p>where overlined quantities denote complex conjugates. <code class="docutils literal notranslate"><span class="pre">K^</span></code> is the
 <em>modal stiffness matrix</em>. For each frequency <code class="docutils literal notranslate"><span class="pre">k</span></code>, <code class="docutils literal notranslate"><span class="pre">K^[k,</span> <span class="pre">i,</span> <span class="pre">j]</span></code> is
 a <code class="docutils literal notranslate"><span class="pre">DIM × DIM</span></code> matrix. Its value is delivered by the method
-<a class="reference internal" href="api.html#_CPPv4NK5bri175Hooke15modal_stiffnessEPK6size_tPNSt7complexIdEE" title="bri17::Hooke::modal_stiffness"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">bri17::Hooke::modal_stiffness()</span></code></a>.</p>
+<a class="reference internal" href="cpp_api.html#_CPPv4NK5bri175Hooke15modal_stiffnessEPK6size_tPNSt7complexIdEE" title="bri17::Hooke::modal_stiffness"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">bri17::Hooke::modal_stiffness()</span></code></a>.</p>
 <p id="id7">The strain energy is in general expressed in the real space by means of the
 <em>nodal stiffness matrix</em> <code class="docutils literal notranslate"><span class="pre">K[m,</span> <span class="pre">n,</span> <span class="pre">i,</span> <span class="pre">j]</span></code> as follows:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>            1
@@ -257,6 +258,7 @@ grid. <em>International Journal for Numerical Methods in Engineering</em>,
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Theory</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#assumptions">Assumptions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#discrete-fourier-transform-conventions-adopted-in-bri17">Discrete Fourier Transform: conventions adopted in bri17</a></li>
@@ -266,15 +268,16 @@ grid. <em>International Journal for Numerical Methods in Engineering</em>,
 <li class="toctree-l2"><a class="reference internal" href="#references">References</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="api.html">API documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cpp_api.html">API documentation of the C++ library</a></li>
+<li class="toctree-l1"><a class="reference internal" href="py_api.html">API documentation of the Python bindings</a></li>
 </ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="installation.html" title="previous chapter">Installation</a></li>
-      <li>Next: <a href="api.html" title="next chapter">API documentation</a></li>
+      <li>Previous: <a href="tutorial.html" title="previous chapter">Tutorial</a></li>
+      <li>Next: <a href="cpp_api.html" title="next chapter">API documentation of the C++ library</a></li>
   </ul></li>
 </ul>
 </div>
@@ -301,7 +304,9 @@ grid. <em>International Journal for Numerical Methods in Engineering</em>,
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2020, Sébastien Brisard.
+      &copy;2020
+, Sébastien Brisard
+.
       
       |
       Powered by <a href="http://sphinx-doc.org/">Sphinx 3.3.1</a>

@@ -6,7 +6,7 @@ import setuptools
 
 
 def get_metadata(key):
-    with open(os.path.join("..", "metadata", key+".txt"), "r") as f:
+    with open(os.path.join("..", "metadata", key+".txt"), "r", encoding="utf8") as f:
         return f.read().strip()
 
 

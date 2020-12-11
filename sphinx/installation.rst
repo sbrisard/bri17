@@ -31,27 +31,17 @@ At this point, bri17 should be installed. You can now run the tests::
 
   $ ctest . -C Release
 
-.. note:: Depending on the system, you might need to add
-   ``bri17_INSTALL_PREFIX`` to your ``PATH`` environment variable.
-
 
 Compiling your first bri17 program
 ==================================
 
 In this section, we create a simple example that instantiates a
-:cpp:class:`bri17::CartesianGrid` and prints it to ``stdout``. The layout of
-this project is::
+:cpp:class:`bri17::CartesianGrid` and prints it to ``stdout``. The
+relevant files are listed below.
 
-  example/
-    ├─ src/
-    │   └─ bri17_example.cc
-    └─ CMakeLists.txt
+:download:`bri17_example.cc <../example/bri17_example.cpp>`
 
-And the files are listed below.
-
-:download:`bri17_example.cc <../example/src/bri17_example.cc>`
-
-.. literalinclude:: ../example/src/bri17_example.cc
+.. literalinclude:: ../example/bri17_example.cpp
 
 :download:`CMakeLists.txt <../example/CMakeLists.txt>`
 
