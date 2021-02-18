@@ -33,13 +33,13 @@ class CartesianGrid {
   static constexpr int num_nodes_per_cell = 1 << DIM;
 
   /** Number of cells in each direction. */
-  std::array<int, DIM> N;
+  std::array<int, DIM> const N;
 
   /** Size of the grid in each direction (arbitrary units of length). */
-  std::array<double, DIM> L;
+  std::array<double, DIM> const L;
 
   /** Total number of cells: `N[0] * N[1] * ... * N[DIM-1]`. */
-  const int num_cells;
+  int const num_cells;
 
   /**
    * @param N number of cells in each direction
@@ -167,13 +167,13 @@ template <int DIM>
 class Hooke {
  public:
   /** The shear modulus of the material. */
-  const double mu;
+  double const mu;
 
   /** The Poisson ratio of the material. */
-  const double nu;
+  double const nu;
 
   /** Geometric description of the underlying FE grid. */
-  const CartesianGrid<DIM> grid;
+  CartesianGrid<DIM> const grid;
 
   /**
    * @param mu shear modulus
@@ -191,8 +191,7 @@ class Hooke {
    * @param k the multi-index in the frequency domain
    * @param B the strain-displacement vector `B^[k, :]` (output parameter)
    */
-  void modal_strain_displacement(int const *k,
-                                 std::complex<double> *B) const {
+  void modal_strain_displacement(int const *k, std::complex<double> *B) const {
     double c[DIM];
     double s[DIM];
     double sum_alpha = 0.;
