@@ -12,6 +12,7 @@
 
 #include <array>
 #include <cmath>
+#include <concepts>
 #include <numbers>
 #include <numeric>
 
@@ -25,10 +26,12 @@ namespace bri17 {
 /**
  * A rectangular grid with fixed spacing in each direction.
  *
+ * @tparam T the scalar type
  * @tparam DIM the number of spatial dimensions (must be 2 or 3)
  */
-template <int DIM>
-class CartesianGrid {
+template <typename T, int DIM>
+requires(std::floating_point<T> &&
+         ((DIM == 2) || (DIM == 3))) class CartesianGrid {
  public:
   /** Number of nodes per cell: `2 ** DIM`. */
   static constexpr int num_nodes_per_cell = 1 << DIM;
@@ -37,7 +40,7 @@ class CartesianGrid {
   std::array<int, DIM> const N;
 
   /** Size of the grid in each direction (arbitrary units of length). */
-  std::array<double, DIM> const L;
+  std::array<T, DIM> const L;
 
   /** Total number of cells: `N[0] * N[1] * ... * N[DIM-1]`. */
   int const num_cells;
@@ -46,7 +49,7 @@ class CartesianGrid {
    * @param N number of cells in each direction
    * @param L size of the grid in each direction (arbitrary units of length)
    */
-  CartesianGrid(std::array<int, DIM> N, std::array<double, DIM> L)
+  CartesianGrid(std::array<int, DIM> N, std::array<T, DIM> L)
       : N{N},
         L{L},
         num_cells{
@@ -145,8 +148,8 @@ class CartesianGrid {
 };
 
 /** Print the grid to the specified `ostream`. */
-template <int DIM>
-std::ostream &operator<<(std::ostream &os, const CartesianGrid<DIM> &grid) {
+template <typename T, int DIM>
+std::ostream &operator<<(std::ostream &os, const CartesianGrid<T, DIM> &grid) {
   os << "CartesianGrid<" << DIM << ">={L=[";
   for (auto L_i : grid.L) {
     os << L_i << ",";
@@ -163,25 +166,28 @@ std::ostream &operator<<(std::ostream &os, const CartesianGrid<DIM> &grid) {
  *
  * This class provides methods to compute the modal strain-displacement and
  * stiffness matrices.
+ *
+ * @tparam T the scalar type
+ * @tparam DIM the number of spatial dimensions (must be 2 or 3)
  */
-template <int DIM>
-class Hooke {
+template <typename T, int DIM>
+requires(std::floating_point<T> && ((DIM == 2) || (DIM == 3))) class Hooke {
  public:
   /** The shear modulus of the material. */
-  double const mu;
+  T const mu;
 
   /** The Poisson ratio of the material. */
-  double const nu;
+  T const nu;
 
   /** Geometric description of the underlying FE grid. */
-  CartesianGrid<DIM> const grid;
+  CartesianGrid<T, DIM> const grid;
 
   /**
    * @param mu shear modulus
    * @param nu Poisson ratio
    * @param grid the FE grid
    */
-  Hooke(double mu, double nu, CartesianGrid<DIM> &grid)
+  Hooke(T mu, T nu, CartesianGrid<T, DIM> &grid)
       : mu{mu}, nu{nu}, grid{grid} {};
 
   /**
@@ -192,19 +198,19 @@ class Hooke {
    * @param k the multi-index in the frequency domain
    * @param B the strain-displacement vector `B^[k, :]` (output parameter)
    */
-  void modal_strain_displacement(int const *k, std::complex<double> *B) const {
-    double c[DIM];
-    double s[DIM];
-    double sum_alpha = 0.;
+  void modal_strain_displacement(int const *k, std::complex<T> *B) const {
+    T c[DIM];
+    T s[DIM];
+    T sum_alpha{}; // TODO Check that initializes to 0
 
     for (int i = 0; i < DIM; i++) {
-      const double alpha = std::numbers::pi * k[i] / grid.N[i];
+      T alpha = std::numbers::pi_v<T> * k[i] / grid.N[i];
       sum_alpha += alpha;
       c[i] = cos(alpha) * grid.L[i] / grid.N[i];
       s[i] = sin(alpha);
     }
 
-    std::complex prefactor{-2 * sin(sum_alpha), 2 * cos(sum_alpha)};
+    std::complex<T> prefactor{-2 * sin(sum_alpha), 2 * cos(sum_alpha)};
 
     if constexpr (DIM == 2) {
       B[0] = prefactor * s[0] * c[1];
@@ -227,7 +233,7 @@ class Hooke {
    * @param k the multi-index in the frequency domain
    * @param K the stiffness matrix `K^[k, :, :]` (output parameter)
    */
-  void modal_stiffness(int const *k, std::complex<double> *K) const {
+  void modal_stiffness(int const *k, std::complex<T> *K) const {
     // In the notation of [Bri17, see Eq. (B.17)]
     //
     // phi[i] = phi(z_i) / h_i
@@ -237,12 +243,12 @@ class Hooke {
     // Which simplifies the expression of H_k (there are no h_i's).
     // Note that H_k is multiplied by the cell volume, so that the
     // modal_stiffness is the true modal stiffness
-    double phi[DIM];
-    double psi[DIM];
-    double chi[DIM];
+    T phi[DIM];
+    T psi[DIM];
+    T chi[DIM];
     for (int i = 0; i < DIM; i++) {
-      double h = grid.L[i] / grid.N[i];
-      double beta = 2 * std::numbers::pi * k[i] / grid.N[i];
+      T h = grid.L[i] / grid.N[i];
+      T beta = 2 * std::numbers::pi_v<T> * k[i] / grid.N[i];
       phi[i] = 2 * (1 - cos(beta)) / h / h;
       chi[i] = (2 + cos(beta)) / 3;
       psi[i] = sin(beta) / h;
@@ -250,18 +256,18 @@ class Hooke {
 
     const double scaling = mu / (1. - 2. * nu);
     if constexpr (DIM == 2) {
-      const double H_00 = phi[0] * chi[1];
-      const double H_11 = chi[0] * phi[1];
-      const double K_diag = mu * (H_00 + H_11);
+      auto H_00 = phi[0] * chi[1];
+      auto H_11 = chi[0] * phi[1];
+      auto K_diag = mu * (H_00 + H_11);
       K[0] = scaling * H_00 + K_diag;
       K[1] = scaling * psi[0] * psi[1];
       K[2] = K[1];
       K[3] = scaling * H_11 + K_diag;
     } else if constexpr (DIM == 3) {
-      const double H_00 = phi[0] * chi[1] * chi[2];
-      const double H_11 = chi[0] * phi[1] * chi[2];
-      const double H_22 = chi[0] * chi[1] * phi[2];
-      const double K_diag = mu * (H_00 + H_11 + H_22);
+      auto H_00 = phi[0] * chi[1] * chi[2];
+      auto H_11 = chi[0] * phi[1] * chi[2];
+      auto H_22 = chi[0] * chi[1] * phi[2];
+      auto K_diag = mu * (H_00 + H_11 + H_22);
       K[0] = scaling * H_00 + K_diag;             // [0, 0]
       K[1] = scaling * psi[0] * psi[1] * chi[2];  // [0, 1]
       K[2] = scaling * psi[0] * chi[1] * psi[2];  // [0, 2]

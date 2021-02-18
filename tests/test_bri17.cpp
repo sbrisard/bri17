@@ -40,11 +40,11 @@ class FFTWComplexBuffer {
   ~FFTWComplexBuffer() { fftw_free(c_data); }
 };
 
-template <int DIM>
+template <typename T, int DIM>
 class StiffnessMatrixFactory {
  private:
   const int num_dofs;
-  const bri17::Hooke<DIM> hooke;
+  const bri17::Hooke<T, DIM> hooke;
   const FFTWComplexBuffer u;
   const FFTWComplexBuffer u_hat;
   const FFTWComplexBuffer Ku;
@@ -107,7 +107,7 @@ class StiffnessMatrixFactory {
   };
 
  public:
-  StiffnessMatrixFactory(bri17::Hooke<DIM> hooke)
+  StiffnessMatrixFactory(bri17::Hooke<T, DIM> hooke)
       : num_dofs{DIM * hooke.grid.num_cells},
         hooke{hooke},
         u{num_dofs},
@@ -152,7 +152,7 @@ class StiffnessMatrixFactory {
 
 template <int DIM>
 Eigen::MatrixXd assemble_expected_stiffness_matrix(
-    const bri17::CartesianGrid<DIM> &grid, const Eigen::MatrixXd &Ke) {
+    const bri17::CartesianGrid<double, DIM> &grid, const Eigen::MatrixXd &Ke) {
   // TODO Check dimensions of Ke and K.
   const int num_dofs_per_cell = grid.num_nodes_per_cell * DIM;
   const int num_dofs = grid.num_cells * DIM;
@@ -163,10 +163,10 @@ Eigen::MatrixXd assemble_expected_stiffness_matrix(
     grid.get_cell_nodes(cell, cell_nodes);
     for (int ie = 0; ie < num_dofs_per_cell; ie++) {
       int i = cell_nodes[ie % grid.num_nodes_per_cell] +
-                 grid.num_cells * (ie / grid.num_nodes_per_cell);
+              grid.num_cells * (ie / grid.num_nodes_per_cell);
       for (int je = 0; je < num_dofs_per_cell; je++) {
         int j = cell_nodes[je % grid.num_nodes_per_cell] +
-                   grid.num_cells * (je / grid.num_nodes_per_cell);
+                grid.num_cells * (je / grid.num_nodes_per_cell);
         K(i, j) += Ke(ie, je);
       }
     }
@@ -180,11 +180,11 @@ constexpr int num_strain_components() {
   return (DIM * (DIM + 1)) / 2;
 }
 
-template <int DIM>
+template <typename T, int DIM>
 class StrainDisplacementMatrixFactory {
  private:
   const int num_dofs;
-  const bri17::Hooke<DIM> hooke;
+  const bri17::Hooke<T, DIM> hooke;
   const FFTWComplexBuffer u;
   const FFTWComplexBuffer u_hat;
   const FFTWComplexBuffer Bu;
@@ -251,7 +251,7 @@ class StrainDisplacementMatrixFactory {
   };
 
  public:
-  StrainDisplacementMatrixFactory(bri17::Hooke<DIM> hooke)
+  StrainDisplacementMatrixFactory(bri17::Hooke<T, DIM> hooke)
       : num_dofs{DIM * hooke.grid.num_cells},
         hooke{hooke},
         u{num_dofs},
@@ -298,9 +298,9 @@ class StrainDisplacementMatrixFactory {
   }
 };
 
-template <int DIM>
+template <typename T, int DIM>
 Eigen::MatrixXd assemble_expected_strain_displacement_matrix(
-    const bri17::CartesianGrid<DIM> &grid, const Eigen::MatrixXd &Be) {
+    const bri17::CartesianGrid<T, DIM> &grid, const Eigen::MatrixXd &Be) {
   const int num_strain_components = (DIM * (DIM + 1)) / 2;
   const int num_rows = grid.num_cells * num_strain_components;
   const int num_dofs_per_cell = grid.num_nodes_per_cell * DIM;
@@ -314,7 +314,7 @@ Eigen::MatrixXd assemble_expected_strain_displacement_matrix(
       int i = i_local * grid.num_cells + cell;
       for (int j_local = 0; j_local < num_dofs_per_cell; j_local++) {
         int j = cell_nodes[j_local % grid.num_nodes_per_cell] +
-                   grid.num_cells * (j_local / grid.num_nodes_per_cell);
+                grid.num_cells * (j_local / grid.num_nodes_per_cell);
         B(i, j) += Be(i_local, j_local);
       }
     }
@@ -342,9 +342,9 @@ TEST_CASE("Global assembly tests") {
 
   SECTION("2D stiffness matrix") {
     const int dim = 2;
-    bri17::CartesianGrid<dim> grid{shape2, L2};
-    bri17::Hooke<dim> hooke{mu, nu, grid};
-    StiffnessMatrixFactory<dim> factory{hooke};
+    bri17::CartesianGrid<decltype(L2)::value_type, dim> grid{shape2, L2};
+    bri17::Hooke hooke{mu, nu, grid};
+    StiffnessMatrixFactory factory{hooke};
 
     const int num_dofs_per_cell = grid.num_nodes_per_cell * dim;
     Eigen::MatrixXd Ke{num_dofs_per_cell, num_dofs_per_cell};
@@ -370,9 +370,9 @@ TEST_CASE("Global assembly tests") {
 
   SECTION("3D stiffness matrix") {
     const int dim = 3;
-    bri17::CartesianGrid<dim> grid{shape3, L3};
-    bri17::Hooke<dim> hooke{mu, nu, grid};
-    StiffnessMatrixFactory<dim> factory{hooke};
+    bri17::CartesianGrid<decltype(L3)::value_type, dim> grid{shape3, L3};
+    bri17::Hooke hooke{mu, nu, grid};
+    StiffnessMatrixFactory factory{hooke};
 
     const int num_dofs_per_cell = grid.num_nodes_per_cell * dim;
     Eigen::MatrixXd Ke{num_dofs_per_cell, num_dofs_per_cell};
@@ -545,8 +545,8 @@ TEST_CASE("Global assembly tests") {
 
   SECTION("2D strain-displacement matrix") {
     const int dim = 2;
-    bri17::CartesianGrid<dim> grid{shape2, L2};
-    bri17::Hooke<dim> hooke{mu, nu, grid};
+    bri17::CartesianGrid<decltype(L2)::value_type, dim> grid{shape2, L2};
+    bri17::Hooke hooke{mu, nu, grid};
 
     const int num_dofs_per_cell = grid.num_nodes_per_cell * dim;
     const int num_strain_components_per_cell = (dim * (dim + 1)) / 2;
@@ -558,7 +558,7 @@ TEST_CASE("Global assembly tests") {
         -0.4242640687119284, 0.4242640687119284, 0.4242640687119284;
     auto B_exp = assemble_expected_strain_displacement_matrix(grid, Be);
 
-    StrainDisplacementMatrixFactory<dim> factory{hooke};
+    StrainDisplacementMatrixFactory factory{hooke};
     auto B_act = factory.run();
 
     assert_equal(B_exp, B_act, 1e-15, 1e-14);
@@ -566,8 +566,8 @@ TEST_CASE("Global assembly tests") {
 
   SECTION("3D strain-displacement matrix") {
     const int dim = 3;
-    bri17::CartesianGrid<dim> grid{shape3, L3};
-    bri17::Hooke<dim> hooke{mu, nu, grid};
+    bri17::CartesianGrid<decltype(L3)::value_type, dim> grid{shape3, L3};
+    bri17::Hooke hooke{mu, nu, grid};
 
     const int num_dofs_per_cell = grid.num_nodes_per_cell * dim;
     const int num_strain_components_per_cell = (dim * (dim + 1)) / 2;
@@ -599,7 +599,7 @@ TEST_CASE("Global assembly tests") {
         0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
     auto B_exp = assemble_expected_strain_displacement_matrix(grid, Be);
 
-    StrainDisplacementMatrixFactory<dim> factory{hooke};
+    StrainDisplacementMatrixFactory factory{hooke};
     auto B_act = factory.run();
 
     assert_equal(B_exp, B_act, 1e-15, 1e-14);
