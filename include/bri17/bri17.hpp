@@ -32,14 +32,14 @@ class CartesianGrid {
   /** Number of nodes per cell: `2 ** DIM`. */
   static constexpr size_t num_nodes_per_cell = 1 << DIM;
 
-  /** Total number of cells: `N[0] * N[1] * ... * N[DIM-1]`. */
-  const size_t num_cells;
-
   /** Number of cells in each direction. */
   std::array<size_t, DIM> N;
 
   /** Size of the grid in each direction (arbitrary units of length). */
   std::array<double, DIM> L;
+
+  /** Total number of cells: `N[0] * N[1] * ... * N[DIM-1]`. */
+  const size_t num_cells;
 
   /**
    * @param N number of cells in each direction
