@@ -327,18 +327,22 @@ TEST_CASE("Global assembly tests") {
   constexpr size_t max_dim = 3;
   const double mu = 5.6;
   const double nu = 0.3;
-  // Arrays N and L are oversized for dim == 2, but that does not
-  // matter
-  size_t N[] = {3, 4, 5};
-  double h[] = {1.1, 1.2, 1.3};
-  double L[max_dim];
-  for (size_t i = 0; i < max_dim; i++) {
-    L[i] = N[i] * h[i];
-  }
+
+  std::array<size_t, 2> shape2{3, 4};
+  std::array<double, 2> spacing2{1.1, 1.2};
+  std::array<double, 2> L2;
+  std::transform(shape2.cbegin(), shape2.cend(), spacing2.cbegin(), L2.begin(),
+                 std::multiplies());
+
+  std::array<size_t, 3> shape3{3, 4, 5};
+  std::array<double, 3> spacing3{1.1, 1.2, 1.3};
+  std::array<double, 3> L3;
+  std::transform(shape3.cbegin(), shape3.cend(), spacing3.cbegin(), L3.begin(),
+                 std::multiplies());
 
   SECTION("2D stiffness matrix") {
     const size_t dim = 2;
-    bri17::CartesianGrid<dim> grid{N, L};
+    bri17::CartesianGrid<dim> grid{shape2, L2};
     bri17::Hooke<dim> hooke{mu, nu, grid};
     StiffnessMatrixFactory<dim> factory{hooke};
 
@@ -366,7 +370,7 @@ TEST_CASE("Global assembly tests") {
 
   SECTION("3D stiffness matrix") {
     const size_t dim = 3;
-    bri17::CartesianGrid<dim> grid{N, L};
+    bri17::CartesianGrid<dim> grid{shape3, L3};
     bri17::Hooke<dim> hooke{mu, nu, grid};
     StiffnessMatrixFactory<dim> factory{hooke};
 
@@ -541,7 +545,7 @@ TEST_CASE("Global assembly tests") {
 
   SECTION("2D strain-displacement matrix") {
     const size_t dim = 2;
-    bri17::CartesianGrid<dim> grid{N, L};
+    bri17::CartesianGrid<dim> grid{shape2, L2};
     bri17::Hooke<dim> hooke{mu, nu, grid};
 
     const size_t num_dofs_per_cell = grid.num_nodes_per_cell * dim;
@@ -562,7 +566,7 @@ TEST_CASE("Global assembly tests") {
 
   SECTION("3D strain-displacement matrix") {
     const size_t dim = 3;
-    bri17::CartesianGrid<dim> grid{N, L};
+    bri17::CartesianGrid<dim> grid{shape3, L3};
     bri17::Hooke<dim> hooke{mu, nu, grid};
 
     const size_t num_dofs_per_cell = grid.num_nodes_per_cell * dim;

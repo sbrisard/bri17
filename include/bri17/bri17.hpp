@@ -10,7 +10,9 @@
 
 #pragma once
 
+#include <array>
 #include <cmath>
+#include <numeric>
 
 #include <complex>
 #include <cstddef>
@@ -39,28 +41,27 @@ template <size_t DIM>
 class CartesianGrid {
  public:
   /** Number of nodes per cell: `2 ** DIM`. */
-  const size_t num_nodes_per_cell;
+  static constexpr size_t num_nodes_per_cell = 1 << DIM;
 
   /** Total number of cells: `N[0] * N[1] * ... * N[DIM-1]`. */
   const size_t num_cells;
 
-  /** Size of the grid in each direction (arbitrary units of length). */
-  double L[DIM];
-
   /** Number of cells in each direction. */
-  size_t N[DIM];
+  std::array<size_t, DIM> N;
+
+  /** Size of the grid in each direction (arbitrary units of length). */
+  std::array<double, DIM> L;
 
   /**
    * @param N number of cells in each direction
    * @param L size of the grid in each direction (arbitrary units of length)
    */
-  CartesianGrid(size_t N[], double L[])
-      : num_nodes_per_cell{1 << DIM}, num_cells{product(DIM, N)} {
+  CartesianGrid(std::array<size_t, DIM> N, std::array<double, DIM> L)
+      : N{N},
+        L{L},
+        num_cells{
+            std::reduce(N.cbegin(), N.cend(), size_t{1}, std::multiplies())} {
     static_assert((DIM == 2) || (DIM == 3));
-    for (size_t i = 0; i < DIM; i++) {
-      this->L[i] = L[i];
-      this->N[i] = N[i];
-    }
   }
 
   /**
@@ -183,7 +184,7 @@ class Hooke {
   const double nu;
 
   /** Geometric description of the underlying FE grid. */
-  const CartesianGrid<DIM> &grid;
+  const CartesianGrid<DIM> grid;
 
   /**
    * @param mu shear modulus
@@ -286,30 +287,31 @@ class Hooke {
     }
   }
 
-//  /**
-//   * Compute the strains induced by the specified eigenstresses.
-//   *
-//   * The eigenstresses `τ[n, i, j]` are constant in each cell n. They induce the
-//   * strains `ε[n, i, j]`.
-//   *
-//   * **Warning: this method has not been tested.**
-//   *
-//   * @param k multi-index of the Fourier component
-//   * @param tau the `k`-th Fourier component of the eigenstress `τ`,
-//   * `τ^[k, :, :]`
-//   * @param eps the `k`-th Fourier component of `ε`, `ε^[k, :, :]` (output
-//   * parameter)
-//   */
-//  void modal_eigenstress_to_strain(
-//      size_t const *k, Eigen::Matrix<std::complex<double>, DIM, DIM> &tau,
-//      Eigen::Matrix<std::complex<double>, DIM, DIM> &eps) const {
-//    Eigen::Matrix<std::complex<double>, DIM, 1> B{};
-//    Eigen::Matrix<std::complex<double>, DIM, DIM> K{};
-//    modal_strain_displacement(k, B);
-//    modal_stiffness<DIM>(k, mu, nu, K);
-//    auto u = -K.fullPivLu().solve(tau * B);
-//    eps = 0.5 * (B * u.transpose() + u * B.transpose());
-//  }
+  //  /**
+  //   * Compute the strains induced by the specified eigenstresses.
+  //   *
+  //   * The eigenstresses `τ[n, i, j]` are constant in each cell n. They induce
+  //   the
+  //   * strains `ε[n, i, j]`.
+  //   *
+  //   * **Warning: this method has not been tested.**
+  //   *
+  //   * @param k multi-index of the Fourier component
+  //   * @param tau the `k`-th Fourier component of the eigenstress `τ`,
+  //   * `τ^[k, :, :]`
+  //   * @param eps the `k`-th Fourier component of `ε`, `ε^[k, :, :]` (output
+  //   * parameter)
+  //   */
+  //  void modal_eigenstress_to_strain(
+  //      size_t const *k, Eigen::Matrix<std::complex<double>, DIM, DIM> &tau,
+  //      Eigen::Matrix<std::complex<double>, DIM, DIM> &eps) const {
+  //    Eigen::Matrix<std::complex<double>, DIM, 1> B{};
+  //    Eigen::Matrix<std::complex<double>, DIM, DIM> K{};
+  //    modal_strain_displacement(k, B);
+  //    modal_stiffness<DIM>(k, mu, nu, K);
+  //    auto u = -K.fullPivLu().solve(tau * B);
+  //    eps = 0.5 * (B * u.transpose() + u * B.transpose());
+  //  }
 };
 
 }  // namespace bri17
