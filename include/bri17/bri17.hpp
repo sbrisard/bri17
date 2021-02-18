@@ -21,17 +21,6 @@
 #include <string>
 
 namespace bri17 {
-
-/** Return the product `a[0] * ... * a[n-1]`. */
-template <typename T>
-T product(size_t n, T a[]) {
-  T out{1};
-  for (size_t i = 0; i < n; i++) {
-    out *= a[i];
-  }
-  return out;
-}
-
 /**
  * A rectangular grid with fixed spacing in each direction.
  *
