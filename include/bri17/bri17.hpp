@@ -26,30 +26,30 @@ namespace bri17 {
  *
  * @tparam DIM the number of spatial dimensions (must be 2 or 3)
  */
-template <size_t DIM>
+template <int DIM>
 class CartesianGrid {
  public:
   /** Number of nodes per cell: `2 ** DIM`. */
-  static constexpr size_t num_nodes_per_cell = 1 << DIM;
+  static constexpr int num_nodes_per_cell = 1 << DIM;
 
   /** Number of cells in each direction. */
-  std::array<size_t, DIM> N;
+  std::array<int, DIM> N;
 
   /** Size of the grid in each direction (arbitrary units of length). */
   std::array<double, DIM> L;
 
   /** Total number of cells: `N[0] * N[1] * ... * N[DIM-1]`. */
-  const size_t num_cells;
+  const int num_cells;
 
   /**
    * @param N number of cells in each direction
    * @param L size of the grid in each direction (arbitrary units of length)
    */
-  CartesianGrid(std::array<size_t, DIM> N, std::array<double, DIM> L)
+  CartesianGrid(std::array<int, DIM> N, std::array<double, DIM> L)
       : N{N},
         L{L},
         num_cells{
-            std::reduce(N.cbegin(), N.cend(), size_t{1}, std::multiplies())} {
+            std::reduce(N.cbegin(), N.cend(), int{1}, std::multiplies())} {
     static_assert((DIM == 2) || (DIM == 3));
   }
 
@@ -60,7 +60,7 @@ class CartesianGrid {
    * checked at compile time). Nodes numbering follows the row-major
    * order convention.
    */
-  size_t get_node_at(size_t i, size_t j) const {
+  int get_node_at(int i, int j) const {
     static_assert(DIM == 2, "this method expects a 2D grid");
     return i * N[1] + j;
   }
@@ -72,7 +72,7 @@ class CartesianGrid {
    * checked at compile time). Nodes numbering follows the row-major
    * order convention.
    */
-  size_t get_node_at(size_t i, size_t j, size_t k) const {
+  int get_node_at(int i, int j, int k) const {
     static_assert(DIM == 3, "this method expects a 3D grid");
     return (i * N[1] + j) * N[2] + k;
   }
@@ -111,24 +111,24 @@ class CartesianGrid {
    *
    * @todo Use move semantics?
    */
-  void get_cell_nodes(const size_t cell, size_t nodes[]) const {
+  void get_cell_nodes(const int cell, int nodes[]) const {
     if constexpr (DIM == 2) {
-      const size_t i1 = cell / N[1];
-      const size_t j1 = cell % N[1];
-      const size_t i2 = i1 == N[0] - 1 ? 0 : i1 + 1;
-      const size_t j2 = j1 == N[1] - 1 ? 0 : j1 + 1;
+      const int i1 = cell / N[1];
+      const int j1 = cell % N[1];
+      const int i2 = i1 == N[0] - 1 ? 0 : i1 + 1;
+      const int j2 = j1 == N[1] - 1 ? 0 : j1 + 1;
       nodes[0] = get_node_at(i1, j1);
       nodes[1] = get_node_at(i1, j2);
       nodes[2] = get_node_at(i2, j1);
       nodes[3] = get_node_at(i2, j2);
     } else if constexpr (DIM == 3) {
-      const size_t k1 = cell % N[2];
-      const size_t ij1 = cell / N[2];
-      const size_t j1 = ij1 % N[1];
-      const size_t i1 = ij1 / N[1];
-      const size_t i2 = i1 == N[0] - 1 ? 0 : i1 + 1;
-      const size_t j2 = j1 == N[1] - 1 ? 0 : j1 + 1;
-      const size_t k2 = k1 == N[2] - 1 ? 0 : k1 + 1;
+      const int k1 = cell % N[2];
+      const int ij1 = cell / N[2];
+      const int j1 = ij1 % N[1];
+      const int i1 = ij1 / N[1];
+      const int i2 = i1 == N[0] - 1 ? 0 : i1 + 1;
+      const int j2 = j1 == N[1] - 1 ? 0 : j1 + 1;
+      const int k2 = k1 == N[2] - 1 ? 0 : k1 + 1;
       nodes[0] = get_node_at(i1, j1, k1);
       nodes[1] = get_node_at(i1, j1, k2);
       nodes[2] = get_node_at(i1, j2, k1);
@@ -144,7 +144,7 @@ class CartesianGrid {
 };
 
 /** Print the grid to the specified `ostream`. */
-template <size_t DIM>
+template <int DIM>
 std::ostream &operator<<(std::ostream &os, const CartesianGrid<DIM> &grid) {
   os << "CartesianGrid<" << DIM << ">={L=[";
   for (auto L_i : grid.L) {
@@ -163,7 +163,7 @@ std::ostream &operator<<(std::ostream &os, const CartesianGrid<DIM> &grid) {
  * This class provides methods to compute the modal strain-displacement and
  * stiffness matrices.
  */
-template <size_t DIM>
+template <int DIM>
 class Hooke {
  public:
   /** The shear modulus of the material. */
@@ -191,13 +191,13 @@ class Hooke {
    * @param k the multi-index in the frequency domain
    * @param B the strain-displacement vector `B^[k, :]` (output parameter)
    */
-  void modal_strain_displacement(size_t const *k,
+  void modal_strain_displacement(int const *k,
                                  std::complex<double> *B) const {
     double c[DIM];
     double s[DIM];
     double sum_alpha = 0.;
 
-    for (size_t i = 0; i < DIM; i++) {
+    for (int i = 0; i < DIM; i++) {
       const double alpha = M_PI * k[i] / grid.N[i];
       sum_alpha += alpha;
       c[i] = cos(alpha) * grid.L[i] / grid.N[i];
@@ -227,7 +227,7 @@ class Hooke {
    * @param k the multi-index in the frequency domain
    * @param K the stiffness matrix `K^[k, :, :]` (output parameter)
    */
-  void modal_stiffness(size_t const *k, std::complex<double> *K) const {
+  void modal_stiffness(int const *k, std::complex<double> *K) const {
     // In the notation of [Bri17, see Eq. (B.17)]
     //
     // phi[i] = phi(z_i) / h_i
@@ -240,7 +240,7 @@ class Hooke {
     double phi[DIM];
     double psi[DIM];
     double chi[DIM];
-    for (size_t i = 0; i < DIM; i++) {
+    for (int i = 0; i < DIM; i++) {
       double h = grid.L[i] / grid.N[i];
       double beta = 2 * M_PI * k[i] / grid.N[i];
       phi[i] = 2 * (1 - cos(beta)) / h / h;
@@ -292,7 +292,7 @@ class Hooke {
   //   * parameter)
   //   */
   //  void modal_eigenstress_to_strain(
-  //      size_t const *k, Eigen::Matrix<std::complex<double>, DIM, DIM> &tau,
+  //      int const *k, Eigen::Matrix<std::complex<double>, DIM, DIM> &tau,
   //      Eigen::Matrix<std::complex<double>, DIM, DIM> &eps) const {
   //    Eigen::Matrix<std::complex<double>, DIM, 1> B{};
   //    Eigen::Matrix<std::complex<double>, DIM, DIM> K{};

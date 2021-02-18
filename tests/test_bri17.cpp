@@ -32,7 +32,7 @@ class FFTWComplexBuffer {
   fftw_complex *c_data;
   std::complex<double> *cpp_data;
 
-  FFTWComplexBuffer(size_t n) {
+  FFTWComplexBuffer(int n) {
     c_data = (fftw_complex *)fftw_malloc(n * sizeof(fftw_complex));
     cpp_data = reinterpret_cast<std::complex<double> *>(c_data);
   }
@@ -40,10 +40,10 @@ class FFTWComplexBuffer {
   ~FFTWComplexBuffer() { fftw_free(c_data); }
 };
 
-template <size_t DIM>
+template <int DIM>
 class StiffnessMatrixFactory {
  private:
-  const size_t num_dofs;
+  const int num_dofs;
   const bri17::Hooke<DIM> hooke;
   const FFTWComplexBuffer u;
   const FFTWComplexBuffer u_hat;
@@ -54,12 +54,12 @@ class StiffnessMatrixFactory {
   fftw_plan idft_Ku[DIM];
 
   void compute_Ku() {
-    for (size_t i = 0; i < DIM; i++) fftw_execute(dft_u[i]);
-    size_t k[DIM] = {0};
+    for (int i = 0; i < DIM; i++) fftw_execute(dft_u[i]);
+    int k[DIM] = {0};
     Eigen::Matrix<std::complex<double>, DIM, DIM> K_k;
     Eigen::Matrix<std::complex<double>, DIM, 1> u_k;
     if constexpr (DIM == 2) {
-      size_t i = 0;
+      int i = 0;
       for (k[0] = 0; k[0] < hooke.grid.N[0]; k[0]++) {
         for (k[1] = 0; k[1] < hooke.grid.N[1]; k[1]++) {
           hooke.modal_stiffness(k, K_k.data());
@@ -73,7 +73,7 @@ class StiffnessMatrixFactory {
       }
     } else if constexpr (DIM == 3) {
       // TODO: the two cases should be merged
-      size_t i = 0;
+      int i = 0;
       for (k[0] = 0; k[0] < hooke.grid.N[0]; k[0]++) {
         for (k[1] = 0; k[1] < hooke.grid.N[1]; k[1]++) {
           for (k[2] = 0; k[2] < hooke.grid.N[2]; k[2]++) {
@@ -91,7 +91,7 @@ class StiffnessMatrixFactory {
       }
     }
     double cell_volume = 1.0;
-    for (size_t i = 0; i < DIM; i++) {
+    for (int i = 0; i < DIM; i++) {
       fftw_execute(idft_Ku[i]);
       cell_volume *= hooke.grid.L[i] / hooke.grid.N[i];
     }
@@ -101,7 +101,7 @@ class StiffnessMatrixFactory {
     // (see FFTW's FAQ, 3.10), and (2) the fact that the so-called “modal
     // stiffness matrix” returns computes the strain energy, scaled by `|h|`
     // (the volume of the cells, see “Theory” in the documentation.
-    for (size_t i = 0; i < num_dofs; i++) {
+    for (int i = 0; i < num_dofs; i++) {
       Ku.cpp_data[i] *= correction;
     }
   };
@@ -115,9 +115,9 @@ class StiffnessMatrixFactory {
         Ku{num_dofs},
         Ku_hat{num_dofs} {
     int N_[DIM];
-    for (size_t i = 0; i < DIM; i++) N_[i] = int(hooke.grid.N[i]);
-    for (size_t i = 0; i < DIM; i++) {
-      size_t offset = i * hooke.grid.num_cells;
+    for (int i = 0; i < DIM; i++) N_[i] = int(hooke.grid.N[i]);
+    for (int i = 0; i < DIM; i++) {
+      int offset = i * hooke.grid.num_cells;
       dft_u[i] =
           fftw_plan_dft(DIM, N_, u.c_data + offset, u_hat.c_data + offset,
                         FFTW_FORWARD, FFTW_ESTIMATE);
@@ -129,13 +129,13 @@ class StiffnessMatrixFactory {
 
   Eigen::MatrixXd run() {
     Eigen::MatrixXd K{num_dofs, num_dofs};
-    for (size_t i = 0; i < num_dofs; i++) {
+    for (int i = 0; i < num_dofs; i++) {
       u.cpp_data[i] = 0;
     }
-    for (size_t j = 0; j < num_dofs; j++) {
+    for (int j = 0; j < num_dofs; j++) {
       u.cpp_data[j] = 1;
       compute_Ku();
-      for (size_t i = 0; i < num_dofs; i++) {
+      for (int i = 0; i < num_dofs; i++) {
         const auto K_ij = Ku.cpp_data[i];
         if (fabs(std::imag(K_ij)) > 1e-14) {
           std::ostringstream msg;
@@ -150,22 +150,22 @@ class StiffnessMatrixFactory {
   }
 };
 
-template <size_t DIM>
+template <int DIM>
 Eigen::MatrixXd assemble_expected_stiffness_matrix(
     const bri17::CartesianGrid<DIM> &grid, const Eigen::MatrixXd &Ke) {
   // TODO Check dimensions of Ke and K.
-  const size_t num_dofs_per_cell = grid.num_nodes_per_cell * DIM;
-  const size_t num_dofs = grid.num_cells * DIM;
+  const int num_dofs_per_cell = grid.num_nodes_per_cell * DIM;
+  const int num_dofs = grid.num_cells * DIM;
   Eigen::MatrixXd K{num_dofs, num_dofs};
   K.setZero();
-  auto cell_nodes = new size_t[grid.num_nodes_per_cell];
-  for (size_t cell = 0; cell < grid.num_cells; cell++) {
+  auto cell_nodes = new int[grid.num_nodes_per_cell];
+  for (int cell = 0; cell < grid.num_cells; cell++) {
     grid.get_cell_nodes(cell, cell_nodes);
-    for (size_t ie = 0; ie < num_dofs_per_cell; ie++) {
-      size_t i = cell_nodes[ie % grid.num_nodes_per_cell] +
+    for (int ie = 0; ie < num_dofs_per_cell; ie++) {
+      int i = cell_nodes[ie % grid.num_nodes_per_cell] +
                  grid.num_cells * (ie / grid.num_nodes_per_cell);
-      for (size_t je = 0; je < num_dofs_per_cell; je++) {
-        size_t j = cell_nodes[je % grid.num_nodes_per_cell] +
+      for (int je = 0; je < num_dofs_per_cell; je++) {
+        int j = cell_nodes[je % grid.num_nodes_per_cell] +
                    grid.num_cells * (je / grid.num_nodes_per_cell);
         K(i, j) += Ke(ie, je);
       }
@@ -175,15 +175,15 @@ Eigen::MatrixXd assemble_expected_stiffness_matrix(
   return K;
 }
 
-template <size_t DIM>
-constexpr size_t num_strain_components() {
+template <int DIM>
+constexpr int num_strain_components() {
   return (DIM * (DIM + 1)) / 2;
 }
 
-template <size_t DIM>
+template <int DIM>
 class StrainDisplacementMatrixFactory {
  private:
-  const size_t num_dofs;
+  const int num_dofs;
   const bri17::Hooke<DIM> hooke;
   const FFTWComplexBuffer u;
   const FFTWComplexBuffer u_hat;
@@ -194,12 +194,12 @@ class StrainDisplacementMatrixFactory {
   fftw_plan idft_Bu[num_strain_components<DIM>()];
 
   void compute_Bu() {
-    for (size_t i = 0; i < DIM; i++) fftw_execute(dft_u[i]);
-    size_t k[DIM] = {0};
+    for (int i = 0; i < DIM; i++) fftw_execute(dft_u[i]);
+    int k[DIM] = {0};
     Eigen::Matrix<std::complex<double>, DIM, 1> B_k;
     Eigen::Matrix<std::complex<double>, DIM, 1> u_k;
     if constexpr (DIM == 2) {
-      size_t i = 0;
+      int i = 0;
       for (k[0] = 0; k[0] < hooke.grid.N[0]; k[0]++) {
         for (k[1] = 0; k[1] < hooke.grid.N[1]; k[1]++) {
           hooke.modal_strain_displacement(k, B_k.data());
@@ -214,7 +214,7 @@ class StrainDisplacementMatrixFactory {
       }
     } else if constexpr (DIM == 3) {
       // TODO: the two cases should be merged
-      size_t i = 0;
+      int i = 0;
       for (k[0] = 0; k[0] < hooke.grid.N[0]; k[0]++) {
         for (k[1] = 0; k[1] < hooke.grid.N[1]; k[1]++) {
           for (k[2] = 0; k[2] < hooke.grid.N[2]; k[2]++) {
@@ -238,13 +238,13 @@ class StrainDisplacementMatrixFactory {
         }
       }
     }
-    for (size_t i = 0; i < num_strain_components<DIM>(); i++)
+    for (int i = 0; i < num_strain_components<DIM>(); i++)
       fftw_execute(idft_Bu[i]);
     double correction = 1.0 / hooke.grid.num_cells;
     // The following correction is due to the fact that FFTW's backward Fourier
     // transform returns the inverse DFT, scaled by the number of cells (see
     // FFTW's FAQ, 3.10).
-    for (size_t i = 0; i < num_strain_components<DIM>() * hooke.grid.num_cells;
+    for (int i = 0; i < num_strain_components<DIM>() * hooke.grid.num_cells;
          i++) {
       Bu.cpp_data[i] *= correction;
     }
@@ -259,15 +259,15 @@ class StrainDisplacementMatrixFactory {
         Bu{num_strain_components<DIM>() * hooke.grid.num_cells},
         Bu_hat{num_strain_components<DIM>() * hooke.grid.num_cells} {
     int N_[DIM];
-    for (size_t i = 0; i < DIM; i++) N_[i] = int(hooke.grid.N[i]);
-    for (size_t i = 0; i < DIM; i++) {
-      size_t offset = i * hooke.grid.num_cells;
+    for (int i = 0; i < DIM; i++) N_[i] = int(hooke.grid.N[i]);
+    for (int i = 0; i < DIM; i++) {
+      int offset = i * hooke.grid.num_cells;
       dft_u[i] =
           fftw_plan_dft(DIM, N_, u.c_data + offset, u_hat.c_data + offset,
                         FFTW_FORWARD, FFTW_ESTIMATE);
     }
-    for (size_t i = 0; i < num_strain_components<DIM>(); i++) {
-      size_t offset = i * hooke.grid.num_cells;
+    for (int i = 0; i < num_strain_components<DIM>(); i++) {
+      int offset = i * hooke.grid.num_cells;
       idft_Bu[i] =
           fftw_plan_dft(DIM, N_, Bu_hat.c_data + offset, Bu.c_data + offset,
                         FFTW_BACKWARD, FFTW_ESTIMATE);
@@ -275,15 +275,15 @@ class StrainDisplacementMatrixFactory {
   }
 
   Eigen::MatrixXd run() {
-    const size_t num_rows = num_strain_components<DIM>() * hooke.grid.num_cells;
+    const int num_rows = num_strain_components<DIM>() * hooke.grid.num_cells;
     Eigen::MatrixXd B{num_rows, num_dofs};
-    for (size_t i = 0; i < num_dofs; i++) {
+    for (int i = 0; i < num_dofs; i++) {
       u.cpp_data[i] = 0;
     }
-    for (size_t j = 0; j < num_dofs; j++) {
+    for (int j = 0; j < num_dofs; j++) {
       u.cpp_data[j] = 1;
       compute_Bu();
-      for (size_t i = 0; i < num_rows; i++) {
+      for (int i = 0; i < num_rows; i++) {
         const auto B_ij = Bu.cpp_data[i];
         if (fabs(std::imag(B_ij)) > 1e-14) {
           std::ostringstream msg;
@@ -298,22 +298,22 @@ class StrainDisplacementMatrixFactory {
   }
 };
 
-template <size_t DIM>
+template <int DIM>
 Eigen::MatrixXd assemble_expected_strain_displacement_matrix(
     const bri17::CartesianGrid<DIM> &grid, const Eigen::MatrixXd &Be) {
-  const size_t num_strain_components = (DIM * (DIM + 1)) / 2;
-  const size_t num_rows = grid.num_cells * num_strain_components;
-  const size_t num_dofs_per_cell = grid.num_nodes_per_cell * DIM;
-  const size_t num_dofs = grid.num_cells * DIM;
+  const int num_strain_components = (DIM * (DIM + 1)) / 2;
+  const int num_rows = grid.num_cells * num_strain_components;
+  const int num_dofs_per_cell = grid.num_nodes_per_cell * DIM;
+  const int num_dofs = grid.num_cells * DIM;
   Eigen::MatrixXd B{num_rows, num_dofs};
   B.setZero();
-  auto cell_nodes = new size_t[grid.num_nodes_per_cell];
-  for (size_t cell = 0; cell < grid.num_cells; cell++) {
+  auto cell_nodes = new int[grid.num_nodes_per_cell];
+  for (int cell = 0; cell < grid.num_cells; cell++) {
     grid.get_cell_nodes(cell, cell_nodes);
-    for (size_t i_local = 0; i_local < num_strain_components; i_local++) {
-      size_t i = i_local * grid.num_cells + cell;
-      for (size_t j_local = 0; j_local < num_dofs_per_cell; j_local++) {
-        size_t j = cell_nodes[j_local % grid.num_nodes_per_cell] +
+    for (int i_local = 0; i_local < num_strain_components; i_local++) {
+      int i = i_local * grid.num_cells + cell;
+      for (int j_local = 0; j_local < num_dofs_per_cell; j_local++) {
+        int j = cell_nodes[j_local % grid.num_nodes_per_cell] +
                    grid.num_cells * (j_local / grid.num_nodes_per_cell);
         B(i, j) += Be(i_local, j_local);
       }
@@ -324,29 +324,29 @@ Eigen::MatrixXd assemble_expected_strain_displacement_matrix(
 }
 
 TEST_CASE("Global assembly tests") {
-  constexpr size_t max_dim = 3;
+  constexpr int max_dim = 3;
   const double mu = 5.6;
   const double nu = 0.3;
 
-  std::array<size_t, 2> shape2{3, 4};
+  std::array<int, 2> shape2{3, 4};
   std::array<double, 2> spacing2{1.1, 1.2};
   std::array<double, 2> L2;
   std::transform(shape2.cbegin(), shape2.cend(), spacing2.cbegin(), L2.begin(),
                  std::multiplies());
 
-  std::array<size_t, 3> shape3{3, 4, 5};
+  std::array<int, 3> shape3{3, 4, 5};
   std::array<double, 3> spacing3{1.1, 1.2, 1.3};
   std::array<double, 3> L3;
   std::transform(shape3.cbegin(), shape3.cend(), spacing3.cbegin(), L3.begin(),
                  std::multiplies());
 
   SECTION("2D stiffness matrix") {
-    const size_t dim = 2;
+    const int dim = 2;
     bri17::CartesianGrid<dim> grid{shape2, L2};
     bri17::Hooke<dim> hooke{mu, nu, grid};
     StiffnessMatrixFactory<dim> factory{hooke};
 
-    const size_t num_dofs_per_cell = grid.num_nodes_per_cell * dim;
+    const int num_dofs_per_cell = grid.num_nodes_per_cell * dim;
     Eigen::MatrixXd Ke{num_dofs_per_cell, num_dofs_per_cell};
     // This is a copy-paste from Maxima
     Ke << 8.83838383838384, 1.852525252525252, -6.271717171717172,
@@ -369,12 +369,12 @@ TEST_CASE("Global assembly tests") {
   }
 
   SECTION("3D stiffness matrix") {
-    const size_t dim = 3;
+    const int dim = 3;
     bri17::CartesianGrid<dim> grid{shape3, L3};
     bri17::Hooke<dim> hooke{mu, nu, grid};
     StiffnessMatrixFactory<dim> factory{hooke};
 
-    const size_t num_dofs_per_cell = grid.num_nodes_per_cell * dim;
+    const int num_dofs_per_cell = grid.num_nodes_per_cell * dim;
     Eigen::MatrixXd Ke{num_dofs_per_cell, num_dofs_per_cell};
     // This is a copy-paste from Maxima
     Ke << 4.461761201761202, 1.283188293188293, 1.118658378658379,
@@ -544,12 +544,12 @@ TEST_CASE("Global assembly tests") {
   }
 
   SECTION("2D strain-displacement matrix") {
-    const size_t dim = 2;
+    const int dim = 2;
     bri17::CartesianGrid<dim> grid{shape2, L2};
     bri17::Hooke<dim> hooke{mu, nu, grid};
 
-    const size_t num_dofs_per_cell = grid.num_nodes_per_cell * dim;
-    const size_t num_strain_components_per_cell = (dim * (dim + 1)) / 2;
+    const int num_dofs_per_cell = grid.num_nodes_per_cell * dim;
+    const int num_strain_components_per_cell = (dim * (dim + 1)) / 2;
     Eigen::MatrixXd Be{num_strain_components_per_cell, num_dofs_per_cell};
     // This is a copy-paste from Maxima
     Be << -0.6, -0.6, 0.6, 0.6, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.55,
@@ -565,12 +565,12 @@ TEST_CASE("Global assembly tests") {
   }
 
   SECTION("3D strain-displacement matrix") {
-    const size_t dim = 3;
+    const int dim = 3;
     bri17::CartesianGrid<dim> grid{shape3, L3};
     bri17::Hooke<dim> hooke{mu, nu, grid};
 
-    const size_t num_dofs_per_cell = grid.num_nodes_per_cell * dim;
-    const size_t num_strain_components_per_cell = (dim * (dim + 1)) / 2;
+    const int num_dofs_per_cell = grid.num_nodes_per_cell * dim;
+    const int num_strain_components_per_cell = (dim * (dim + 1)) / 2;
     Eigen::MatrixXd Be{num_strain_components_per_cell, num_dofs_per_cell};
     // This is a copy-paste from Maxima
     Be << -0.39, -0.39, -0.39, -0.39, 0.39, 0.39, 0.39, 0.39, 0.0, 0.0, 0.0,
