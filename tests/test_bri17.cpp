@@ -64,10 +64,10 @@ class StiffnessMatrixFactory {
         for (k[1] = 0; k[1] < hooke.grid.shape[1]; k[1]++) {
           hooke.modal_stiffness(k, K_k.data());
           u_k(0) = u_hat.cpp_data[i];
-          u_k(1) = u_hat.cpp_data[i + hooke.grid.num_cells];
+          u_k(1) = u_hat.cpp_data[i + hooke.grid.size];
           auto Ku_k = K_k * u_k;
           Ku_hat.cpp_data[i] = Ku_k(0);
-          Ku_hat.cpp_data[i + hooke.grid.num_cells] = Ku_k(1);
+          Ku_hat.cpp_data[i + hooke.grid.size] = Ku_k(1);
           i++;
         }
       }
@@ -79,12 +79,12 @@ class StiffnessMatrixFactory {
           for (k[2] = 0; k[2] < hooke.grid.shape[2]; k[2]++) {
             hooke.modal_stiffness(k, K_k.data());
             u_k(0) = u_hat.cpp_data[i];
-            u_k(1) = u_hat.cpp_data[i + hooke.grid.num_cells];
-            u_k(2) = u_hat.cpp_data[i + 2 * hooke.grid.num_cells];
+            u_k(1) = u_hat.cpp_data[i + hooke.grid.size];
+            u_k(2) = u_hat.cpp_data[i + 2 * hooke.grid.size];
             auto Ku_k = K_k * u_k;
             Ku_hat.cpp_data[i] = Ku_k(0);
-            Ku_hat.cpp_data[i + hooke.grid.num_cells] = Ku_k(1);
-            Ku_hat.cpp_data[i + 2 * hooke.grid.num_cells] = Ku_k(2);
+            Ku_hat.cpp_data[i + hooke.grid.size] = Ku_k(1);
+            Ku_hat.cpp_data[i + 2 * hooke.grid.size] = Ku_k(2);
             i++;
           }
         }
@@ -95,7 +95,7 @@ class StiffnessMatrixFactory {
       fftw_execute(idft_Ku[i]);
       cell_volume *= hooke.grid.L[i] / hooke.grid.shape[i];
     }
-    double correction = cell_volume / hooke.grid.num_cells;
+    double correction = cell_volume / hooke.grid.size;
     // The following correction is due to (1) the fact that FFTW's backward
     // Fourier transform returns the inverse DFT, scaled by the number of cells
     // (see FFTW's FAQ, 3.10), and (2) the fact that the so-called “modal
@@ -108,7 +108,7 @@ class StiffnessMatrixFactory {
 
  public:
   StiffnessMatrixFactory(bri17::Hooke<T, DIM> hooke)
-      : num_dofs{DIM * hooke.grid.num_cells},
+      : num_dofs{DIM * hooke.grid.size},
         hooke{hooke},
         u{num_dofs},
         u_hat{num_dofs},
@@ -117,7 +117,7 @@ class StiffnessMatrixFactory {
     int N_[DIM];
     for (int i = 0; i < DIM; i++) N_[i] = int(hooke.grid.shape[i]);
     for (int i = 0; i < DIM; i++) {
-      int offset = i * hooke.grid.num_cells;
+      int offset = i * hooke.grid.size;
       dft_u[i] =
           fftw_plan_dft(DIM, N_, u.c_data + offset, u_hat.c_data + offset,
                         FFTW_FORWARD, FFTW_ESTIMATE);
@@ -155,18 +155,18 @@ Eigen::MatrixXd assemble_expected_stiffness_matrix(
     const bri17::CartesianGrid<double, DIM> &grid, const Eigen::MatrixXd &Ke) {
   // TODO Check dimensions of Ke and K.
   const int num_dofs_per_cell = grid.num_nodes_per_cell * DIM;
-  const int num_dofs = grid.num_cells * DIM;
+  const int num_dofs = grid.size * DIM;
   Eigen::MatrixXd K{num_dofs, num_dofs};
   K.setZero();
   auto cell_nodes = new int[grid.num_nodes_per_cell];
-  for (int cell = 0; cell < grid.num_cells; cell++) {
+  for (int cell = 0; cell < grid.size; cell++) {
     grid.get_cell_nodes(cell, cell_nodes);
     for (int ie = 0; ie < num_dofs_per_cell; ie++) {
       int i = cell_nodes[ie % grid.num_nodes_per_cell] +
-              grid.num_cells * (ie / grid.num_nodes_per_cell);
+              grid.size * (ie / grid.num_nodes_per_cell);
       for (int je = 0; je < num_dofs_per_cell; je++) {
         int j = cell_nodes[je % grid.num_nodes_per_cell] +
-                grid.num_cells * (je / grid.num_nodes_per_cell);
+                grid.size * (je / grid.num_nodes_per_cell);
         K(i, j) += Ke(ie, je);
       }
     }
@@ -204,11 +204,11 @@ class StrainDisplacementMatrixFactory {
         for (k[1] = 0; k[1] < hooke.grid.shape[1]; k[1]++) {
           hooke.modal_strain_displacement(k, B_k.data());
           u_k(0) = u_hat.cpp_data[i];
-          u_k(1) = u_hat.cpp_data[i + hooke.grid.num_cells];
+          u_k(1) = u_hat.cpp_data[i + hooke.grid.size];
           auto eps_k = 0.5 * (B_k * u_k.transpose() + u_k * B_k.transpose());
           Bu_hat.cpp_data[i] = eps_k(0, 0);
-          Bu_hat.cpp_data[i + hooke.grid.num_cells] = eps_k(1, 1);
-          Bu_hat.cpp_data[i + 2 * hooke.grid.num_cells] = sqrt(2) * eps_k(0, 1);
+          Bu_hat.cpp_data[i + hooke.grid.size] = eps_k(1, 1);
+          Bu_hat.cpp_data[i + 2 * hooke.grid.size] = sqrt(2) * eps_k(0, 1);
           i++;
         }
       }
@@ -220,18 +220,18 @@ class StrainDisplacementMatrixFactory {
           for (k[2] = 0; k[2] < hooke.grid.shape[2]; k[2]++) {
             hooke.modal_strain_displacement(k, B_k.data());
             u_k(0) = u_hat.cpp_data[i];
-            u_k(1) = u_hat.cpp_data[i + hooke.grid.num_cells];
-            u_k(2) = u_hat.cpp_data[i + 2 * hooke.grid.num_cells];
+            u_k(1) = u_hat.cpp_data[i + hooke.grid.size];
+            u_k(2) = u_hat.cpp_data[i + 2 * hooke.grid.size];
             auto eps_k = 0.5 * (B_k * u_k.transpose() + u_k * B_k.transpose());
             Bu_hat.cpp_data[i] = eps_k(0, 0);
-            Bu_hat.cpp_data[i + hooke.grid.num_cells] = eps_k(1, 1);
-            Bu_hat.cpp_data[i + 2 * hooke.grid.num_cells] = eps_k(2, 2);
+            Bu_hat.cpp_data[i + hooke.grid.size] = eps_k(1, 1);
+            Bu_hat.cpp_data[i + 2 * hooke.grid.size] = eps_k(2, 2);
 
-            Bu_hat.cpp_data[i + 3 * hooke.grid.num_cells] =
+            Bu_hat.cpp_data[i + 3 * hooke.grid.size] =
                 sqrt(2) * eps_k(1, 2);
-            Bu_hat.cpp_data[i + 4 * hooke.grid.num_cells] =
+            Bu_hat.cpp_data[i + 4 * hooke.grid.size] =
                 sqrt(2) * eps_k(2, 0);
-            Bu_hat.cpp_data[i + 5 * hooke.grid.num_cells] =
+            Bu_hat.cpp_data[i + 5 * hooke.grid.size] =
                 sqrt(2) * eps_k(0, 1);
             i++;
           }
@@ -240,11 +240,11 @@ class StrainDisplacementMatrixFactory {
     }
     for (int i = 0; i < num_strain_components<DIM>(); i++)
       fftw_execute(idft_Bu[i]);
-    double correction = 1.0 / hooke.grid.num_cells;
+    double correction = 1.0 / hooke.grid.size;
     // The following correction is due to the fact that FFTW's backward Fourier
     // transform returns the inverse DFT, scaled by the number of cells (see
     // FFTW's FAQ, 3.10).
-    for (int i = 0; i < num_strain_components<DIM>() * hooke.grid.num_cells;
+    for (int i = 0; i < num_strain_components<DIM>() * hooke.grid.size;
          i++) {
       Bu.cpp_data[i] *= correction;
     }
@@ -252,22 +252,22 @@ class StrainDisplacementMatrixFactory {
 
  public:
   StrainDisplacementMatrixFactory(bri17::Hooke<T, DIM> hooke)
-      : num_dofs{DIM * hooke.grid.num_cells},
+      : num_dofs{DIM * hooke.grid.size},
         hooke{hooke},
         u{num_dofs},
         u_hat{num_dofs},
-        Bu{num_strain_components<DIM>() * hooke.grid.num_cells},
-        Bu_hat{num_strain_components<DIM>() * hooke.grid.num_cells} {
+        Bu{num_strain_components<DIM>() * hooke.grid.size},
+        Bu_hat{num_strain_components<DIM>() * hooke.grid.size} {
     int N_[DIM];
     for (int i = 0; i < DIM; i++) N_[i] = int(hooke.grid.shape[i]);
     for (int i = 0; i < DIM; i++) {
-      int offset = i * hooke.grid.num_cells;
+      int offset = i * hooke.grid.size;
       dft_u[i] =
           fftw_plan_dft(DIM, N_, u.c_data + offset, u_hat.c_data + offset,
                         FFTW_FORWARD, FFTW_ESTIMATE);
     }
     for (int i = 0; i < num_strain_components<DIM>(); i++) {
-      int offset = i * hooke.grid.num_cells;
+      int offset = i * hooke.grid.size;
       idft_Bu[i] =
           fftw_plan_dft(DIM, N_, Bu_hat.c_data + offset, Bu.c_data + offset,
                         FFTW_BACKWARD, FFTW_ESTIMATE);
@@ -275,7 +275,7 @@ class StrainDisplacementMatrixFactory {
   }
 
   Eigen::MatrixXd run() {
-    const int num_rows = num_strain_components<DIM>() * hooke.grid.num_cells;
+    const int num_rows = num_strain_components<DIM>() * hooke.grid.size;
     Eigen::MatrixXd B{num_rows, num_dofs};
     for (int i = 0; i < num_dofs; i++) {
       u.cpp_data[i] = 0;
@@ -302,19 +302,19 @@ template <typename T, int DIM>
 Eigen::MatrixXd assemble_expected_strain_displacement_matrix(
     const bri17::CartesianGrid<T, DIM> &grid, const Eigen::MatrixXd &Be) {
   const int num_strain_components = (DIM * (DIM + 1)) / 2;
-  const int num_rows = grid.num_cells * num_strain_components;
+  const int num_rows = grid.size * num_strain_components;
   const int num_dofs_per_cell = grid.num_nodes_per_cell * DIM;
-  const int num_dofs = grid.num_cells * DIM;
+  const int num_dofs = grid.size * DIM;
   Eigen::MatrixXd B{num_rows, num_dofs};
   B.setZero();
   auto cell_nodes = new int[grid.num_nodes_per_cell];
-  for (int cell = 0; cell < grid.num_cells; cell++) {
+  for (int cell = 0; cell < grid.size; cell++) {
     grid.get_cell_nodes(cell, cell_nodes);
     for (int i_local = 0; i_local < num_strain_components; i_local++) {
-      int i = i_local * grid.num_cells + cell;
+      int i = i_local * grid.size + cell;
       for (int j_local = 0; j_local < num_dofs_per_cell; j_local++) {
         int j = cell_nodes[j_local % grid.num_nodes_per_cell] +
-                grid.num_cells * (j_local / grid.num_nodes_per_cell);
+                grid.size * (j_local / grid.num_nodes_per_cell);
         B(i, j) += Be(i_local, j_local);
       }
     }

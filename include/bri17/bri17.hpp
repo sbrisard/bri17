@@ -43,7 +43,7 @@ requires(std::floating_point<T> &&
   std::array<T, DIM> const L;
 
   /** Total number of cells: `shape[0] * shape[1] * ... * shape[DIM-1]`. */
-  int const num_cells;
+  int const size;
 
   /**
    * @param N number of cells in each direction
@@ -52,8 +52,7 @@ requires(std::floating_point<T> &&
   CartesianGrid(std::array<int, DIM> N, std::array<T, DIM> L)
       : shape{N},
         L{L},
-        num_cells{
-            std::reduce(N.cbegin(), N.cend(), int{1}, std::multiplies())} {
+        size{std::reduce(N.cbegin(), N.cend(), int{1}, std::multiplies())} {
     static_assert((DIM == 2) || (DIM == 3));
   }
 
@@ -201,7 +200,7 @@ requires(std::floating_point<T> && ((DIM == 2) || (DIM == 3))) class Hooke {
   void modal_strain_displacement(int const *k, std::complex<T> *B) const {
     T c[DIM];
     T s[DIM];
-    T sum_alpha{}; // TODO Check that initializes to 0
+    T sum_alpha{};  // TODO Check that initializes to 0
 
     for (int i = 0; i < DIM; i++) {
       T alpha = std::numbers::pi_v<T> * k[i] / grid.shape[i];
