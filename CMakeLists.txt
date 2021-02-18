@@ -13,7 +13,7 @@ project(
   DESCRIPTION ${METADATA_AUTHOR}
   LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
 include(CMakePackageConfigHelpers)
 include(CTest)
@@ -31,7 +31,6 @@ target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_17)
 if (MATH_LIBRARY)
   target_link_libraries(${PROJECT_NAME} INTERFACE ${MATH_LIBRARY})
 endif()
-add_compile_definitions(_USE_MATH_DEFINES)
 
 install(
   TARGETS ${PROJECT_NAME}

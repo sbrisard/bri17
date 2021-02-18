@@ -12,6 +12,7 @@
 
 #include <array>
 #include <cmath>
+#include <numbers>
 #include <numeric>
 
 #include <complex>
@@ -197,7 +198,7 @@ class Hooke {
     double sum_alpha = 0.;
 
     for (int i = 0; i < DIM; i++) {
-      const double alpha = M_PI * k[i] / grid.N[i];
+      const double alpha = std::numbers::pi * k[i] / grid.N[i];
       sum_alpha += alpha;
       c[i] = cos(alpha) * grid.L[i] / grid.N[i];
       s[i] = sin(alpha);
@@ -241,7 +242,7 @@ class Hooke {
     double chi[DIM];
     for (int i = 0; i < DIM; i++) {
       double h = grid.L[i] / grid.N[i];
-      double beta = 2 * M_PI * k[i] / grid.N[i];
+      double beta = 2 * std::numbers::pi * k[i] / grid.N[i];
       phi[i] = 2 * (1 - cos(beta)) / h / h;
       chi[i] = (2 + cos(beta)) / 3;
       psi[i] = sin(beta) / h;
