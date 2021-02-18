@@ -52,9 +52,7 @@ requires(std::floating_point<T> &&
   CartesianGrid(std::array<int, DIM> N, std::array<T, DIM> L)
       : shape{N},
         L{L},
-        size{std::reduce(N.cbegin(), N.cend(), int{1}, std::multiplies())} {
-    static_assert((DIM == 2) || (DIM == 3));
-  }
+        size{std::reduce(N.cbegin(), N.cend(), int{1}, std::multiplies())}{}
 
   /**
    * Return the index of the node located at <tt>[i, j]</tt>.
