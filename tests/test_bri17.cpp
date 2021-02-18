@@ -158,9 +158,8 @@ Eigen::MatrixXd assemble_expected_stiffness_matrix(
   const int num_dofs = grid.size * DIM;
   Eigen::MatrixXd K{num_dofs, num_dofs};
   K.setZero();
-  auto cell_nodes = new int[grid.num_nodes_per_cell];
   for (int cell = 0; cell < grid.size; cell++) {
-    grid.get_cell_nodes(cell, cell_nodes);
+    auto cell_nodes = grid.get_cell_nodes(cell);
     for (int ie = 0; ie < num_dofs_per_cell; ie++) {
       int i = cell_nodes[ie % grid.num_nodes_per_cell] +
               grid.size * (ie / grid.num_nodes_per_cell);
@@ -171,7 +170,6 @@ Eigen::MatrixXd assemble_expected_stiffness_matrix(
       }
     }
   }
-  delete[] cell_nodes;
   return K;
 }
 
@@ -307,9 +305,8 @@ Eigen::MatrixXd assemble_expected_strain_displacement_matrix(
   const int num_dofs = grid.size * DIM;
   Eigen::MatrixXd B{num_rows, num_dofs};
   B.setZero();
-  auto cell_nodes = new int[grid.num_nodes_per_cell];
   for (int cell = 0; cell < grid.size; cell++) {
-    grid.get_cell_nodes(cell, cell_nodes);
+    auto cell_nodes = grid.get_cell_nodes(cell);
     for (int i_local = 0; i_local < num_strain_components; i_local++) {
       int i = i_local * grid.size + cell;
       for (int j_local = 0; j_local < num_dofs_per_cell; j_local++) {
@@ -319,7 +316,6 @@ Eigen::MatrixXd assemble_expected_strain_displacement_matrix(
       }
     }
   }
-  delete[] cell_nodes;
   return B;
 }
 

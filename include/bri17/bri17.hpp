@@ -109,11 +109,10 @@ requires(std::floating_point<T> &&
    * ```
    *
    * @param cell index of the cell (row-major order)
-   * @param nodes array of node indices (return parameter)
-   *
-   * @todo Use move semantics?
+   * @return array of node indices
    */
-  void get_cell_nodes(const int cell, int nodes[]) const {
+  std::array<int, num_nodes_per_cell> get_cell_nodes(int cell) const {
+    std::array<int, num_nodes_per_cell> nodes;
     if constexpr (DIM == 2) {
       const int i1 = cell / shape[1];
       const int j1 = cell % shape[1];
@@ -142,6 +141,7 @@ requires(std::floating_point<T> &&
     } else {
       throw std::logic_error("This should never occur");
     }
+    return nodes;
   }
 };
 
