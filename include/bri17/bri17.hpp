@@ -37,12 +37,12 @@ requires(std::floating_point<T> &&
   static constexpr int num_nodes_per_cell = 1 << DIM;
 
   /** Number of cells in each direction. */
-  std::array<int, DIM> const N;
+  std::array<int, DIM> const shape;
 
   /** Size of the grid in each direction (arbitrary units of length). */
   std::array<T, DIM> const L;
 
-  /** Total number of cells: `N[0] * N[1] * ... * N[DIM-1]`. */
+  /** Total number of cells: `shape[0] * shape[1] * ... * shape[DIM-1]`. */
   int const num_cells;
 
   /**
@@ -50,7 +50,7 @@ requires(std::floating_point<T> &&
    * @param L size of the grid in each direction (arbitrary units of length)
    */
   CartesianGrid(std::array<int, DIM> N, std::array<T, DIM> L)
-      : N{N},
+      : shape{N},
         L{L},
         num_cells{
             std::reduce(N.cbegin(), N.cend(), int{1}, std::multiplies())} {
@@ -66,7 +66,7 @@ requires(std::floating_point<T> &&
    */
   int get_node_at(int i, int j) const {
     static_assert(DIM == 2, "this method expects a 2D grid");
-    return i * N[1] + j;
+    return i * shape[1] + j;
   }
 
   /**
@@ -78,7 +78,7 @@ requires(std::floating_point<T> &&
    */
   int get_node_at(int i, int j, int k) const {
     static_assert(DIM == 3, "this method expects a 3D grid");
-    return (i * N[1] + j) * N[2] + k;
+    return (i * shape[1] + j) * shape[2] + k;
   }
 
   /**
@@ -117,22 +117,22 @@ requires(std::floating_point<T> &&
    */
   void get_cell_nodes(const int cell, int nodes[]) const {
     if constexpr (DIM == 2) {
-      const int i1 = cell / N[1];
-      const int j1 = cell % N[1];
-      const int i2 = i1 == N[0] - 1 ? 0 : i1 + 1;
-      const int j2 = j1 == N[1] - 1 ? 0 : j1 + 1;
+      const int i1 = cell / shape[1];
+      const int j1 = cell % shape[1];
+      const int i2 = i1 == shape[0] - 1 ? 0 : i1 + 1;
+      const int j2 = j1 == shape[1] - 1 ? 0 : j1 + 1;
       nodes[0] = get_node_at(i1, j1);
       nodes[1] = get_node_at(i1, j2);
       nodes[2] = get_node_at(i2, j1);
       nodes[3] = get_node_at(i2, j2);
     } else if constexpr (DIM == 3) {
-      const int k1 = cell % N[2];
-      const int ij1 = cell / N[2];
-      const int j1 = ij1 % N[1];
-      const int i1 = ij1 / N[1];
-      const int i2 = i1 == N[0] - 1 ? 0 : i1 + 1;
-      const int j2 = j1 == N[1] - 1 ? 0 : j1 + 1;
-      const int k2 = k1 == N[2] - 1 ? 0 : k1 + 1;
+      const int k1 = cell % shape[2];
+      const int ij1 = cell / shape[2];
+      const int j1 = ij1 % shape[1];
+      const int i1 = ij1 / shape[1];
+      const int i2 = i1 == shape[0] - 1 ? 0 : i1 + 1;
+      const int j2 = j1 == shape[1] - 1 ? 0 : j1 + 1;
+      const int k2 = k1 == shape[2] - 1 ? 0 : k1 + 1;
       nodes[0] = get_node_at(i1, j1, k1);
       nodes[1] = get_node_at(i1, j1, k2);
       nodes[2] = get_node_at(i1, j2, k1);
@@ -154,8 +154,8 @@ std::ostream &operator<<(std::ostream &os, const CartesianGrid<T, DIM> &grid) {
   for (auto L_i : grid.L) {
     os << L_i << ",";
   }
-  os << "],N=[";
-  for (auto N_i : grid.N) {
+  os << "],shape=[";
+  for (auto N_i : grid.shape) {
     os << N_i << ",";
   }
   return os << "]}";
@@ -204,9 +204,9 @@ requires(std::floating_point<T> && ((DIM == 2) || (DIM == 3))) class Hooke {
     T sum_alpha{}; // TODO Check that initializes to 0
 
     for (int i = 0; i < DIM; i++) {
-      T alpha = std::numbers::pi_v<T> * k[i] / grid.N[i];
+      T alpha = std::numbers::pi_v<T> * k[i] / grid.shape[i];
       sum_alpha += alpha;
-      c[i] = cos(alpha) * grid.L[i] / grid.N[i];
+      c[i] = cos(alpha) * grid.L[i] / grid.shape[i];
       s[i] = sin(alpha);
     }
 
@@ -247,8 +247,8 @@ requires(std::floating_point<T> && ((DIM == 2) || (DIM == 3))) class Hooke {
     T psi[DIM];
     T chi[DIM];
     for (int i = 0; i < DIM; i++) {
-      T h = grid.L[i] / grid.N[i];
-      T beta = 2 * std::numbers::pi_v<T> * k[i] / grid.N[i];
+      T h = grid.L[i] / grid.shape[i];
+      T beta = 2 * std::numbers::pi_v<T> * k[i] / grid.shape[i];
       phi[i] = 2 * (1 - cos(beta)) / h / h;
       chi[i] = (2 + cos(beta)) / 3;
       psi[i] = sin(beta) / h;

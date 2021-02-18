@@ -60,8 +60,8 @@ class StiffnessMatrixFactory {
     Eigen::Matrix<std::complex<double>, DIM, 1> u_k;
     if constexpr (DIM == 2) {
       int i = 0;
-      for (k[0] = 0; k[0] < hooke.grid.N[0]; k[0]++) {
-        for (k[1] = 0; k[1] < hooke.grid.N[1]; k[1]++) {
+      for (k[0] = 0; k[0] < hooke.grid.shape[0]; k[0]++) {
+        for (k[1] = 0; k[1] < hooke.grid.shape[1]; k[1]++) {
           hooke.modal_stiffness(k, K_k.data());
           u_k(0) = u_hat.cpp_data[i];
           u_k(1) = u_hat.cpp_data[i + hooke.grid.num_cells];
@@ -74,9 +74,9 @@ class StiffnessMatrixFactory {
     } else if constexpr (DIM == 3) {
       // TODO: the two cases should be merged
       int i = 0;
-      for (k[0] = 0; k[0] < hooke.grid.N[0]; k[0]++) {
-        for (k[1] = 0; k[1] < hooke.grid.N[1]; k[1]++) {
-          for (k[2] = 0; k[2] < hooke.grid.N[2]; k[2]++) {
+      for (k[0] = 0; k[0] < hooke.grid.shape[0]; k[0]++) {
+        for (k[1] = 0; k[1] < hooke.grid.shape[1]; k[1]++) {
+          for (k[2] = 0; k[2] < hooke.grid.shape[2]; k[2]++) {
             hooke.modal_stiffness(k, K_k.data());
             u_k(0) = u_hat.cpp_data[i];
             u_k(1) = u_hat.cpp_data[i + hooke.grid.num_cells];
@@ -93,7 +93,7 @@ class StiffnessMatrixFactory {
     double cell_volume = 1.0;
     for (int i = 0; i < DIM; i++) {
       fftw_execute(idft_Ku[i]);
-      cell_volume *= hooke.grid.L[i] / hooke.grid.N[i];
+      cell_volume *= hooke.grid.L[i] / hooke.grid.shape[i];
     }
     double correction = cell_volume / hooke.grid.num_cells;
     // The following correction is due to (1) the fact that FFTW's backward
@@ -115,7 +115,7 @@ class StiffnessMatrixFactory {
         Ku{num_dofs},
         Ku_hat{num_dofs} {
     int N_[DIM];
-    for (int i = 0; i < DIM; i++) N_[i] = int(hooke.grid.N[i]);
+    for (int i = 0; i < DIM; i++) N_[i] = int(hooke.grid.shape[i]);
     for (int i = 0; i < DIM; i++) {
       int offset = i * hooke.grid.num_cells;
       dft_u[i] =
@@ -200,8 +200,8 @@ class StrainDisplacementMatrixFactory {
     Eigen::Matrix<std::complex<double>, DIM, 1> u_k;
     if constexpr (DIM == 2) {
       int i = 0;
-      for (k[0] = 0; k[0] < hooke.grid.N[0]; k[0]++) {
-        for (k[1] = 0; k[1] < hooke.grid.N[1]; k[1]++) {
+      for (k[0] = 0; k[0] < hooke.grid.shape[0]; k[0]++) {
+        for (k[1] = 0; k[1] < hooke.grid.shape[1]; k[1]++) {
           hooke.modal_strain_displacement(k, B_k.data());
           u_k(0) = u_hat.cpp_data[i];
           u_k(1) = u_hat.cpp_data[i + hooke.grid.num_cells];
@@ -215,9 +215,9 @@ class StrainDisplacementMatrixFactory {
     } else if constexpr (DIM == 3) {
       // TODO: the two cases should be merged
       int i = 0;
-      for (k[0] = 0; k[0] < hooke.grid.N[0]; k[0]++) {
-        for (k[1] = 0; k[1] < hooke.grid.N[1]; k[1]++) {
-          for (k[2] = 0; k[2] < hooke.grid.N[2]; k[2]++) {
+      for (k[0] = 0; k[0] < hooke.grid.shape[0]; k[0]++) {
+        for (k[1] = 0; k[1] < hooke.grid.shape[1]; k[1]++) {
+          for (k[2] = 0; k[2] < hooke.grid.shape[2]; k[2]++) {
             hooke.modal_strain_displacement(k, B_k.data());
             u_k(0) = u_hat.cpp_data[i];
             u_k(1) = u_hat.cpp_data[i + hooke.grid.num_cells];
@@ -259,7 +259,7 @@ class StrainDisplacementMatrixFactory {
         Bu{num_strain_components<DIM>() * hooke.grid.num_cells},
         Bu_hat{num_strain_components<DIM>() * hooke.grid.num_cells} {
     int N_[DIM];
-    for (int i = 0; i < DIM; i++) N_[i] = int(hooke.grid.N[i]);
+    for (int i = 0; i < DIM; i++) N_[i] = int(hooke.grid.shape[i]);
     for (int i = 0; i < DIM; i++) {
       int offset = i * hooke.grid.num_cells;
       dft_u[i] =
