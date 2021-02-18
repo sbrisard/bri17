@@ -46,13 +46,14 @@ requires(std::floating_point<T> &&
   int const size;
 
   /**
-   * @param N number of cells in each direction
+   * @param shape number of cells in each direction
    * @param L size of the grid in each direction (arbitrary units of length)
    */
-  CartesianGrid(std::array<int, DIM> N, std::array<T, DIM> L)
-      : shape{N},
+  CartesianGrid(std::array<int, DIM> shape, std::array<T, DIM> L)
+      : shape{shape},
         L{L},
-        size{std::reduce(N.cbegin(), N.cend(), int{1}, std::multiplies())}{}
+        size{std::reduce(shape.cbegin(), shape.cend(), int{1},
+                         std::multiplies())} {}
 
   /**
    * Return the index of the node located at <tt>[i, j]</tt>.
