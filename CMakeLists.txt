@@ -61,3 +61,4 @@ install(
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/bri17 TYPE INCLUDE)
 
 add_subdirectory(tests)
+add_subdirectory(python)

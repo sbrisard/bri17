@@ -6,7 +6,7 @@ import setuptools
 
 
 def get_metadata(key):
-    with open(os.path.join("..", "metadata", key+".txt"), "r", encoding="utf8") as f:
+    with open(os.path.join("..", "metadata", key + ".txt"), "r", encoding="utf8") as f:
         return f.read().strip()
 
 
@@ -27,18 +27,18 @@ if __name__ == "__main__":
     config.read("setup.cfg")
     bri17_include_dir = config["bri17"].get("include_dir", "")
 
-    bri17 = setuptools.Extension(
-        "bri17",
+    pybri17 = setuptools.Extension(
+        "pybri17",
         include_dirs=[pybind11.get_include(),
                       bri17_include_dir],
-        sources=["bri17.cpp"],
+        sources=["pybri17.cpp"],
         extra_compile_args=["-D__DOC__=\"\"{}\"\"".format(metadata["description"]),
                             "-D__AUTHOR__=\"\"{}\"\"".format(metadata["author"]),
-                            "-D__VERSION__=\"\\\"{}\\\"\"".format(metadata["version"])]
+                            "-D__VERSION__=\"\\\"{}\\\"\"".format(metadata["version"]), "/std:c++latest"]
     )
 
     setuptools.setup(
         long_description_content_type="text/markdown",
-        ext_modules=[bri17],
+        ext_modules=[pybri17],
         **metadata
     )
