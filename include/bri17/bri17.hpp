@@ -59,9 +59,9 @@ requires(std::floating_point<T> &&
   std::string repr() const {
     std::ostringstream stream;
     stream << "CartesianGrid<" << typeid(T).name() << "," << DIM << ">{shape={";
-    for (auto n : grid.shape) stream << n << ",";
+    for (auto n : shape) stream << n << ",";
     stream << "},L={";
-    for (auto x : grid.L) stream << x << ",";
+    for (auto x : L) stream << x << ",";
     stream << "}}";
     return stream.str();
   }
