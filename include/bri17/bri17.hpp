@@ -55,6 +55,17 @@ requires(std::floating_point<T> &&
         size{std::reduce(shape.cbegin(), shape.cend(), int{1},
                          std::multiplies())} {}
 
+  /** Return a string representation of this object. */
+  std::string repr() const {
+    std::ostringstream stream;
+    stream << "CartesianGrid<" << typeid(T).name() << "," << DIM << ">{shape={";
+    for (auto n : grid.shape) stream << n << ",";
+    stream << "},L={";
+    for (auto x : grid.L) stream << x << ",";
+    stream << "}}";
+    return stream.str();
+  }
+
   /**
    * Return the index of the node located at <tt>[i, j]</tt>.
    *
@@ -148,15 +159,7 @@ requires(std::floating_point<T> &&
 /** Print the grid to the specified `ostream`. */
 template <typename T, int DIM>
 std::ostream &operator<<(std::ostream &os, const CartesianGrid<T, DIM> &grid) {
-  os << "CartesianGrid<" << DIM << ">={L=[";
-  for (auto L_i : grid.L) {
-    os << L_i << ",";
-  }
-  os << "],shape=[";
-  for (auto N_i : grid.shape) {
-    os << N_i << ",";
-  }
-  return os << "]}";
+  return os << grid.repr();
 }
 
 /**
@@ -187,6 +190,14 @@ requires(std::floating_point<T> && ((DIM == 2) || (DIM == 3))) class Hooke {
    */
   Hooke(T mu, T nu, CartesianGrid<T, DIM> &grid)
       : mu{mu}, nu{nu}, grid{grid} {};
+
+  /** Return a string representation of this object. */
+  std::string repr() const {
+    std::ostringstream stream;
+    stream << "Hooke<" << typeid(T).name() << "," << DIM << ">{mu=" << mu
+           << ",nu=" << nu << ",grid=" << grid << std::endl;
+    return stream.str();
+  }
 
   /**
    * Compute modal strain-displacement vector for specified spatial frequency.
@@ -306,5 +317,11 @@ requires(std::floating_point<T> && ((DIM == 2) || (DIM == 3))) class Hooke {
   //    eps = 0.5 * (B * u.transpose() + u * B.transpose());
   //  }
 };
+
+/** Print the grid to the specified `ostream`. */
+template <typename T, int DIM>
+std::ostream &operator<<(std::ostream &os, const Hooke<T, DIM> &hooke) {
+  return os << hooke.repr();
+}
 
 }  // namespace bri17
