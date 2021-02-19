@@ -10,4 +10,8 @@ if __name__ == "__main__":
     print(grid.dim)
     print(grid.shape)
     print(grid.L)
-    grid.L[1] = 0.0
+    print(grid.get_cell_nodes(1))
+    print(grid.get_node_at(2, 3))
+
+    hooke = pybri17.Hooke2f64(1., 0.3, grid);
+    print(hooke)
