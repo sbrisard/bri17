@@ -7,3 +7,5 @@ add_compile_definitions(
 
 pybind11_add_module(pybri17 pybri17.cpp)
 target_link_libraries(pybri17 PRIVATE bri17)
+
+configure_file(demo.py demo.py COPYONLY)

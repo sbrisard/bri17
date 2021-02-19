@@ -1,6 +1,13 @@
-import bri17
+import pybri17
 
 if __name__ == "__main__":
-    print(bri17.__doc__)
-    print(bri17.__author__)
-    print(bri17.__version__)
+    print(pybri17.__doc__)
+    print(pybri17.__author__)
+    print(pybri17.__version__)
+
+    grid = pybri17.CartesianGrid2f64((3, 4), (1.1, 1.2))
+    print(grid.dtype)
+    print(grid.dim)
+    print(grid.shape)
+    print(grid.L)
+    grid.L[1] = 0.0
