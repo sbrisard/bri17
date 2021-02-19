@@ -12,7 +12,7 @@ def get_metadata(key):
 
 if __name__ == "__main__":
     metadata = {
-        "name": "bri17",
+        "name": "pybri17",
         "version": get_metadata("version"),
         "author": get_metadata("author"),
         "author_email": "email",
