@@ -157,7 +157,7 @@ print("Strain-displacement matrix");
 print("==========================");
 
 eps_avg : eps;
-for i:1 thru ndims do eps_avg : integrate(eps_avg, xyz[i], 0, abc[i]);
+for i:1 thru ndims do eps_avg : integrate(eps_avg, xyz[i], 0, abc[i]) / abc[i];
 
 eps_avg : expand(eps_avg);
 

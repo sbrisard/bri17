@@ -215,8 +215,8 @@ requires(std::floating_point<T> && ((DIM == 2) || (DIM == 3))) class Hooke {
     for (int i = 0; i < DIM; i++) {
       T alpha = std::numbers::pi_v<T> * k[i] / grid.shape[i];
       sum_alpha += alpha;
-      c[i] = cos(alpha) * grid.L[i] / grid.shape[i];
-      s[i] = sin(alpha);
+      c[i] = cos(alpha);
+      s[i] = sin(alpha) * grid.shape[i] / grid.L[i];
     }
 
     std::complex<T> prefactor{-2 * sin(sum_alpha), 2 * cos(sum_alpha)};
@@ -250,8 +250,6 @@ requires(std::floating_point<T> && ((DIM == 2) || (DIM == 3))) class Hooke {
     // psi[i] = psi(z_i)
     //
     // Which simplifies the expression of H_k (there are no h_i's).
-    // Note that H_k is multiplied by the cell volume, so that the
-    // modal_stiffness is the true modal stiffness
     T phi[DIM];
     T psi[DIM];
     T chi[DIM];
