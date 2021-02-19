@@ -2,7 +2,7 @@
 API documentation of the Python bindings
 ****************************************
 
-.. automodule:: bri17
+.. automodule:: pybri17
    :members:
    :private-members:
    :undoc-members:
