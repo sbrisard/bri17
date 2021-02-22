@@ -22,6 +22,8 @@
 #include <stdexcept>
 #include <string>
 
+#include <Eigen/Dense>
+
 namespace bri17 {
 /**
  * A rectangular grid with fixed spacing in each direction.
@@ -289,31 +291,68 @@ requires(std::floating_point<T> && ((DIM == 2) || (DIM == 3))) class Hooke {
     }
   }
 
-  //  /**
-  //   * Compute the strains induced by the specified eigenstresses.
-  //   *
-  //   * The eigenstresses `τ[n, i, j]` are constant in each cell n. They induce
-  //   the
-  //   * strains `ε[n, i, j]`.
-  //   *
-  //   * **Warning: this method has not been tested.**
-  //   *
-  //   * @param k multi-index of the Fourier component
-  //   * @param tau the `k`-th Fourier component of the eigenstress `τ`,
-  //   * `τ^[k, :, :]`
-  //   * @param eps the `k`-th Fourier component of `ε`, `ε^[k, :, :]` (output
-  //   * parameter)
-  //   */
-  //  void modal_eigenstress_to_strain(
-  //      int const *k, Eigen::Matrix<std::complex<double>, DIM, DIM> &tau,
-  //      Eigen::Matrix<std::complex<double>, DIM, DIM> &eps) const {
-  //    Eigen::Matrix<std::complex<double>, DIM, 1> B{};
-  //    Eigen::Matrix<std::complex<double>, DIM, DIM> K{};
-  //    modal_strain_displacement(k, B);
-  //    modal_stiffness<DIM>(k, mu, nu, K);
-  //    auto u = -K.fullPivLu().solve(tau * B);
-  //    eps = 0.5 * (B * u.transpose() + u * B.transpose());
-  //  }
+  /**
+   * Compute the strains induced by the specified eigenstresses.
+   *
+   * The eigenstresses `τ[n, i, j]` are constant in each cell n. They induce the
+   * average strains `ε[n, i, j]`.
+   *
+   * This method computes the **opposite** of the induced strain!
+   *
+   * @param k multi-index of the Fourier component
+   * @param tau the `k`-th Fourier component of the eigenstress `τ`,
+   *            `τ^[k, :, :]`
+   * @param eta the `k`-th Fourier component of `-ε`, `-ε^[k, :, :]`
+   *            (output parameter).
+   */
+  void modal_eigenstress_to_opposite_strain(int const *k,
+                                            std::complex<T> const *tau,
+                                            std::complex<T> *eta) const {
+    using Vector = Eigen::Matrix<std::complex<T>, DIM, 1>;
+    using Matrix = Eigen::Matrix<std::complex<T>, DIM, DIM>;
+    constexpr T const sqrt2 = std::numbers::sqrt2_v<T>;
+    constexpr std::complex<T> zero{};
+    constexpr int const sym = DIM == 2 ? 3 : 6;
+    Vector B{};
+    modal_strain_displacement(k, B.data());
+    Matrix K{};
+    modal_stiffness(k, K.data());
+    Matrix tau_mat;
+    bool null_frequency = false;
+    if constexpr (DIM == 2) {
+      // clang-format off
+      tau_mat <<         tau[0], tau[2] / sqrt2,
+                 tau[2] / sqrt2,         tau[1];
+      // clang-format on
+      null_frequency = (k[0] == 0) && (k[1] == 0);
+    } else if constexpr (DIM == 3) {
+      // clang-format off
+      tau_mat <<         tau[0], tau[5] / sqrt2, tau[4] / sqrt2,
+                 tau[5] / sqrt2,         tau[1], tau[3] / sqrt2,
+                 tau[4] / sqrt2, tau[3] / sqrt2,         tau[2];
+      // clang-format on
+      null_frequency = (k[0] == 0) && (k[1] == 0) && (k[2] == 0);
+    }
+    if (null_frequency) {
+      for (int i = 0; i < sym; i++) eta[i] = zero;
+      return;
+    }
+    Vector rhs = tau_mat * B.conjugate();
+    Vector u = K.llt().solve(rhs);
+    Matrix eta_mat = 0.5 * (B * u.transpose() + u * B.transpose());
+    if constexpr (DIM == 2) {
+      eta[0] = eta_mat(0, 0);
+      eta[1] = eta_mat(1, 1);
+      eta[2] = sqrt2 * eta_mat(0, 1);
+    } else if constexpr (DIM == 3) {
+      eta[0] = eta_mat(0, 0);
+      eta[1] = eta_mat(1, 1);
+      eta[2] = eta_mat(2, 2);
+      eta[3] = sqrt2 * eta_mat(1, 2);
+      eta[4] = sqrt2 * eta_mat(2, 0);
+      eta[5] = sqrt2 * eta_mat(0, 1);
+    }
+  }
 };
 
 /** Print the grid to the specified `ostream`. */

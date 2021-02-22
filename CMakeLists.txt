@@ -26,7 +26,10 @@ target_include_directories(
   $<BUILD_INTERFACE:${${PROJECT_NAME}_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 
-target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_17)
+find_package(Eigen3 3.3 REQUIRED NO_MODULE)
+target_link_libraries(${PROJECT_NAME} INTERFACE Eigen3::Eigen)
+
+#target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_17)
 
 if (MATH_LIBRARY)
   target_link_libraries(${PROJECT_NAME} INTERFACE ${MATH_LIBRARY})

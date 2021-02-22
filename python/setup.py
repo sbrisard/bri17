@@ -25,11 +25,13 @@ if __name__ == "__main__":
 
     config = configparser.ConfigParser()
     config.read("setup.cfg")
+    eigen_include_dir = config["eigen"].get("include_dir", "")
     bri17_include_dir = config["bri17"].get("include_dir", "")
 
     pybri17 = setuptools.Extension(
         "pybri17",
         include_dirs=[pybind11.get_include(),
+                      eigen_include_dir,
                       bri17_include_dir],
         sources=["pybri17.cpp"],
         extra_compile_args=["-D__DOC__=\"\"{}\"\"".format(metadata["description"]),

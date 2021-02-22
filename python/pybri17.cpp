@@ -72,6 +72,12 @@ void create_hooke_binding(py::module m, const char* name) {
       .def("modal_stiffness_matrix",
            [](Hooke& self, int_array_t k, complex_array_t K) {
              return self.modal_stiffness(k.data(), K.mutable_data());
+           })
+      .def("modal_eigenstress_to_opposite_strain",
+           [](Hooke& self, int_array_t k, complex_array_t tau,
+              complex_array_t eta) {
+             return self.modal_eigenstress_to_opposite_strain(
+                 k.data(), tau.data(), eta.mutable_data());
            });
 }
 
