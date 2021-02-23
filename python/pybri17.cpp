@@ -6,6 +6,14 @@
 
 namespace py = pybind11;
 
+template <typename T>
+void check_contiguous(py::array_t<T> array) {
+  auto info = array.request();
+  if ((info.ndim != 1) || (info.strides[0] != sizeof(T))) {
+    throw std::invalid_argument("expected one-dimensional, contiguous array");
+  }
+}
+
 template <typename T, int SIZE>
 requires((SIZE >= 0) &&
          (SIZE < 5)) auto make_tuple_from_std_array(std::array<T, SIZE> a) {
@@ -56,8 +64,8 @@ template <typename T, int DIM>
 void create_hooke_binding(py::module m, const char* name) {
   using CartesianGrid = bri17::CartesianGrid<T, DIM>;
   using Hooke = bri17::Hooke<T, DIM>;
-  using int_array_t = py::array_t<int, py::array::c_style>;
-  using complex_array_t = py::array_t<std::complex<T>, py::array::c_style>;
+  using int_array_t = py::array_t<int>;
+  using complex_array_t = py::array_t<std::complex<T>>;
 
   auto py_class_ = py::class_<Hooke>(m, name);
   py_class_.def(py::init<T, T, CartesianGrid>())
@@ -67,15 +75,21 @@ void create_hooke_binding(py::module m, const char* name) {
       .def("__repr__", &Hooke::repr)
       .def("modal_strain_displacement",
            [](Hooke& self, int_array_t k, complex_array_t B) {
+             check_contiguous(k);
+             check_contiguous(B);
              return self.modal_strain_displacement(k.data(), B.mutable_data());
            })
       .def("modal_stiffness_matrix",
            [](Hooke& self, int_array_t k, complex_array_t K) {
+             check_contiguous(k);
+             check_contiguous(K);
              return self.modal_stiffness(k.data(), K.mutable_data());
            })
       .def("modal_eigenstress_to_opposite_strain",
            [](Hooke& self, int_array_t k, complex_array_t tau,
               complex_array_t eta) {
+             check_contiguous(tau);
+             check_contiguous(eta);
              return self.modal_eigenstress_to_opposite_strain(
                  k.data(), tau.data(), eta.mutable_data());
            });
